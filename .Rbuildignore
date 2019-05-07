@@ -1,0 +1,8 @@
+^novels\.Rproj$
+^\.Rproj\.user$
+^data-raw$
+^README.html$
+^TODO.*$
+^doc$
+^Meta$
+^vignettes/glmnet_cache/

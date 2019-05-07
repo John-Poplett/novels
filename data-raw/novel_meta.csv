@@ -1,0 +1,810 @@
+genre,response,file.name,title,author,language,download.count
+adventure,SUCCESS,103.txt,"around the world in 80 days","verne, jules, 1828-1905",en,3260
+adventure,SUCCESS,1145.txt,"rupert of hentzau","hope, anthony, 1863-1933",en,141
+adventure,SUCCESS,1947.txt,"scaramouche","sabatini, rafael, 1875-1950",en,434
+adventure,SUCCESS,19513.txt,"a journey to the center of the earth","verne, jules, 1828-1905",en,336
+adventure,SUCCESS,1965.txt,"captain blood","sabatini, rafael, 1875-1950",en,638
+adventure,SUCCESS,2166.txt,"king solomon's mines","haggard, h. rider (henry rider), 1856-1925",en,1667
+adventure,SUCCESS,24091.txt,"despoilers of the golden empire","garrett, randall, 1927-1987",en,115
+adventure,SUCCESS,2727.txt,"allan's wife","haggard, h. rider (henry rider), 1856-1925",en,200
+adventure,SUCCESS,393.txt,"the blue lagoon: a romance","stacpoole, h. de vere (henry de vere), 1863-1951",en,175
+adventure,SUCCESS,95.txt,"the prisoner of zenda","hope, anthony, 1863-1933",en,669
+adventure,FAILURE,10368.txt,"the vizier of the two-horned alexander","stockton, frank richard, 1834-1902",en,15
+adventure,FAILURE,12190.txt,"the adventures of captain horn","stockton, frank richard, 1834-1902",en,17
+adventure,FAILURE,13290.txt,"martin rattler","ballantyne, r. m. (robert michael), 1825-1894",en,13
+adventure,FAILURE,15072.txt,"marjorie's maytime","wells, carolyn, 1862-1942",en,10
+adventure,FAILURE,18399.txt,"the shipwreck a story for the young","spillman, joseph, 1842-1905",en,7
+adventure,FAILURE,21393.txt,"hendricks the hunter the border farm, a tale of zululand","kingston, william henry giles, 1814-1880",en,15
+adventure,FAILURE,21459.txt,"dick onslow among the redskins","kingston, william henry giles, 1814-1880",en,12
+adventure,FAILURE,23662.txt,"the heart of unaga","cullum, ridgwell, 1867-1943",en,12
+adventure,FAILURE,24695.txt,"the snowshoe trail","marshall, edison, 1894-1967",en,16
+adventure,FAILURE,8493.txt,"the last hope","merriman, henry seton, 1862-1903",en,11
+adventure,SUCCESS,106.txt,"jungle tales of tarzan","burroughs, edgar rice, 1875-1950",en,377
+adventure,SUCCESS,123.txt,"at the earth's core","burroughs, edgar rice, 1875-1950",en,479
+adventure,SUCCESS,126.txt,"the poison belt","doyle, arthur conan, sir, 1859-1930",en,413
+adventure,SUCCESS,17047.txt,"the half-hearted","buchan, john, 1875-1940",en,252
+adventure,SUCCESS,20898.txt,"the galaxy primes","smith, e. e. (edward elmer), 1890-1965",en,354
+adventure,SUCCESS,25577.txt,"all adrift or the goldwing club","optic, oliver, 1822-1897",en,160
+adventure,SUCCESS,3782.txt,"huntingtower","buchan, john, 1875-1940",en,126
+adventure,SUCCESS,468.txt,"manon lescaut","pr�vost, abb�, 1697-1763",en,277
+adventure,SUCCESS,9609.txt,"joseph andrews, vol. 2","fielding, henry, 1707-1754",en,139
+adventure,SUCCESS,9611.txt,"joseph andrews, vol. 1","fielding, henry, 1707-1754",en,257
+adventure,FAILURE,10690.txt,"a desperate chance or, the wizard tramp's revelation, a thrilling narrative","halsey, harlan page, 1839?-1898",en,17
+adventure,FAILURE,12191.txt,"the red axe","crockett, s. r. (samuel rutherford), 1860-1914",en,17
+adventure,FAILURE,13276.txt,"the mission","marryat, frederick, 1792-1848",en,9
+adventure,FAILURE,13405.txt,"the travels and adventures of monsieur violet in california, sonora, and western texas","marryat, frederick, 1792-1848",en,17
+adventure,FAILURE,19235.txt,"under the great bear","munroe, kirk, 1850-1930",en,7
+adventure,FAILURE,21268.txt,"the search for the silver city a tale of adventure in yucatan","otis, james, 1848-1912",en,10
+adventure,FAILURE,21539.txt,"the blue envelope","snell, roy j. (roy judson), 1878-1959",en,14
+adventure,FAILURE,23725.txt,"viking boys","saxby, jessie margaret edmondston, 1842-1940",en,8
+adventure,FAILURE,24996.txt,"the tapu of banderah 1901","becke, louis, 1855-1913",en,7
+adventure,FAILURE,9649.txt,"with trapper jim in the north woods","leslie, lawrence j.",en,14
+adventure,SUCCESS,10743.txt,"moonfleet","falkner, john meade, 1858-1932",en,270
+adventure,SUCCESS,11866.txt,"the life and most surprising adventures of robinson crusoe, of york, mariner (1801)","defoe, daniel, 1661?-1731",en,108
+adventure,SUCCESS,12623.txt,"the life and adventures of robinson crusoe (1808)","defoe, daniel, 1661?-1731",en,189
+adventure,SUCCESS,12986.txt,"the card, a story of adventure in the five towns","bennett, arnold, 1867-1931",en,221
+adventure,SUCCESS,1752.txt,"el dorado, an adventure of the scarlet pimpernel","orczy, baroness emmuska, 1865-1947",en,230
+adventure,SUCCESS,19640.txt,"adventures of huckleberry finn","twain, mark, 1835-1910",en,1092
+adventure,SUCCESS,19714.txt,"with frederick the great a story of the seven years' war","henty, g. a. (george alfred), 1832-1902",en,103
+adventure,SUCCESS,2785.txt,"the elusive pimpernel","orczy, baroness emmuska, 1865-1947",en,210
+adventure,SUCCESS,546.txt,"under the andes","stout, rex, 1886-1975",en,147
+adventure,SUCCESS,7100.txt,"adventures of huckleberry finn, chapters 01 to 05","twain, mark, 1835-1910",en,746
+adventure,FAILURE,12611.txt,"the regent","bennett, arnold, 1867-1931",en,17
+adventure,FAILURE,15773.txt,"round the world in seven days","strang, herbert",en,17
+adventure,FAILURE,20131.txt,"the mask a story of love and adventure","hornblow, arthur, 1865-1942",en,15
+adventure,FAILURE,21313.txt,"in honour's cause a tale of the days of george the first","fenn, george manville, 1831-1909",en,11
+adventure,FAILURE,21314.txt,"king o' the beach a tropic tale","fenn, george manville, 1831-1909",en,10
+adventure,FAILURE,21795.txt,"fred fearnot's new ranch and how he and terry managed it","shackleford, h. k. (harvey king), 1841-1906",en,6
+adventure,FAILURE,24297.txt,"the river of darkness, or, under africa","graydon, william murray, 1864-1946",en,12
+adventure,FAILURE,24299.txt,"the cryptogram a story of northwest canada","graydon, william murray, 1864-1946",en,13
+adventure,FAILURE,25079.txt,"queensland cousins","haverfield, eleanor luisa, 1870-",en,13
+adventure,FAILURE,9873.txt,"till the clock stops","bell, j. j. (john joy), 1871-1934",en,11
+adventure,SUCCESS,1083.txt,"the arrow of gold a story between two notes","conrad, joseph, 1857-1924",en,104
+adventure,SUCCESS,1142.txt,"typhoon","conrad, joseph, 1857-1924",en,320
+adventure,SUCCESS,13720.txt,"mardi: and a voyage thither, vol. i","melville, herman, 1819-1891",en,130
+adventure,SUCCESS,13721.txt,"mardi: and a voyage thither, vol. ii","melville, herman, 1819-1891",en,169
+adventure,SUCCESS,1376.txt,"the little white bird; or, adventures in kensington gardens","barrie, j. m. (james matthew), 1860-1937",en,284
+adventure,SUCCESS,19678.txt,"call of the wild","london, jack, 1876-1916",en,503
+adventure,SUCCESS,21338.txt,"the vnfortunate traveller, or the life of jack wilton with an essay on the life and writings of thomas nash by edmund gosse","nash, thomas, 1567-1601",en,257
+adventure,SUCCESS,215.txt,"the call of the wild","london, jack, 1876-1916",en,3433
+adventure,SUCCESS,2226.txt,"kim","kipling, rudyard, 1865-1936",en,1203
+adventure,SUCCESS,2275.txt,"the pioneers","cooper, james fenimore, 1789-1851",en,262
+adventure,FAILURE,10988.txt,"the devil's admiral","moore, frederick ferdinand, 1877-",en,9
+adventure,FAILURE,11909.txt,"bob the castaway or, the wreck of the eagle","webster, frank v.",en,12
+adventure,FAILURE,12405.txt,"frank, the young naturalist","castlemon, harry, 1842-1915",en,14
+adventure,FAILURE,13946.txt,"camp and trail a story of the maine woods","hornibrook, isabel, 1859-1952",en,17
+adventure,FAILURE,14361.txt,"carmen's messenger","bindloss, harold, 1866-1945",en,13
+adventure,FAILURE,16604.txt,"poison island","quiller-couch, arthur thomas, sir, 1863-1944",en,13
+adventure,FAILURE,20261.txt,"the adventures of harry revel","quiller-couch, arthur thomas, sir, 1863-1944",en,13
+adventure,FAILURE,22086.txt,"the son of monte-cristo, volume ii","lermina, jules, 1839-1915",en,17
+adventure,FAILURE,25144.txt,"a voyage with captain dynamite","rich, charles edward",en,11
+adventure,FAILURE,9927.txt,"the bronze bell","vance, louis joseph, 1879-1933",en,13
+adventure,SUCCESS,1184.txt,"the count of monte cristo","dumas, alexandre, 1802-1870",en,6562
+adventure,SUCCESS,12556.txt,"a master of fortune being further adventures of captain kettle","hyne, charles john cutcliffe wright, 1866-1944",en,304
+adventure,SUCCESS,18883.txt,"the four feathers","mason, a. e. w. (alfred edward woodley), 1865-1948",en,161
+adventure,SUCCESS,18997.txt,"the vicomte de bragelonne or ten years later being the completion of the three musketeers and twenty years after","dumas, alexandre, 1802-1870",en,104
+adventure,SUCCESS,21513.txt,"life and adventures of peter wilkins, vol. i. (of ii.)","paltock, robert, 1697-1767",en,110
+adventure,SUCCESS,2360.txt,"the riddle of the sands","childers, erskine, 1870-1922",en,860
+adventure,SUCCESS,23765.txt,"captain boldheart & the latin-grammar master a holiday romance from the pen of lieut-col. robin redforth, aged 9","dickens, charles, 1812-1870",en,134
+adventure,SUCCESS,794.txt,"the wouldbegoods","nesbit, e. (edith), 1858-1924",en,106
+adventure,SUCCESS,966.txt,"maid marian","peacock, thomas love, 1785-1866",en,100
+adventure,SUCCESS,968.txt,"martin chuzzlewit","dickens, charles, 1812-1870",en,534
+adventure,FAILURE,11997.txt,"crusoes of the frozen north","stables, gordon, 1840-1910",en,17
+adventure,FAILURE,14882.txt,"bobby of the labrador","wallace, dillon, 1863-1939",en,6
+adventure,FAILURE,15546.txt,"the last of the peterkins with others of their kin","hale, lucretia p. (lucretia peabody), 1820-1900",en,12
+adventure,FAILURE,17131.txt,"the colonel of the red huzzars","scott, john reed, 1869-",en,10
+adventure,FAILURE,20618.txt,"the boy land boomer or, dick arbuckle's adventures in oklahoma","stratemeyer, edward, 1862-1930",en,12
+adventure,FAILURE,20870.txt,"the motor girls through new england or, held by the gypsies","penrose, margaret",en,14
+adventure,FAILURE,22424.txt,"frank merriwell down south","standish, burt l., 1866-1945",en,13
+adventure,FAILURE,24306.txt,"the flaming jewel","chambers, robert w. (robert william), 1865-1933",en,11
+adventure,FAILURE,25316.txt,"frank merriwell's son a chip off the old block","standish, burt l., 1866-1945",en,11
+adventure,FAILURE,9968.txt,"the young woodsman or, life in the forests of canada","oxley, j. macdonald (james macdonald), 1855-1907",en,4
+mystery,SUCCESS,10067.txt,"the mystery of the boule cabinet a detective story","stevenson, burton egbert, 1872-1962",en,93
+mystery,SUCCESS,11128.txt,"the red thumb mark","freeman, r. austin (richard austin), 1862-1943",en,190
+mystery,SUCCESS,12187.txt,"the mystery of 31 new inn","freeman, r. austin (richard austin), 1862-1943",en,211
+mystery,SUCCESS,13372.txt,"the gloved hand","stevenson, burton egbert, 1872-1962",en,133
+mystery,SUCCESS,1695.txt,"the man who was thursday, a nightmare","chesterton, g. k. (gilbert keith), 1874-1936",en,1220
+mystery,SUCCESS,1718.txt,"manalive","chesterton, g. k. (gilbert keith), 1874-1936",en,184
+mystery,SUCCESS,20912.txt,"the daffodil mystery","wallace, edgar, 1875-1932",en,328
+mystery,SUCCESS,21530.txt,"the angel of terror","wallace, edgar, 1875-1932",en,343
+mystery,SUCCESS,3180.txt,"a double barrelled detective story","twain, mark, 1835-1910",en,311
+mystery,SUCCESS,3181.txt,"the stolen white elephant","twain, mark, 1835-1910",en,228
+mystery,FAILURE,10029.txt,"the hunt ball mystery","magnay, william, sir, 1855-1917",en,24
+mystery,FAILURE,12195.txt,"the mystery of metropolisville","eggleston, edward, 1837-1902",en,17
+mystery,FAILURE,14369.txt,"the young engineers on the gulf or, the dread mystery of the million dollar breakwater","hancock, h. irving (harrie irving), 1868-1922",en,17
+mystery,FAILURE,18671.txt,"never-fail blake","stringer, arthur, 1874-1950",en,24
+mystery,FAILURE,20152.txt,"the winning clue","hay, james, 1881-1936",en,15
+mystery,FAILURE,24945.txt,"mufti","mcneile, h. c. (herman cyril), 1888-1937",en,23
+mystery,FAILURE,25873.txt,"the motor girls on crystal bay or, the secret of the red oar","penrose, margaret",en,22
+mystery,FAILURE,2789.txt,"the motor girls on a tour","penrose, margaret",en,17
+mystery,FAILURE,28504.txt,"the rival campers ashore the mystery of the mill","smith, ruel perley, 1869-1937",en,7
+mystery,FAILURE,9300.txt,"jennie baxter, journalist","barr, robert, 1850-1912",en,25
+mystery,SUCCESS,108.txt,"the return of sherlock holmes","doyle, arthur conan, sir, 1859-1930",en,5293
+mystery,SUCCESS,11451.txt,"the rome express","griffiths, arthur, 1838-1908",en,368
+mystery,SUCCESS,16339.txt,"the passenger from calais","griffiths, arthur, 1838-1908",en,165
+mystery,SUCCESS,19069.txt,"the silent house","hume, fergus, 1859-1932",en,94
+mystery,SUCCESS,2014.txt,"the lodger","lowndes, marie belloc, 1868-1947",en,176
+mystery,SUCCESS,2097.txt,"the sign of the four","doyle, arthur conan, sir, 1859-1930",en,2529
+mystery,SUCCESS,3802.txt,"the widow lerouge","gaboriau, emile, 1832-1873",en,120
+mystery,SUCCESS,4071.txt,"monsieur lecoq","gaboriau, emile, 1832-1873",en,119
+mystery,SUCCESS,564.txt,"the mystery of edwin drood","dickens, charles, 1812-1870",en,643
+mystery,SUCCESS,5660.txt,"mary louise","baum, l. frank (lyman frank), 1856-1919",en,92
+mystery,FAILURE,10537.txt,"the governors","oppenheim, e. phillips (edward phillips), 1866-1946",en,22
+mystery,FAILURE,10575.txt,"the profiteers","oppenheim, e. phillips (edward phillips), 1866-1946",en,14
+mystery,FAILURE,14623.txt,"six little bunkers at grandma bell's","hope, laura lee",en,16
+mystery,FAILURE,18965.txt,"the substitute prisoner","marcin, max, 1879-1948",en,13
+mystery,FAILURE,22212.txt,"the paternoster ruby","walk, charles edmonds, 1875-",en,22
+mystery,FAILURE,25695.txt,"the diamond coterie","lynch, lawrence l.",en,18
+mystery,FAILURE,25847.txt,"patty's friends","wells, carolyn, 1862-1942",en,18
+mystery,FAILURE,25875.txt,"the woman from outside [on swan river]","footner, hulbert, 1879-1944",en,20
+mystery,FAILURE,2883.txt,"the gold bag","wells, carolyn, 1862-1942",en,22
+mystery,FAILURE,9635.txt,"the end of her honeymoon","lowndes, marie belloc, 1868-1947",en,12
+mystery,SUCCESS,10373.txt,"the middle temple murder","fletcher, j. s. (joseph smith), 1863-1935",en,283
+mystery,SUCCESS,1155.txt,"secret adversary","christie, agatha, 1890-1976",en,4971
+mystery,SUCCESS,1167.txt,"a strange disappearance","green, anna katharine, 1846-1935",en,226
+mystery,SUCCESS,12239.txt,"dead men's money","fletcher, j. s. (joseph smith), 1863-1935",en,222
+mystery,SUCCESS,155.txt,"the moonstone","collins, wilkie, 1824-1889",en,1650
+mystery,SUCCESS,1622.txt,"the law and the lady","collins, wilkie, 1824-1889",en,110
+mystery,SUCCESS,172.txt,"the haunted bookshop","morley, christopher, 1890-1957",en,293
+mystery,SUCCESS,17763.txt,"the mystery of the hasty arrow","green, anna katharine, 1846-1935",en,180
+mystery,SUCCESS,6864.txt,"average jones","adams, samuel hopkins, 1871-1958",en,91
+mystery,SUCCESS,863.txt,"the mysterious affair at styles","christie, agatha, 1890-1976",en,4941
+mystery,FAILURE,12678.txt,"the house of mystery an episode in the career of rosalie le grange, clairvoyant","irwin, will, 1873-1948",en,24
+mystery,FAILURE,13880.txt,"triple spies","snell, roy j. (roy judson), 1878-1959",en,13
+mystery,FAILURE,19335.txt,"oscar the detective or, dudie dunne, the exquisite detective","halsey, harlan page, 1839?-1898",en,22
+mystery,FAILURE,22820.txt,"the crooked house","fleming, brandon",en,14
+mystery,FAILURE,25787.txt,"on the edge of the arctic or, an aeroplane in snowland","sayler, h. l. (harry lincoln), 1863-",en,13
+mystery,FAILURE,26155.txt,"two wonderful detectives jack and gil's marvelous skill","halsey, harlan page, 1839?-1898",en,20
+mystery,FAILURE,26372.txt,"panther eye","snell, roy j. (roy judson), 1878-1959",en,10
+mystery,FAILURE,27097.txt,"the boy ranchers in death valley or diamond x and the poison mystery","baker, willard f.",en,24
+mystery,FAILURE,431.txt,"the fortune hunter","phillips, david graham, 1867-1911",en,18
+mystery,FAILURE,9808.txt,"the loudwater mystery","jepson, edgar, 1863-1938",en,14
+mystery,SUCCESS,1076.txt,"the wallet of kai lung","bramah, ernest, 1869?-1942",en,99
+mystery,SUCCESS,1159.txt,"fire-tongue","rohmer, sax, 1883-1959",en,104
+mystery,SUCCESS,1182.txt,"dope","rohmer, sax, 1883-1959",en,146
+mystery,SUCCESS,12509.txt,"the moon rock","rees, arthur j. (arthur john), 1872-1942",en,100
+mystery,SUCCESS,13058.txt,"the teeth of the tiger","leblanc, maurice, 1864-1941",en,141
+mystery,SUCCESS,14332.txt,"cleek: the man of the forty faces","hanshew, thomas w., 1857-1914",en,123
+mystery,SUCCESS,1563.txt,"the crystal stopper","leblanc, maurice, 1864-1941",en,189
+mystery,SUCCESS,20494.txt,"the shrieking pit","rees, arthur j. (arthur john), 1872-1942",en,103
+mystery,SUCCESS,2568.txt,"trent's last case","bentley, e. c. (edmund clerihew), 1875-1956",en,305
+mystery,SUCCESS,4715.txt,"an african millionaire episodes in the life of the illustrious colonel clay","allen, grant, 1848-1899",en,244
+mystery,FAILURE,10584.txt,"air service boys over the atlantic or, the longest flight on record","beach, charles amory",en,9
+mystery,FAILURE,14096.txt,"with links of steel or, the peril of the unknown","carter, nicholas",en,23
+mystery,FAILURE,15695.txt,"'doc.' gordon","freeman, mary eleanor wilkins, 1852-1930",en,17
+mystery,FAILURE,15965.txt,"in friendship's guise","graydon, william murray, 1864-1946",en,11
+mystery,FAILURE,24033.txt,"dave porter in the gold fields or, the search for the landslide mine","stratemeyer, edward, 1862-1930",en,18
+mystery,FAILURE,2691.txt,"nan sherwood at pine camp or, the old lumberman's secret","carr, annie roe",en,21
+mystery,FAILURE,26925.txt,"the bradys beyond their depth the great swamp mystery","doughty, francis worcester, 1850-1917",en,16
+mystery,FAILURE,4660.txt,"timothy crump's ward a story of american life","alger, horatio, 1832-1899",en,23
+mystery,FAILURE,5002.txt,"the rover boys in business or, the search for the missing bonds","stratemeyer, edward, 1862-1930",en,20
+mystery,FAILURE,9853.txt,"the mystery of the four fingers","white, fred m. (fred merrick), 1859-",en,20
+mystery,SUCCESS,11127.txt,"the case of jennie brice","rinehart, mary roberts, 1876-1958",en,92
+mystery,SUCCESS,1601.txt,"the breaking point","rinehart, mary roberts, 1876-1958",en,130
+mystery,SUCCESS,1686.txt,"the secret of the night","leroux, gaston, 1868-1927",en,164
+mystery,SUCCESS,1703.txt,"dead men tell no tales","hornung, e. w. (ernest william), 1866-1921",en,274
+mystery,SUCCESS,17866.txt,"murder in the gunroom","piper, h. beam, 1904-1964",en,297
+mystery,SUCCESS,1814.txt,"the agony column","biggers, earl derr, 1884-1933",en,97
+mystery,SUCCESS,1872.txt,"the red house mystery","milne, a. a. (alan alexander), 1882-1956",en,723
+mystery,SUCCESS,20559.txt,"r. holmes & co. being the remarkable adventures of raffles holmes, esq., detective and amateur cracksman by birth","bangs, john kendrick, 1862-1922",en,121
+mystery,SUCCESS,546.txt,"under the andes","stout, rex, 1886-1975",en,147
+mystery,SUCCESS,9746.txt,"the ashiel mystery: a detective story","bryce, charles, mrs.",en,167
+mystery,FAILURE,11085.txt,"m. or n. similia similibus curantur.","whyte-melville, g. j. (george john), 1821-1878",en,17
+mystery,FAILURE,14167.txt,"the red redmaynes","phillpotts, eden, 1862-1960",en,20
+mystery,FAILURE,17762.txt,"the burglar's fate and the detectives","pinkerton, allan, 1819-1884",en,21
+mystery,FAILURE,19523.txt,"a husband by proxy","steele, jack",en,16
+mystery,FAILURE,19901.txt,"the castle of the shadows","williamson, a. m. (alice muriel), 1869-1933",en,25
+mystery,FAILURE,24102.txt,"owen clancy's happy trail or, the motor wizard in california","standish, burt l., 1866-1945",en,23
+mystery,FAILURE,25849.txt,"the launch boys' adventures in northern waters","ellis, edward sylvester, 1840-1916",en,11
+mystery,FAILURE,26657.txt,"the motor pirate","paternoster, g. sidney, 1866-",en,10
+mystery,FAILURE,27890.txt,"the merriweather girls in quest of treasure","edholm, lizette m.",en,12
+mystery,FAILURE,9974.txt,"the yellow streak","williams, valentine, 1883-1946",en,23
+fiction,SUCCESS,1027.txt,"the lone star ranger, a romance of the border","grey, zane, 1872-1939",en,333
+fiction,SUCCESS,1095.txt,"light of the western stars","grey, zane, 1872-1939",en,183
+fiction,SUCCESS,165.txt,"mcteague","norris, frank, 1870-1902",en,245
+fiction,SUCCESS,1897.txt,"the seventh man","brand, max, 1892-1944",en,140
+fiction,SUCCESS,243.txt,"the forged coupon","tolstoy, leo, graf, 1828-1910",en,237
+fiction,SUCCESS,331.txt,"the mucker","burroughs, edgar rice, 1875-1950",en,146
+fiction,SUCCESS,363.txt,"the oakdale affair","burroughs, edgar rice, 1875-1950",en,132
+fiction,SUCCESS,5240.txt,"the confessions of harry lorrequer � complete","lever, charles james, 1806-1872",en,166
+fiction,SUCCESS,525.txt,"youth, a narrative","conrad, joseph, 1857-1924",en,237
+fiction,SUCCESS,689.txt,"the kreutzer sonata and other stories","tolstoy, leo, graf, 1828-1910",en,560
+fiction,FAILURE,11005.txt,"o+f","wetterau, john moncure",en,2
+fiction,FAILURE,13238.txt,"six women","cross, victoria, 1868-1952",en,7
+fiction,FAILURE,15181.txt,"my mother's rival everyday life library no. 4","brame, charlotte m., 1836-1884",en,7
+fiction,FAILURE,15182.txt,"marion arleigh's penance everyday life library no. 5","brame, charlotte m., 1836-1884",en,5
+fiction,FAILURE,15793.txt,"an unpardonable liar","parker, gilbert, 1862-1932",en,4
+fiction,FAILURE,1762.txt,"the consul","davis, richard harding, 1864-1916",en,6
+fiction,FAILURE,1819.txt,"the messengers","davis, richard harding, 1864-1916",en,7
+fiction,FAILURE,20615.txt,"the master-knot of human fate","meredith, ellis, 1865-",en,3
+fiction,FAILURE,22961.txt,"nell, of shorne mills or, one heart's burden","garvice, charles, -1920",en,7
+fiction,FAILURE,5236.txt,"the confessions of harry lorrequer � volume 3","lever, charles james, 1806-1872",en,2
+fiction,SUCCESS,1032.txt,"the pupil","james, henry, 1843-1916",en,125
+fiction,SUCCESS,1093.txt,"the beast in the jungle","james, henry, 1843-1916",en,711
+fiction,SUCCESS,1156.txt,"babbitt","lewis, sinclair, 1885-1951",en,482
+fiction,SUCCESS,1253.txt,"a simple soul","flaubert, gustave, 1821-1880",en,656
+fiction,SUCCESS,1290.txt,"salammbo","flaubert, gustave, 1821-1880",en,208
+fiction,SUCCESS,17047.txt,"the half-hearted","buchan, john, 1875-1940",en,252
+fiction,SUCCESS,2028.txt,"the yellow claw","rohmer, sax, 1883-1959",en,164
+fiction,SUCCESS,24920.txt,"the book of all-power","wallace, edgar, 1875-1932",en,345
+fiction,SUCCESS,39293.txt,"the gentlemen's book of etiquette and manual of politeness being a complete guide for a gentleman's conduct in all his relations towards society","hartley, cecil b.",en,152
+fiction,SUCCESS,543.txt,"main street","lewis, sinclair, 1885-1951",en,473
+fiction,FAILURE,13261.txt,"jason a romance","forman, justus miles, 1875-1915",en,7
+fiction,FAILURE,15103.txt,"the imaginary marriage","cooper, henry st. john, 1908-1973",en,5
+fiction,FAILURE,15244.txt,"lewie or, the bended twig","bradford, sarah h. (sarah hopkins), 1818-",en,5
+fiction,FAILURE,16137.txt,"the hoyden","duchess, 1855?-1897",en,6
+fiction,FAILURE,16836.txt,"mark hurdlestone or, the two brothers","moodie, susanna, 1803-1885",en,3
+fiction,FAILURE,18280.txt,"enter bridget","cobb, thomas, 1854-1932",en,6
+fiction,FAILURE,20835.txt,"the monctons: a novel, volume i","moodie, susanna, 1803-1885",en,3
+fiction,FAILURE,23010.txt,"gulmore, the boss","harris, frank, 1856-1931",en,6
+fiction,FAILURE,23012.txt,"elder conklin","harris, frank, 1856-1931",en,7
+fiction,FAILURE,726.txt,"a psychological counter-current in recent fiction","howells, william dean, 1837-1920",en,7
+fiction,SUCCESS,1074.txt,"the sea wolf","london, jack, 1876-1916",en,655
+fiction,SUCCESS,1162.txt,"the jacket (star-rover)","london, jack, 1876-1916",en,212
+fiction,SUCCESS,1595.txt,"whirligigs","henry, o., 1862-1910",en,177
+fiction,SUCCESS,1601.txt,"the breaking point","rinehart, mary roberts, 1876-1958",en,130
+fiction,SUCCESS,1646.txt,"roads of destiny","henry, o., 1862-1910",en,159
+fiction,SUCCESS,21767.txt,"agatha's husband a novel","craik, dinah maria mulock, 1826-1887",en,132
+fiction,SUCCESS,2675.txt,"burlesques","thackeray, william makepeace, 1811-1863",en,128
+fiction,SUCCESS,343.txt,"fables","stevenson, robert louis, 1850-1894",en,137
+fiction,SUCCESS,434.txt,"the circular staircase","rinehart, mary roberts, 1876-1958",en,281
+fiction,SUCCESS,546.txt,"under the andes","stout, rex, 1886-1975",en,147
+fiction,FAILURE,12181.txt,"the story of bessie costrell","ward, humphry, mrs., 1851-1920",en,7
+fiction,FAILURE,12935.txt,"the song of the blood-red flower","linnankoski, johannes, 1869-1913",en,6
+fiction,FAILURE,1367.txt,"findelkind","ouida, 1839-1908",en,6
+fiction,FAILURE,15123.txt,"david lockwin�the people's idol","mcgovern, john, 1850-1917",en,4
+fiction,FAILURE,15315.txt,"gladys, the reaper","beale, anne",en,7
+fiction,FAILURE,16398.txt,"what necessity knows","dougall, l. (lily), 1858-1923",en,7
+fiction,FAILURE,16993.txt,"miss dexie a romance of the provinces","eveleth, stanford",en,7
+fiction,FAILURE,19173.txt,"the cow puncher","stead, robert j. c., 1880-1959",en,5
+fiction,FAILURE,21690.txt,"flint his faults, his friendships and his fortunes","goodwin, maud wilder, 1856-1935",en,7
+fiction,FAILURE,9087.txt,"eleanor","ward, humphry, mrs., 1851-1920",en,6
+fiction,SUCCESS,1204.txt,"cabin fever","bower, b. m., 1874-1940",en,140
+fiction,SUCCESS,13541.txt,"the collected works of ambrose bierce, volume 1","bierce, ambrose, 1842-1914?",en,322
+fiction,SUCCESS,14420.txt,"the exemplary novels of cervantes","cervantes saavedra, miguel de, 1547-1616",en,472
+fiction,SUCCESS,1743.txt,"twelve stories and a dream","wells, h. g. (herbert george), 1866-1946",en,266
+fiction,SUCCESS,222.txt,"moon and sixpence","maugham, w. somerset (william somerset), 1874-1965",en,604
+fiction,SUCCESS,2684.txt,"five tales","galsworthy, john, 1867-1933",en,200
+fiction,SUCCESS,325.txt,"phantastes, a faerie romance for men and women","macdonald, george, 1824-1905",en,312
+fiction,SUCCESS,346.txt,"the troll garden and selected stories","cather, willa, 1873-1947",en,135
+fiction,SUCCESS,351.txt,"of human bondage","maugham, w. somerset (william somerset), 1874-1965",en,845
+fiction,SUCCESS,524.txt,"ann veronica, a modern love story","wells, h. g. (herbert george), 1866-1946",en,267
+fiction,FAILURE,12972.txt,"people like that a novel","bosher, kate langley, 1865-1932",en,7
+fiction,FAILURE,14425.txt,"mona or, the secret of a royal mirror","sheldon, georgie, mrs., 1843-1926",en,4
+fiction,FAILURE,15179.txt,"the inner sisterhood a social study in high colors","sherley, douglass, 1857-1917",en,4
+fiction,FAILURE,15382.txt,"jess of the rebel trail","cody, h. a. (hiram alfred), 1872-1948",en,7
+fiction,FAILURE,16803.txt,"lydia of the pines","morrow, honor�, 1880-1940",en,7
+fiction,FAILURE,20462.txt,"ernest linwood or, the inner life of the author","hentz, caroline lee, 1800-1856",en,7
+fiction,FAILURE,22205.txt,"in direst peril","murray, david christie, 1847-1907",en,6
+fiction,FAILURE,22206.txt,"an old meerschaum from coals of fire and other stories, volume ii. (of iii.)","murray, david christie, 1847-1907",en,7
+fiction,FAILURE,23106.txt,"helen and arthur or, miss thusa's spinning wheel","hentz, caroline lee, 1800-1856",en,7
+fiction,FAILURE,9926.txt,"the two guardians or, home in this world","yonge, charlotte m. (charlotte mary), 1823-1901",en,7
+fiction,SUCCESS,1097.txt,"mrs. warren's profession","shaw, bernard, 1856-1950",en,999
+fiction,SUCCESS,1213.txt,"the man that corrupted hadleyburg","twain, mark, 1835-1910",en,202
+fiction,SUCCESS,1354.txt,"chronicles of avonlea","montgomery, l. m. (lucy maud), 1874-1942",en,503
+fiction,SUCCESS,142.txt,"the 30,000 dollar bequest and other stories","twain, mark, 1835-1910",en,545
+fiction,SUCCESS,144.txt,"the voyage out","woolf, virginia, 1882-1941",en,474
+fiction,SUCCESS,1840.txt,"the financier, a novel","dreiser, theodore, 1871-1945",en,256
+fiction,SUCCESS,1848.txt,"montezuma's daughter","haggard, h. rider (henry rider), 1856-1925",en,178
+fiction,SUCCESS,22480.txt,"the prussian officer","lawrence, d. h. (david herbert), 1885-1930",en,176
+fiction,SUCCESS,294.txt,"the captain of the polestar","doyle, arthur conan, sir, 1859-1930",en,265
+fiction,SUCCESS,8496.txt,"the quest","baroja, p�o, 1872-1956",en,162
+fiction,FAILURE,13178.txt,"broken to the plow a novel","dobie, charles caldwell, 1881-1943",en,7
+fiction,FAILURE,14490.txt,"a daughter of to-day","duncan, sara jeannette, 1861-1922",en,3
+fiction,FAILURE,14523.txt,"sister carmen","corvus, m.",en,4
+fiction,FAILURE,15430.txt,"the lever a novel","orcutt, william dana, 1870-1953",en,7
+fiction,FAILURE,16497.txt,"the moon out of reach","pedler, margaret, -1948",en,7
+fiction,FAILURE,16574.txt,"the twins a domestic novel","tupper, martin farquhar, 1810-1889",en,4
+fiction,FAILURE,18052.txt,"medoline selwyn's work","colter, j. j., mrs.",en,7
+fiction,FAILURE,20235.txt,"heart a social novel","tupper, martin farquhar, 1810-1889",en,4
+fiction,FAILURE,2685.txt,"the way to peace","deland, margaret wade campbell, 1857-1945",en,7
+fiction,FAILURE,9967.txt,"mr. waddington of wyck","sinclair, may, 1863-1946",en,3
+fiction,SUCCESS,98.txt,"a tale of two cities","dickens, charles",en,6867
+fiction,SUCCESS,11.txt,"alices adventures in wonderland","carroll, lewis",en,13759
+fiction,SUCCESS,1342.txt,"pride and prejudice","austen, jane",en,16006
+fiction,SUCCESS,236.txt,"the jungle book","kipling, rudyard",en,7241
+fiction,SUCCESS,5200.txt,"metamorphisis","kafka, frank, 1883-1924",en,6762
+fiction,SUCCESS,84.txt,"frankenstein or the moderm prometheus","shelley, mary, 1797-1851",en,6007
+fiction,SUCCESS,2701.txt,"moby dick or the whale","melville, herman, 1819-1891",en,5590
+fiction,SUCCESS,1400.txt,"great expectations","dickens, charles, 1812-1870",en,4920
+fiction,SUCCESS,153.txt,"jude the obscure","hardy, thomas, 1840-1928",en,435
+fiction,SUCCESS,174.txt,"the picture of dorian gray","wilde, oscar, 1854-1900",en,5160
+historical.fiction,SUCCESS,11228.txt,"the marrow of tradition","chesnutt, charles w. (charles waddell), 1858-1932",en,147
+historical.fiction,SUCCESS,11413.txt,"the refugees a tale of two continents","doyle, arthur conan, sir, 1859-1930",en,129
+historical.fiction,SUCCESS,17221.txt,"history of the plague in london","defoe, daniel, 1661?-1731",en,247
+historical.fiction,SUCCESS,1880.txt,"pathfinder; or, the inland sea","cooper, james fenimore, 1789-1851",en,185
+historical.fiction,SUCCESS,2275.txt,"the pioneers","cooper, james fenimore, 1789-1851",en,262
+historical.fiction,SUCCESS,2845.txt,"sir nigel","doyle, arthur conan, sir, 1859-1930",en,228
+historical.fiction,SUCCESS,30344.txt,"the fortunate mistress (parts 1 and 2) or a history of the life of mademoiselle de beleau known by the name of the lady roxana","defoe, daniel, 1661?-1731",en,304
+historical.fiction,SUCCESS,30723.txt,"fathers and children","turgenev, ivan sergeevich, 1818-1883",en,369
+historical.fiction,SUCCESS,7037.txt,"beric the briton : a story of the roman invasion","henty, g. a. (george alfred), 1832-1902",en,188
+historical.fiction,SUCCESS,7060.txt,"at agincourt","henty, g. a. (george alfred), 1832-1902",en,116
+historical.fiction,FAILURE,10094.txt,"a soldier of virginia a tale of colonel washington and braddock's defeat","stevenson, burton egbert, 1872-1962",en,11
+historical.fiction,FAILURE,12558.txt,"snarleyyow, or, the dog fiend","marryat, frederick, 1792-1848",en,15
+historical.fiction,FAILURE,12959.txt,"newton forster","marryat, frederick, 1792-1848",en,21
+historical.fiction,FAILURE,14656.txt,"the sword maker","barr, robert, 1850-1912",en,23
+historical.fiction,FAILURE,18182.txt,"heralds of empire being the story of one ramsay stanhope, lieutenant to pierre radisson in the northern fur trade","laut, agnes c. (agnes christina), 1871-1936",en,16
+historical.fiction,FAILURE,20418.txt,"lords of the north","laut, agnes c. (agnes christina), 1871-1936",en,24
+historical.fiction,FAILURE,2059.txt,"the little shepherd of kingdom come","fox, john, 1863-1919",en,24
+historical.fiction,FAILURE,22304.txt,"nicanor - teller of tales a story of roman britain","taylor, c. bryson, 1880-",en,21
+historical.fiction,FAILURE,3339.txt,"the wandering jew � volume 01","sue, eug�ne, 1804-1857",en,19
+historical.fiction,FAILURE,3340.txt,"the wandering jew � volume 02","sue, eug�ne, 1804-1857",en,9
+historical.fiction,SUCCESS,135.txt,"les mis�rables","hugo, victor, 1802-1885",en,10605
+historical.fiction,SUCCESS,17460.txt,"lorna doone a romance of exmoor","blackmore, r. d. (richard doddridge), 1825-1900",en,399
+historical.fiction,SUCCESS,19194.txt,"rebel raider","piper, h. beam, 1904-1964",en,140
+historical.fiction,SUCCESS,2600.txt,"war and peace","tolstoy, leo, graf, 1828-1910",en,7782
+historical.fiction,SUCCESS,2610.txt,"notre-dame de paris","hugo, victor, 1802-1885",en,1231
+historical.fiction,SUCCESS,2853.txt,"quo vadis: a narrative of the time of nero","sienkiewicz, henryk, 1846-1916",en,307
+historical.fiction,SUCCESS,369.txt,"the outlaw of torn","burroughs, edgar rice, 1875-1950",en,300
+historical.fiction,SUCCESS,467.txt,"the princess of cleves","la fayette, madame de (marie-madeleine pioche de la vergne), 1634-1693",en,560
+historical.fiction,SUCCESS,8123.txt,"the virginians","thackeray, william makepeace, 1811-1863",en,118
+historical.fiction,SUCCESS,840.txt,"lorna doone; a romance of exmoor","blackmore, r. d. (richard doddridge), 1825-1900",en,162
+historical.fiction,FAILURE,10455.txt,"a golden book of venice","turnbull, lawrence, mrs., -1927",en,20
+historical.fiction,FAILURE,13215.txt,"edwy the fair or the first chronicle of aescendune a tale of the days of saint dunstan","crake, a. d. (augustine david), 1836-1890",en,19
+historical.fiction,FAILURE,15228.txt,"lady good-for-nothing a man's portrait of a woman","quiller-couch, arthur thomas, sir, 1863-1944",en,14
+historical.fiction,FAILURE,16890.txt,"hetty wesley","quiller-couch, arthur thomas, sir, 1863-1944",en,7
+historical.fiction,FAILURE,17012.txt,"the house of walderne a tale of the cloister and the forest in the days of the barons' wars","crake, a. d. (augustine david), 1836-1890",en,6
+historical.fiction,FAILURE,19485.txt,"the long night","weyman, stanley john, 1855-1928",en,18
+historical.fiction,FAILURE,20911.txt,"the rose of old st. louis","dillon, mary (mary c. johnson)",en,23
+historical.fiction,FAILURE,22334.txt,"in kings' byways","weyman, stanley john, 1855-1928",en,11
+historical.fiction,FAILURE,23675.txt,"under the rose","isham, frederic stewart, 1866-1922",en,24
+historical.fiction,FAILURE,24120.txt,"the hour and the man, an historical romance","martineau, harriet, 1802-1876",en,18
+historical.fiction,SUCCESS,15868.txt,"the man without a country and other tales","hale, edward everett, 1822-1909",en,180
+historical.fiction,SUCCESS,1606.txt,"kenilworth","scott, walter, sir, 1771-1832",en,195
+historical.fiction,SUCCESS,1752.txt,"el dorado, an adventure of the scarlet pimpernel","orczy, baroness emmuska, 1865-1947",en,230
+historical.fiction,SUCCESS,1947.txt,"scaramouche","sabatini, rafael, 1875-1950",en,434
+historical.fiction,SUCCESS,1965.txt,"captain blood","sabatini, rafael, 1875-1950",en,638
+historical.fiction,SUCCESS,2785.txt,"the elusive pimpernel","orczy, baroness emmuska, 1865-1947",en,210
+historical.fiction,SUCCESS,2948.txt,"where angels fear to tread","forster, e. m. (edward morgan), 1879-1970",en,280
+historical.fiction,SUCCESS,3942.txt,"the confession of a child of the century � complete","musset, alfred de, 1810-1857",en,273
+historical.fiction,SUCCESS,4537.txt,"sylvia's lovers � complete","gaskell, elizabeth cleghorn, 1810-1865",en,139
+historical.fiction,SUCCESS,471.txt,"the bride of lammermoor","scott, walter, sir, 1771-1832",en,216
+historical.fiction,FAILURE,12256.txt,"mistress penwick","payne, dutton",en,4
+historical.fiction,FAILURE,12270.txt,"the doomswoman an historical romance of old california","atherton, gertrude franklin horn, 1857-1948",en,11
+historical.fiction,FAILURE,13315.txt,"a prince of cornwall a story of glastonbury and the west in the days of ina of wessex","whistler, charles w. (charles watts), 1856-1913",en,13
+historical.fiction,FAILURE,13438.txt,"a king's comrade a story of old hereford","whistler, charles w. (charles watts), 1856-1913",en,13
+historical.fiction,FAILURE,15470.txt,"inez a tale of the alamo","evans, augusta j. (augusta jane), 1835-1909",en,8
+historical.fiction,FAILURE,20219.txt,"the lion's brood","osborne, duffield, 1858-1917",en,14
+historical.fiction,FAILURE,22779.txt,"the false chevalier or, the lifeguard of marie antoinette","lighthall, w. d. (william douw), 1857-1954",en,14
+historical.fiction,FAILURE,24140.txt,"the northern iron","birmingham, george a., 1865-1950",en,12
+historical.fiction,FAILURE,4534.txt,"sylvia's lovers � volume 1","gaskell, elizabeth cleghorn, 1810-1865",en,19
+historical.fiction,FAILURE,9869.txt,"the confession of a child of the century","musset, alfred de, 1810-1857",en,17
+historical.fiction,SUCCESS,1184.txt,"the count of monte cristo","dumas, alexandre, 1802-1870",en,6562
+historical.fiction,SUCCESS,1257.txt,"the three musketeers","dumas, alexandre, 1802-1870",en,2516
+historical.fiction,SUCCESS,1692.txt,"1492","johnston, mary, 1870-1936",en,168
+historical.fiction,SUCCESS,1837.txt,"the prince and the pauper","twain, mark, 1835-1910",en,2522
+historical.fiction,SUCCESS,2145.txt,"ben-hur; a tale of the christ","wallace, lewis, 1827-1905",en,465
+historical.fiction,SUCCESS,24680.txt,"the martyr of the catacombs a tale of ancient rome",anonymous,en,117
+historical.fiction,SUCCESS,26282.txt,"the witch of salem or credulity run mad","musick, john r. (john roy), 1849-1901",en,128
+historical.fiction,SUCCESS,421.txt,"kidnapped","stevenson, robert louis, 1850-1894",en,1221
+historical.fiction,SUCCESS,6308.txt,"hypatia � or new foes with an old face","kingsley, charles, 1819-1875",en,119
+historical.fiction,SUCCESS,848.txt,"the black arrow","stevenson, robert louis, 1850-1894",en,519
+historical.fiction,FAILURE,11534.txt,"the lions of the lord a tale of the old west","wilson, harry leon, 1867-1939",en,17
+historical.fiction,FAILURE,12560.txt,"port o' gold a history-romance of the san francisco argonauts","stellman, louis j. (louis john), 1877-1961",en,9
+historical.fiction,FAILURE,13404.txt,"tom tufton's travels","everett-green, evelyn, 1856-1932",en,22
+historical.fiction,FAILURE,15534.txt,"children of the market place","masters, edgar lee, 1868-1950",en,16
+historical.fiction,FAILURE,17183.txt,"atm� a romance","frazer, c. a. (caroline augusta)",en,23
+historical.fiction,FAILURE,2029.txt,"lahoma","ellis, j. breckenridge (john breckenridge), 1870-1956",en,5
+historical.fiction,FAILURE,2139.txt,"alvira, the heroine of vesuvius","o'reilly, a. j. (augustine j.)",en,12
+historical.fiction,FAILURE,22902.txt,"the liberty boys running the blockade or, getting out of new york","moore, harry",en,19
+historical.fiction,FAILURE,24417.txt,"the forest king wild hunter of the adaca","keyes, hervey",en,16
+historical.fiction,FAILURE,7155.txt,"the prince and the pauper, part 2.","twain, mark, 1835-1910",en,23
+historical.fiction,SUCCESS,1261.txt,"betty zane","grey, zane, 1872-1939",en,171
+historical.fiction,SUCCESS,1711.txt,"child of storm","haggard, h. rider (henry rider), 1856-1925",en,167
+historical.fiction,SUCCESS,1842.txt,"michael strogoff or, the courier of the czar","verne, jules, 1828-1905",en,210
+historical.fiction,SUCCESS,20840.txt,"rebel spurs","norton, andre, 1912-2005",en,161
+historical.fiction,SUCCESS,24020.txt,"romola","eliot, george, 1819-1880",en,151
+historical.fiction,SUCCESS,25344.txt,"the scarlet letter","hawthorne, nathaniel, 1804-1864",en,1902
+historical.fiction,SUCCESS,26240.txt,"the clansman an historical romance of the ku klux klan","dixon, thomas, 1864-1946",en,158
+historical.fiction,SUCCESS,30486.txt,"shirley","bront�, charlotte, 1816-1855",en,464
+historical.fiction,SUCCESS,463.txt,"the red badge of courage","crane, stephen, 1871-1900",en,126
+historical.fiction,SUCCESS,917.txt,"barnaby rudge: a tale of the riots of 'eighty","dickens, charles, 1812-1870",en,594
+historical.fiction,FAILURE,11379.txt,"round anvil rock a romance","banks, nancy huston",en,8
+historical.fiction,FAILURE,11690.txt,"calvert of strathore","goodloe, abbe carter, 1867-",en,7
+historical.fiction,FAILURE,12725.txt,"the vale of cedars or, the martyr","aguilar, grace, 1816-1847",en,16
+historical.fiction,FAILURE,15808.txt,"the history of richard raynal, solitary","benson, robert hugh, 1871-1914",en,14
+historical.fiction,FAILURE,1665.txt,"derrick vaughan, novelist","lyall, edna, 1857-1903",en,10
+historical.fiction,FAILURE,17690.txt,"the master of appleby a novel tale concerning itself in part with the great struggle in the two carolinas; but chiefly with the adventures therein of two gentlemen who loved one and the same lady","lynde, francis, 1856-1930",en,16
+historical.fiction,FAILURE,21234.txt,"the gold that glitters the mistakes of jenny lavender","holt, emily sarah, 1836-1893",en,8
+historical.fiction,FAILURE,21492.txt,"a true hero a story of the days of william penn","kingston, william henry giles, 1814-1880",en,12
+historical.fiction,FAILURE,22942.txt,"clare avery a story of the spanish armada","holt, emily sarah, 1836-1893",en,16
+historical.fiction,FAILURE,24483.txt,"the justice of the king","drummond, hamilton, 1857-1935",en,10
+love.story,SUCCESS,1028.txt,"the professor","bront�, charlotte, 1816-1855",en,350
+love.story,SUCCESS,1260.txt,"jane eyre","bront�, charlotte, 1816-1855",en,9375
+love.story,SUCCESS,145.txt,"middlemarch","eliot, george, 1819-1880",en,2367
+love.story,SUCCESS,157.txt,"daddy-long-legs","webster, jean, 1876-1916",en,759
+love.story,SUCCESS,17460.txt,"lorna doone a romance of exmoor","blackmore, r. d. (richard doddridge), 1825-1900",en,399
+love.story,SUCCESS,19782.txt,"daddy-long-legs","webster, jean, 1876-1916",en,101
+love.story,SUCCESS,2834.txt,"the portrait of a lady � volume 2","james, henry, 1843-1916",en,496
+love.story,SUCCESS,29452.txt,"the wings of the dove, volume 1 of 2","james, henry, 1843-1916",en,164
+love.story,SUCCESS,507.txt,"adam bede","eliot, george, 1819-1880",en,570
+love.story,SUCCESS,840.txt,"lorna doone; a romance of exmoor","blackmore, r. d. (richard doddridge), 1825-1900",en,162
+love.story,FAILURE,10452.txt,"peter's mother","de la pasture, henry, mrs., 1866-1945",en,13
+love.story,FAILURE,11379.txt,"round anvil rock a romance","banks, nancy huston",en,8
+love.story,FAILURE,12971.txt,"the man in lonely land","bosher, kate langley, 1865-1932",en,9
+love.story,FAILURE,14153.txt,"westways a village chronicle","mitchell, s. weir (silas weir), 1829-1914",en,7
+love.story,FAILURE,15406.txt,"the little red chimney being the love story of a candy man","leonard, mary finley, 1862-",en,14
+love.story,FAILURE,17301.txt,"on with torchy","ford, sewell, 1868-1946",en,15
+love.story,FAILURE,18902.txt,"flood tide","bassett, sara ware, 1872-1968",en,11
+love.story,FAILURE,20661.txt,"the romance of an old fool","field, roswell martin, 1851-1919",en,11
+love.story,FAILURE,21099.txt,"more about peggy","vaizey, george de horne, mrs., 1857-1917",en,13
+love.story,FAILURE,21120.txt,"the fortunes of the farrells","vaizey, george de horne, mrs., 1857-1917",en,13
+love.story,SUCCESS,107.txt,"far from the madding crowd","hardy, thomas, 1840-1928",en,547
+love.story,SUCCESS,122.txt,"the return of the native","hardy, thomas, 1840-1928",en,474
+love.story,SUCCESS,1476.txt,"chance: a tale in two parts","conrad, joseph, 1857-1924",en,90
+love.story,SUCCESS,17498.txt,"when knighthood was in flower or, the love story of charles brandon and mary tudor the king's sister, and happening in the reign of his august majesty king henry the eighth","major, charles, 1856-1913",en,90
+love.story,SUCCESS,20533.txt,"jill the reckless","wodehouse, p. g. (pelham grenville), 1881-1975",en,294
+love.story,SUCCESS,22002.txt,"a simple story","inchbald, mrs., 1753-1821",en,123
+love.story,SUCCESS,23506.txt,"chance: a tale in two parts","conrad, joseph, 1857-1924",en,160
+love.story,SUCCESS,23727.txt,"the lost girl","lawrence, d. h. (david herbert), 1885-1930",en,124
+love.story,SUCCESS,4075.txt,"the intrusion of jimmy","wodehouse, p. g. (pelham grenville), 1881-1975",en,226
+love.story,SUCCESS,4240.txt,"women in love","lawrence, d. h. (david herbert), 1885-1930",en,946
+love.story,FAILURE,10608.txt,"the turquoise cup, and, the desert","smith, arthur cosslett, 1852-1926",en,5
+love.story,FAILURE,11912.txt,"the brown study","richmond, grace s. (grace smith), 1866-1959",en,16
+love.story,FAILURE,13071.txt,"helena","ward, humphry, mrs., 1851-1920",en,9
+love.story,FAILURE,14406.txt,"the intriguers","bindloss, harold, 1866-1945",en,8
+love.story,FAILURE,16343.txt,"beth woodburn","petitt, maud",en,5
+love.story,FAILURE,17690.txt,"the master of appleby a novel tale concerning itself in part with the great struggle in the two carolinas; but chiefly with the adventures therein of two gentlemen who loved one and the same lady","lynde, francis, 1856-1930",en,16
+love.story,FAILURE,19411.txt,"the woman's way","garvice, charles, -1920",en,16
+love.story,FAILURE,20901.txt,"in apple-blossom time a fairy-tale to date","burnham, clara louise, 1854-1927",en,14
+love.story,FAILURE,21625.txt,"play the game!","mitchell, ruth comfort, 1882-1954",en,14
+love.story,FAILURE,24910.txt,"the last woman","beeckman, ross",en,14
+love.story,SUCCESS,11640.txt,"love and mr. lewisham","wells, h. g. (herbert george), 1866-1946",en,207
+love.story,SUCCESS,1245.txt,"night and day","woolf, virginia, 1882-1941",en,731
+love.story,SUCCESS,1250.txt,"anthem","rand, ayn, 1905-1982",en,2432
+love.story,SUCCESS,1845.txt,"zuleika dobson, or, an oxford love story","beerbohm, max, sir, 1872-1956",en,156
+love.story,SUCCESS,2070.txt,"to the last man","grey, zane, 1872-1939",en,203
+love.story,SUCCESS,3155.txt,"she","haggard, h. rider (henry rider), 1856-1925",en,800
+love.story,SUCCESS,467.txt,"the princess of cleves","la fayette, madame de (marie-madeleine pioche de la vergne), 1634-1693",en,560
+love.story,SUCCESS,4684.txt,"the u. p. trail","grey, zane, 1872-1939",en,112
+love.story,SUCCESS,583.txt,"the woman in white","collins, wilkie, 1824-1889",en,1606
+love.story,SUCCESS,805.txt,"this side of paradise","fitzgerald, f. scott (francis scott), 1896-1940",en,1572
+love.story,FAILURE,10932.txt,"over the pass","palmer, frederick, 1873-1958",en,8
+love.story,FAILURE,12557.txt,"the penalty","morris, gouverneur, 1876-1953",en,10
+love.story,FAILURE,13282.txt,"the island of faith","sangster, margaret e. (margaret elizabeth), 1894-1981",en,3
+love.story,FAILURE,14708.txt,"the laurel bush an old-fashioned love story","craik, dinah maria mulock, 1826-1887",en,15
+love.story,FAILURE,16497.txt,"the moon out of reach","pedler, margaret, -1948",en,7
+love.story,FAILURE,17891.txt,"evelina's garden","freeman, mary eleanor wilkins, 1852-1930",en,16
+love.story,FAILURE,21095.txt,"she and i, volume 1 a love story. a life history.","hutcheson, john c. (john conroy)",en,7
+love.story,FAILURE,21096.txt,"she and i, volume 2 a love story. a life history.","hutcheson, john c. (john conroy)",en,7
+love.story,FAILURE,21834.txt,"the black colonel","milne, james, 1865-1951",en,12
+love.story,FAILURE,26135.txt,"love at paddington","ridge, w. pett (william pett), -1930",en,13
+love.story,SUCCESS,121.txt,"northanger abbey","austen, jane, 1775-1817",en,1989
+love.story,SUCCESS,12280.txt,"the grandissimes","cable, george washington, 1844-1925",en,88
+love.story,SUCCESS,16389.txt,"the enchanted april","von arnim, elizabeth, 1866-1941",en,136
+love.story,SUCCESS,18883.txt,"the four feathers","mason, a. e. w. (alfred edward woodley), 1865-1948",en,161
+love.story,SUCCESS,21094.txt,"the girl in the golden atom","cummings, ray, 1887-1957",en,257
+love.story,SUCCESS,23810.txt,"at fault","chopin, kate, 1850-1904",en,157
+love.story,SUCCESS,35247.txt,"that affair at elizabeth","stevenson, burton egbert, 1872-1962",en,106
+love.story,SUCCESS,6784.txt,"love and intrigue","schiller, friedrich, 1759-1805",en,217
+love.story,SUCCESS,883.txt,"our mutual friend","dickens, charles, 1812-1870",en,2046
+love.story,SUCCESS,963.txt,"little dorrit","dickens, charles, 1812-1870",en,995
+love.story,FAILURE,11106.txt,"the girl at cobhurst","stockton, frank richard, 1834-1902",en,14
+love.story,FAILURE,12639.txt,"spanish doubloons","kenyon, camilla",en,14
+love.story,FAILURE,13396.txt,"sweetapple cove","van schaick, george, 1861-1924",en,8
+love.story,FAILURE,14854.txt,"martha by-the-day","lippmann, julie mathilde, 1864-1952",en,4
+love.story,FAILURE,16699.txt,"glen of the high north","cody, h. a. (hiram alfred), 1872-1948",en,7
+love.story,FAILURE,18057.txt,"flower of the dusk","reed, myrtle, 1874-1911",en,16
+love.story,FAILURE,19798.txt,"the farringdons","fowler, ellen thorneycroft, 1860-1929",en,16
+love.story,FAILURE,19861.txt,"the lady paramount","harland, henry, 1861-1905",en,7
+love.story,FAILURE,22076.txt,"the second chance","mcclung, nellie l., 1873-1951",en,9
+love.story,FAILURE,504.txt,"the fifth string","sousa, john philip, 1854-1932",en,10
+love.story,SUCCESS,1399.txt,"anna karenina","tolstoy, leo, graf, 1828-1910",en,4538
+love.story,SUCCESS,166.txt,"summer","wharton, edith, 1862-1937",en,136
+love.story,SUCCESS,19500.txt,"can you forgive her?","trollope, anthony, 1815-1882",en,263
+love.story,SUCCESS,21415.txt,"the young visiters or, mr. salteena's plan","ashford, daisy, 1881-1972",en,738
+love.story,SUCCESS,24000.txt,"miss mackenzie","trollope, anthony, 1815-1882",en,131
+love.story,SUCCESS,3957.txt,"l'abbe constantin � complete","hal�vy, ludovic, 1834-1908",en,96
+love.story,SUCCESS,471.txt,"the bride of lammermoor","scott, walter, sir, 1771-1832",en,216
+love.story,SUCCESS,541.txt,"the age of innocence","wharton, edith, 1862-1937",en,1161
+love.story,SUCCESS,768.txt,"wuthering heights","bront�, emily, 1818-1848",en,5023
+love.story,SUCCESS,966.txt,"maid marian","peacock, thomas love, 1785-1866",en,100
+love.story,FAILURE,11166.txt,"for gold or soul? the story of a great department store","sheldon, lurana",en,14
+love.story,FAILURE,12876.txt,"a young girl's wooing","roe, edward payson, 1838-1888",en,16
+love.story,FAILURE,13679.txt,"andrew the glad","daviess, maria thompson, 1872-1924",en,13
+love.story,FAILURE,15243.txt,"over paradise ridge a romance","daviess, maria thompson, 1872-1924",en,12
+love.story,FAILURE,16777.txt,"the heart of the desert kut-le of the desert","morrow, honor�, 1880-1940",en,14
+love.story,FAILURE,18426.txt,"sunny slopes","hueston, ethel, 1887-",en,12
+love.story,FAILURE,20563.txt,"terry a tale of the hill people","thomson, charles goff",en,9
+love.story,FAILURE,23695.txt,"the little gray lady 1909","smith, francis hopkinson, 1838-1915",en,7
+love.story,FAILURE,24771.txt,"tutors' lane","lewis, w. s. (wilmarth sheldon), 1895-1979",en,11
+love.story,FAILURE,787.txt,"the man between, an international romance","barr, amelia edith huddleston, 1831-1919",en,15
+poetry,SUCCESS,12843.txt,"poems household edition","emerson, ralph waldo, 1803-1882",en,146
+poetry,SUCCESS,1322.txt,"leaves of grass","whitman, walt, 1819-1892",en,11765
+poetry,SUCCESS,15963.txt,"may-day and other pieces","emerson, ralph waldo, 1803-1882",en,75
+poetry,SUCCESS,22531.txt,"amores poems","lawrence, d. h. (david herbert), 1885-1930",en,120
+poetry,SUCCESS,23394.txt,"look! we have come through!","lawrence, d. h. (david herbert), 1885-1930",en,73
+poetry,SUCCESS,2665.txt,"the professor at the breakfast-table","holmes, oliver wendell, 1809-1894",en,99
+poetry,SUCCESS,2666.txt,"the poet at the breakfast-table","holmes, oliver wendell, 1809-1894",en,112
+poetry,SUCCESS,27494.txt,"the patriotic poems of walt whitman","whitman, walt, 1819-1892",en,224
+poetry,SUCCESS,5720.txt,"a shropshire lad","housman, a. e. (alfred edward), 1859-1936",en,398
+poetry,SUCCESS,791.txt,"the princess","tennyson, alfred tennyson, baron, 1809-1892",en,110
+poetry,FAILURE,10457.txt,"the lonely dancer and other poems","le gallienne, richard, 1866-1947",en,9
+poetry,FAILURE,11215.txt,"poems (1828)","gent, thomas, 1780-",en,6
+poetry,FAILURE,11983.txt,"poetic sketches a collection of miscellaneous poetry","gent, thomas, 1780-",en,7
+poetry,FAILURE,15078.txt,"idle hour stories","potts, eugenia dunlap",en,7
+poetry,FAILURE,16535.txt,"myth and romance being a book of verses","cawein, madison julius, 1865-1914",en,9
+poetry,FAILURE,17619.txt,"a jongleur strayed verses on love and other matters sacred and profane","le gallienne, richard, 1866-1947",en,6
+poetry,FAILURE,19443.txt,"our profession and other poems","barhite, jared",en,9
+poetry,FAILURE,22289.txt,"the conuercyon of swerers (the conversion of swearers)","hawes, stephen, -1523",en,5
+poetry,FAILURE,22326.txt,"the c�forte of louers the comfort of lovers","hawes, stephen, -1523",en,3
+poetry,FAILURE,27700.txt,"the rose-jar","jones, thomas s. (thomas samuel), 1882-1932",en,7
+poetry,SUCCESS,1246.txt,"the house of dust; a symphony","aiken, conrad, 1889-1973",en,94
+poetry,SUCCESS,16229.txt,"the poems of henry van dyke","van dyke, henry, 1852-1933",en,74
+poetry,SUCCESS,1745.txt,"the poetical works of john milton","milton, john, 1608-1674",en,322
+poetry,SUCCESS,19819.txt,"milton's comus","milton, john, 1608-1674",en,160
+poetry,SUCCESS,20158.txt,"the works of lord byron. vol. 4","byron, george gordon byron, baron, 1788-1824",en,488
+poetry,SUCCESS,21628.txt,"imaginary conversations and poems a selection","landor, walter savage, 1775-1864",en,85
+poetry,SUCCESS,27199.txt,"japanese prints","fletcher, john gould, 1886-1950",en,173
+poetry,SUCCESS,30501.txt,"collected poems volume one","noyes, alfred, 1880-1958",en,75
+poetry,SUCCESS,574.txt,"poems of william blake","blake, william, 1757-1827",en,486
+poetry,SUCCESS,841.txt,"men, women and ghosts","lowell, amy, 1874-1925",en,70
+poetry,FAILURE,13908.txt,"pipes o'pan at zekesbury","riley, james whitcomb, 1849-1916",en,1
+poetry,FAILURE,14531.txt,"the singing man a book of songs and shadows","peabody, josephine preston, 1874-1922",en,2
+poetry,FAILURE,15079.txt,"green fields and running brooks, and other poems","riley, james whitcomb, 1849-1916",en,7
+poetry,FAILURE,16735.txt,"lays of ancient virginia, and other poems","bartley, james avis, 1830-",en,8
+poetry,FAILURE,17936.txt,"poems","hensley, sophia margaretta, 1866-1913",en,3
+poetry,FAILURE,19836.txt,"early spring","inchfawn, fay, 1880-",en,9
+poetry,FAILURE,22637.txt,"a little window","snyder, jean m.",en,5
+poetry,FAILURE,26611.txt,"enthusiasm and other poems","moodie, susanna, 1803-1885",en,7
+poetry,FAILURE,27731.txt,"the new world","bynner, witter, 1881-1968",en,8
+poetry,FAILURE,9372.txt,"songs out of doors","van dyke, henry, 1852-1933",en,9
+poetry,SUCCESS,10133.txt,"the vigil of venus and other poems by q","quiller-couch, arthur thomas, sir, 1863-1944",en,146
+poetry,SUCCESS,13621.txt,"the poems of jonathan swift, d.d., volume 2","swift, jonathan, 1667-1745",en,100
+poetry,SUCCESS,14353.txt,"the poems of jonathan swift, d.d., volume 1","swift, jonathan, 1667-1745",en,108
+poetry,SUCCESS,16839.txt,"sixteen poems","allingham, william, 1824-1889",en,96
+poetry,SUCCESS,19978.txt,"35 sonnets","pessoa, fernando ant�nio nogueira, 1888-1935",en,152
+poetry,SUCCESS,21777.txt,"the years between","kipling, rudyard, 1865-1936",en,70
+poetry,SUCCESS,23538.txt,"hugh selwyn mauberley","pound, ezra, 1885-1972",en,390
+poetry,SUCCESS,30568.txt,"kipling stories and poems every child should know, book ii","kipling, rudyard, 1865-1936",en,216
+poetry,SUCCESS,8795.txt,"the divine comedy by dante, illustrated, purgatory, complete","dante alighieri, 1265-1321",en,566
+poetry,SUCCESS,8799.txt,"the divine comedy by dante, illustrated, paradise, complete","dante alighieri, 1265-1321",en,728
+poetry,FAILURE,10367.txt,"poems","carr, john, sir, 1772-1832",en,9
+poetry,FAILURE,10518.txt,"poems","hay, john, 1838-1905",en,9
+poetry,FAILURE,11564.txt,"an essay on war, in blank verse; honington green, a ballad; the culprit, an elegy; and other poems, on various subjects","bloomfield, nathaniel",en,9
+poetry,FAILURE,14869.txt,"soldier songs and love songs","laidlaw, a. h. (alexander hamilton), 1869-1908",en,9
+poetry,FAILURE,15101.txt,"the mountain spring and other poems","glass, nancy rebecca campbell, 1842-",en,4
+poetry,FAILURE,16821.txt,"the scarlet gown being verses by a st. andrews man","murray, r. f. (robert fuller), 1863-1894",en,7
+poetry,FAILURE,18009.txt,"sagittulae, random verses","bowling, edward woodley, 1837-1907",en,6
+poetry,FAILURE,21509.txt,"rowena & harold a romance in rhyme of an olden time, of hastyngs and normanhurst","pryer, william stephen",en,3
+poetry,FAILURE,22803.txt,"helen redeemed and other poems","hewlett, maurice, 1861-1923",en,7
+poetry,FAILURE,26675.txt,"the masque of the elements","scheffauer, herman george, 1878-1927",en,4
+poetry,SUCCESS,1459.txt,"prufrock and other observations","eliot, t. s. (thomas stearns), 1888-1965",en,740
+poetry,SUCCESS,1567.txt,"poems","eliot, t. s. (thomas stearns), 1888-1965",en,845
+poetry,SUCCESS,19315.txt,"the poems of giacomo leopardi","leopardi, giacomo, 1798-1837",en,262
+poetry,SUCCESS,2002.txt,"sonnets from the portuguese","browning, elizabeth barrett, 1806-1861",en,221
+poetry,SUCCESS,22403.txt,"poems of gerard manley hopkins now first published","hopkins, gerard manley, 1844-1889?",en,220
+poetry,SUCCESS,25631.txt,"a poetical cook-book","moss, maria j.",en,79
+poetry,SUCCESS,28665.txt,"sea garden","h. d. (hilda doolittle), 1886-1961",en,83
+poetry,SUCCESS,36773.txt,"oxford lectures on poetry","bradley, a. c. (andrew cecil), 1851-1935",en,94
+poetry,SUCCESS,6081.txt,"biographia literaria","coleridge, samuel taylor, 1772-1834",en,618
+poetry,SUCCESS,6796.txt,"the poems of schiller � third period","schiller, friedrich, 1759-1805",en,146
+poetry,FAILURE,11006.txt,"the book with the yellow cover","wetterau, john moncure",en,9
+poetry,FAILURE,12095.txt,"more bywords","yonge, charlotte m. (charlotte mary), 1823-1901",en,9
+poetry,FAILURE,14871.txt,"poems","walton, mary alice",en,9
+poetry,FAILURE,16108.txt,"debris selections from poems","wagner, madge morris, 1862-1924",en,3
+poetry,FAILURE,17065.txt,"interludes being two essays, a story, and some verses","smith, horace, 1836-1922",en,9
+poetry,FAILURE,18658.txt,"in macao","gunnison, charles a., 1861-1897",en,9
+poetry,FAILURE,22032.txt,"later poems","meynell, alice christiana thompson, 1847-1922",en,7
+poetry,FAILURE,23392.txt,"the hours of fiammetta a sonnet sequence","taylor, rachel annand, 1876-1960",en,3
+poetry,FAILURE,27139.txt,"a leaf from the old forest","cossar, john d.",en,9
+poetry,FAILURE,9465.txt,"songs of two","hardy, arthur sherburne, 1847-1930",en,2
+poetry,SUCCESS,1211.txt,"a selection from the lyrical poems of robert herrick","herrick, robert, 1591-1674",en,100
+poetry,SUCCESS,12977.txt,"black beetles in amber","bierce, ambrose, 1842-1914?",en,72
+poetry,SUCCESS,17081.txt,"cottage poems","bront�, patrick, 1777-1861",en,101
+poetry,SUCCESS,2003.txt,"spirits in bondage; a cycle of lyrics","lewis, c. s. (clive staples), 1898-1963",en,278
+poetry,SUCCESS,22421.txt,"the hesperides & noble numbers: vol. 1 and 2","herrick, robert, 1591-1674",en,255
+poetry,SUCCESS,28903.txt,"all that matters","guest, edgar a. (edgar albert), 1881-1959",en,120
+poetry,SUCCESS,30357.txt,"select poems of thomas gray","gray, thomas, 1716-1771",en,128
+poetry,SUCCESS,442.txt,"love songs","teasdale, sara, 1884-1933",en,83
+poetry,SUCCESS,715.txt,"the moon endureth: tales and fancies","buchan, john, 1875-1940",en,74
+poetry,SUCCESS,9870.txt,"war is kind","crane, stephen, 1871-1900",en,84
+poetry,FAILURE,11194.txt,"vignettes in verse","betham, matilda, 1776-1852",en,3
+poetry,FAILURE,13052.txt,"the mistress of the manse","holland, j. g. (josiah gilbert), 1819-1881",en,1
+poetry,FAILURE,14906.txt,"songs, sonnets & miscellaneous poems","runciman, thomas, 1841-1909",en,8
+poetry,FAILURE,16144.txt,"harry","hart, fanny wheeler",en,8
+poetry,FAILURE,17448.txt,"the auld doctor and other poems and songs in scots","rorie, david, 1867-1946",en,3
+poetry,FAILURE,18739.txt,"zophiel a poem","brooks, maria gowen, 1795?-1845",en,9
+poetry,FAILURE,24312.txt,"the minstrel a collection of poems","amott, lennox",en,8
+poetry,FAILURE,26505.txt,"the old hanging fork and other poems","doneghy, george w.",en,7
+poetry,FAILURE,27333.txt,"pan and �olus: poems","musgrove, charles hamilton",en,4
+poetry,FAILURE,9653.txt,"a wreath of virginia bay leaves poems of james barron hope","j. b. h. (james barron hope), 1829-1887",en,8
+science.fiction,SUCCESS,18109.txt,"graveyard of dreams","piper, h. beam, 1904-1964",en,115
+science.fiction,SUCCESS,18342.txt,"the answer","piper, h. beam, 1904-1964",en,131
+science.fiction,SUCCESS,19029.txt,"the gifts of asti","norton, andre, 1912-2005",en,144
+science.fiction,SUCCESS,24517.txt,"accidental death","baily, peter",en,171
+science.fiction,SUCCESS,26955.txt,"advanced chemistry","huekels, jack g.",en,137
+science.fiction,SUCCESS,29019.txt,"all cats are gray","norton, andre, 1912-2005",en,376
+science.fiction,SUCCESS,29458.txt,"cost of living","sheckley, robert, 1928-2005",en,106
+science.fiction,SUCCESS,29548.txt,"warrior race","sheckley, robert, 1928-2005",en,108
+science.fiction,SUCCESS,29559.txt,"they twinkled like jewels","farmer, philip jos�, 1918-2009",en,285
+science.fiction,SUCCESS,30199.txt,"mcilvaine's star","derleth, august william, 1909-1971",en,196
+science.fiction,FAILURE,10391.txt,"the wolf's long howl","waterloo, stanley, 1846-1913",en,30
+science.fiction,FAILURE,24927.txt,"a matter of magnitude","sevcik, al",en,29
+science.fiction,FAILURE,28156.txt,"minor detail","sharkey, jack, 1931-",en,22
+science.fiction,FAILURE,29601.txt,"see?","robles, edward g.",en,29
+science.fiction,FAILURE,30329.txt,"black eyes and the daily grind","marlowe, stephen, 1928-2008",en,23
+science.fiction,FAILURE,30382.txt,"say hello for me","coggins, frank w.",en,12
+science.fiction,FAILURE,30386.txt,"the one and the many","marlowe, stephen, 1928-2008",en,23
+science.fiction,FAILURE,30438.txt,"the eyes have it","mckimmey, james, 1923-",en,27
+science.fiction,FAILURE,30528.txt,"the day of the dog","horne, anderson",en,21
+science.fiction,FAILURE,30680.txt,"all day wednesday","olin, richard",en,24
+science.fiction,SUCCESS,22073.txt,"the repairman","harrison, harry, 1925-",en,328
+science.fiction,SUCCESS,22966.txt,"toy shop","harrison, harry, 1925-",en,224
+science.fiction,SUCCESS,22967.txt,"the stoker and the stars","budrys, algis, 1931-2008",en,129
+science.fiction,SUCCESS,23210.txt,"missing link","herbert, frank, 1920-1986",en,177
+science.fiction,SUCCESS,26066.txt,"the cosmic express","williamson, jack, 1908-2006",en,108
+science.fiction,SUCCESS,28554.txt,"beyond lies the wub","dick, philip k., 1928-1982",en,1086
+science.fiction,SUCCESS,28698.txt,"the crystal crypt","dick, philip k., 1928-1982",en,874
+science.fiction,SUCCESS,29492.txt,"old rambling house","herbert, frank, 1920-1986",en,179
+science.fiction,SUCCESS,29614.txt,"the game of rat and dragon","linebarger, paul myron anthony, 1913-1966",en,245
+science.fiction,SUCCESS,30234.txt,"dead ringer","del rey, lester, 1915-1993",en,178
+science.fiction,FAILURE,21541.txt,"quiet, please","scott, kevin",en,23
+science.fiction,FAILURE,25094.txt,"daughters of doom","livingston, herbert b.",en,25
+science.fiction,FAILURE,28460.txt,"bolden's pets","wallace, f. l. (floyd l.), 1915-2004",en,23
+science.fiction,FAILURE,29675.txt,"less than human","blade, zo�",en,29
+science.fiction,FAILURE,29676.txt,"identity","blade, zo�",en,25
+science.fiction,FAILURE,30330.txt,"high dragon bump","thompson, don, 1935-1994",en,21
+science.fiction,FAILURE,30383.txt,"spies die hard!","marmor, arnold",en,16
+science.fiction,FAILURE,30454.txt,"blind spot","jones, bascom",en,24
+science.fiction,FAILURE,30539.txt,"the terrible answer","hill, arthur g.",en,24
+science.fiction,FAILURE,30683.txt,"the unthinking destroyer","phillips, rog, 1909-1965",en,30
+science.fiction,SUCCESS,21279.txt,"2 b r 0 2 b","vonnegut, kurt, 1922-2007",en,2811
+science.fiction,SUCCESS,22579.txt,"bread overhead","leiber, fritz, 1910-1992",en,117
+science.fiction,SUCCESS,27392.txt,"lease to doomsday","archer, lee",en,173
+science.fiction,SUCCESS,28063.txt,"the next logical step","bova, ben, 1932-",en,364
+science.fiction,SUCCESS,28650.txt,"year of the big thaw","bradley, marion zimmer, 1930-1999",en,174
+science.fiction,SUCCESS,29133.txt,"shipwreck in the sky","binder, eando",en,196
+science.fiction,SUCCESS,29140.txt,"the mathematicians","feldman, arthur",en,110
+science.fiction,SUCCESS,29504.txt,"what's he doing in there?","leiber, fritz, 1910-1992",en,103
+science.fiction,SUCCESS,29643.txt,"death of a spaceman","miller, walter m., 1923-1996",en,100
+science.fiction,SUCCESS,30240.txt,"the big trip up yonder","vonnegut, kurt, 1922-2007",en,972
+science.fiction,FAILURE,22470.txt,"the bell tone","leftwich, edmund h.",en,29
+science.fiction,FAILURE,28894.txt,"two plus two makes crazy","sheldon, walter j., 1917-",en,29
+science.fiction,FAILURE,28922.txt,"compatible","smith, richard r.",en,11
+science.fiction,FAILURE,28954.txt,"this is klon calling","sheldon, walter j., 1917-",en,24
+science.fiction,FAILURE,29160.txt,"operation lorelie","salton, william p.",en,30
+science.fiction,FAILURE,29272.txt,"no hiding place","smith, richard r.",en,21
+science.fiction,FAILURE,29356.txt,"such blooming talk","reynolds, l. major",en,16
+science.fiction,FAILURE,30468.txt,"holes, incorporated","reynolds, l. major",en,19
+science.fiction,FAILURE,30649.txt,"last resort","bartholomew, stephen",en,26
+science.fiction,FAILURE,30761.txt,"the minus woman","winterbotham, r. r. (russell robert), 1904-1971",en,18
+science.fiction,SUCCESS,22958.txt,"one-shot","blish, james, 1921-1975",en,269
+science.fiction,SUCCESS,23868.txt,"vanishing point","beck, c. c.",en,124
+science.fiction,SUCCESS,26206.txt,"pandemic","bone, jesse f. (jesse franklin), 1916-1986",en,111
+science.fiction,SUCCESS,26521.txt,"earthmen bearing gifts","brown, fredric, 1906-1972",en,233
+science.fiction,SUCCESS,27053.txt,"the day time stopped moving","buckner, bradner",en,158
+science.fiction,SUCCESS,27462.txt,"the last evolution","campbell, john wood, 1910-1971",en,295
+science.fiction,SUCCESS,29142.txt,"keep out","brown, fredric, 1906-1972",en,139
+science.fiction,SUCCESS,29503.txt,"the hated","pohl, frederik, 1919-",en,158
+science.fiction,SUCCESS,29750.txt,"zen","bixby, jerome, 1923-1998",en,179
+science.fiction,SUCCESS,30399.txt,"pythias","pohl, frederik, 1919-",en,134
+science.fiction,FAILURE,22596.txt,"measure for a loner","harmon, jim, 1933-2010",en,28
+science.fiction,FAILURE,25740.txt,"ambush a terran empire vignette","wilson, ann",en,18
+science.fiction,FAILURE,25742.txt,"hostage a terran empire story","wilson, ann",en,13
+science.fiction,FAILURE,29749.txt,"the flying cuspidors","francis, v. r.",en,27
+science.fiction,FAILURE,30361.txt,"the stowaway","heiner, alvin",en,19
+science.fiction,FAILURE,30379.txt,"field trip","hunter, gene",en,11
+science.fiction,FAILURE,30405.txt,"the clean and wholesome land","sholto, ralph",en,10
+science.fiction,FAILURE,30475.txt,"with a vengeance","woodley, j. b.",en,16
+science.fiction,FAILURE,30670.txt,"mr. chipfellow's jackpot","purcell, dick",en,8
+science.fiction,FAILURE,30798.txt,"sonny","raphael, rick, 1919-1994",en,17
+science.fiction,SUCCESS,21627.txt,"gambler's world","laumer, keith, 1925-1993",en,198
+science.fiction,SUCCESS,21782.txt,"the yillian way","laumer, keith, 1925-1993",en,117
+science.fiction,SUCCESS,23146.txt,"and all the earth a grave","macapp, c. c., 1917-1971",en,107
+science.fiction,SUCCESS,24149.txt,"the ambulance made two trips","leinster, murray, 1896-1975",en,145
+science.fiction,SUCCESS,26741.txt,"i'm a stranger here myself","reynolds, mack, 1917-1983",en,106
+science.fiction,SUCCESS,28062.txt,"the man who saw the future","hamilton, edmond, 1904-1977",en,126
+science.fiction,SUCCESS,28893.txt,"of time and texas","nolan, william f., 1928-",en,132
+science.fiction,SUCCESS,29303.txt,"operation earthworm","archibald, joe, 1898-1989",en,122
+science.fiction,SUCCESS,29908.txt,"the adventurer","kornbluth, c. m. (cyril m.), 1924-1958",en,140
+science.fiction,SUCCESS,32436.txt,"duel on syrtis","anderson, poul william, 1926-2001",en,172
+science.fiction,FAILURE,24864.txt,"the great potlatch riots","lang, allen kim, 1928-",en,29
+science.fiction,FAILURE,26883.txt,"the sword and the atopen","greenfield, taylor h.",en,29
+science.fiction,FAILURE,28953.txt,"when i grow up","lowe, richard e.",en,28
+science.fiction,FAILURE,29599.txt,"homesick","venable, lyn",en,26
+science.fiction,FAILURE,29790.txt,"pleasant journey","thieme, richard f.",en,29
+science.fiction,FAILURE,30381.txt,"prelude to space","haseltine, robert w.",en,20
+science.fiction,FAILURE,30437.txt,"larson's luck","vance, gerald",en,24
+science.fiction,FAILURE,30491.txt,"vital ingredient","de vet, charles v. (charles vincent), 1911-1997",en,18
+science.fiction,FAILURE,30673.txt,"sound of terror","berry, don",en,21
+science.fiction,FAILURE,31123.txt,"the observers","vandenburg, g. l.",en,20
+short.stories,SUCCESS,10150.txt,"dracula's guest","stoker, bram, 1847-1912",en,618
+short.stories,SUCCESS,1883.txt,"the wife, and other stories","chekhov, anton pavlovich, 1860-1904",en,238
+short.stories,SUCCESS,1944.txt,"the witch and other stories","chekhov, anton pavlovich, 1860-1904",en,225
+short.stories,SUCCESS,21279.txt,"2 b r 0 2 b","vonnegut, kurt, 1922-2007",en,2811
+short.stories,SUCCESS,23661.txt,"the book of dragons","nesbit, e. (edith), 1858-1924",en,463
+short.stories,SUCCESS,25519.txt,"little wizard stories of oz","baum, l. frank (lyman frank), 1856-1919",en,309
+short.stories,SUCCESS,2781.txt,"just so stories","kipling, rudyard, 1865-1936",en,1703
+short.stories,SUCCESS,29019.txt,"all cats are gray","norton, andre, 1912-2005",en,376
+short.stories,SUCCESS,30240.txt,"the big trip up yonder","vonnegut, kurt, 1922-2007",en,972
+short.stories,SUCCESS,4357.txt,"american fairy tales","baum, l. frank (lyman frank), 1856-1919",en,507
+short.stories,FAILURE,11003.txt,"michelangelo's shoulder","wetterau, john moncure",en,0
+short.stories,FAILURE,13908.txt,"pipes o'pan at zekesbury","riley, james whitcomb, 1849-1916",en,1
+short.stories,FAILURE,15986.txt,"th' barrel organ","waugh, edwin, 1817-1890",en,8
+short.stories,FAILURE,18509.txt,"nick baba's last drink and other sketches","goff, george paul",en,6
+short.stories,FAILURE,20255.txt,"the unruly sprite a partial fairy tale","van dyke, henry, 1852-1933",en,9
+short.stories,FAILURE,23015.txt,"run to seed 1891","page, thomas nelson, 1853-1922",en,6
+short.stories,FAILURE,23016.txt,"p'laski's tunament 1891","page, thomas nelson, 1853-1922",en,3
+short.stories,FAILURE,23168.txt,"a ride with a mad horse in a freight-car 1898","murray, w. h. h. (william henry harrison), 1840-1904",en,6
+short.stories,FAILURE,23549.txt,"wolf's head 1911","murfree, mary noailles, 1850-1922",en,7
+short.stories,FAILURE,23550.txt,"una of the hill country 1911","murfree, mary noailles, 1850-1922",en,6
+short.stories,SUCCESS,1074.txt,"the sea wolf","london, jack, 1876-1916",en,655
+short.stories,SUCCESS,13707.txt,"twice told tales","hawthorne, nathaniel, 1804-1864",en,788
+short.stories,SUCCESS,14967.txt,"a gentleman vagabond and some others","smith, francis hopkinson, 1838-1915",en,229
+short.stories,SUCCESS,22958.txt,"one-shot","blish, james, 1921-1975",en,269
+short.stories,SUCCESS,24811.txt,"viking tales","hall, jennie, 1875-1921",en,367
+short.stories,SUCCESS,27085.txt,"rootabaga stories","sandburg, carl, 1878-1967",en,297
+short.stories,SUCCESS,28063.txt,"the next logical step","bova, ben, 1932-",en,364
+short.stories,SUCCESS,29542.txt,"the valor of cappen varra","anderson, poul william, 1926-2001",en,304
+short.stories,SUCCESS,3181.txt,"the stolen white elephant","twain, mark, 1835-1910",en,228
+short.stories,SUCCESS,512.txt,"mosses from an old manse and other stories","hawthorne, nathaniel, 1804-1864",en,1816
+short.stories,FAILURE,12095.txt,"more bywords","yonge, charlotte m. (charlotte mary), 1823-1901",en,9
+short.stories,FAILURE,16860.txt,"a lover in homespun and other stories","smith, f. clifford (frank clifford), 1865-1937",en,7
+short.stories,FAILURE,18605.txt,"a pair of patient lovers","howells, william dean, 1837-1920",en,6
+short.stories,FAILURE,20493.txt,"stories and sketches","caswell, harriet s., 1834-",en,9
+short.stories,FAILURE,22837.txt,"the lost dahlia","mitford, mary russell, 1787-1855",en,8
+short.stories,FAILURE,22842.txt,"the widow's dog","mitford, mary russell, 1787-1855",en,9
+short.stories,FAILURE,23170.txt,"a brace of boys 1867, from little brother","ludlow, fitz hugh, 1836-1870",en,6
+short.stories,FAILURE,23221.txt,"the story of the little mamsell","niese, charlotte, 1854-1935",en,8
+short.stories,FAILURE,23695.txt,"the little gray lady 1909","smith, francis hopkinson, 1838-1915",en,7
+short.stories,FAILURE,3380.txt,"staccato notes of a vanished summer (from literature and life)","howells, william dean, 1837-1920",en,2
+short.stories,SUCCESS,1197.txt,"taras bulba and other tales","gogol, nikolai vasilievich, 1809-1852",en,455
+short.stories,SUCCESS,15859.txt,"the piazza tales","melville, herman, 1819-1891",en,592
+short.stories,SUCCESS,17860.txt,"stories from hans andersen","andersen, h. c. (hans christian), 1805-1875",en,739
+short.stories,SUCCESS,22073.txt,"the repairman","harrison, harry, 1925-",en,328
+short.stories,SUCCESS,22966.txt,"toy shop","harrison, harry, 1925-",en,224
+short.stories,SUCCESS,27200.txt,"fairy tales of hans christian andersen","andersen, h. c. (hans christian), 1805-1875",en,858
+short.stories,SUCCESS,2814.txt,"dubliners","joyce, james, 1882-1941",en,5293
+short.stories,SUCCESS,29559.txt,"they twinkled like jewels","farmer, philip jos�, 1918-2009",en,285
+short.stories,SUCCESS,3688.txt,"the chronicles of clovis","saki, 1870-1916",en,545
+short.stories,SUCCESS,689.txt,"the kreutzer sonata and other stories","tolstoy, leo, graf, 1828-1910",en,560
+short.stories,FAILURE,15078.txt,"idle hour stories","potts, eugenia dunlap",en,7
+short.stories,FAILURE,17065.txt,"interludes being two essays, a story, and some verses","smith, horace, 1836-1922",en,9
+short.stories,FAILURE,18658.txt,"in macao","gunnison, charles a., 1861-1897",en,9
+short.stories,FAILURE,20541.txt,"the rocky island and other similitudes","wilberforce, samuel, 1805-1873",en,9
+short.stories,FAILURE,23003.txt,"the new minister's great opportunity first published in the century magazine","chaplin, heman white, 1847-1924",en,4
+short.stories,FAILURE,23004.txt,"in madeira place 1887","chaplin, heman white, 1847-1924",en,6
+short.stories,FAILURE,23165.txt,"the man who stole a meeting-house 1878, from coupon bonds","trowbridge, j. t. (john townsend), 1827-1916",en,3
+short.stories,FAILURE,23411.txt,"sma�n; and safti's summer day 1905","hichens, robert (robert smythe), 1864-1950",en,6
+short.stories,FAILURE,23412.txt,"the figure in the mirage 1905","hichens, robert (robert smythe), 1864-1950",en,8
+short.stories,FAILURE,24109.txt,"the capgras shift","vaknin, samuel, 1961-",en,2
+short.stories,SUCCESS,1202.txt,"tales of unrest","conrad, joseph, 1857-1924",en,249
+short.stories,SUCCESS,2148.txt,"the works of edgar allan poe � volume 2","poe, edgar allan, 1809-1849",en,6383
+short.stories,SUCCESS,2150.txt,"the works of edgar allan poe � volume 4","poe, edgar allan, 1809-1849",en,1294
+short.stories,SUCCESS,23172.txt,"the damned thing 1898, from in the midst of life","bierce, ambrose, 1842-1914?",en,323
+short.stories,SUCCESS,24975.txt,"the gift bearer","fontenay, charles louis, 1917-2007",en,607
+short.stories,SUCCESS,28554.txt,"beyond lies the wub","dick, philip k., 1928-1982",en,1086
+short.stories,SUCCESS,28644.txt,"beyond the door","dick, philip k., 1928-1982",en,1415
+short.stories,SUCCESS,29614.txt,"the game of rat and dragon","linebarger, paul myron anthony, 1913-1966",en,245
+short.stories,SUCCESS,3806.txt,"a modern cinderella or, the little old shoe and other stories","alcott, louisa may, 1832-1888",en,344
+short.stories,SUCCESS,7471.txt,"the man with two left feet and other stories","wodehouse, p. g. (pelham grenville), 1881-1975",en,813
+short.stories,FAILURE,12152.txt,"keeping watch night watches, part 2.","jacobs, w. w. (william wymark), 1863-1943",en,7
+short.stories,FAILURE,12154.txt,"the weaker vessel night watches, part 4.","jacobs, w. w. (william wymark), 1863-1943",en,4
+short.stories,FAILURE,15089.txt,"the deserter","davis, richard harding, 1864-1916",en,4
+short.stories,FAILURE,17453.txt,"up in ardmuirland","barrett, michael, 1848-",en,5
+short.stories,FAILURE,1762.txt,"the consul","davis, richard harding, 1864-1916",en,6
+short.stories,FAILURE,1891.txt,"a plea for old cap collier","cobb, irvin s. (irvin shrewsbury), 1876-1944",en,8
+short.stories,FAILURE,23166.txt,"who was she? from the atlantic monthly for september, 1874","taylor, bayard, 1825-1878",en,7
+short.stories,FAILURE,23174.txt,"a good-for-nothing 1876","boyesen, hjalmar hjorth, 1848-1895",en,7
+short.stories,FAILURE,23176.txt,"a michigan man 1891","peattie, elia wilkinson, 1862-1935",en,8
+short.stories,FAILURE,25056.txt,"the brothers-in-law: a tale of the equatorial islands; and the brass gun of the buccaneers 1901","becke, louis, 1855-1913",en,7
+short.stories,SUCCESS,1312.txt,"selected stories of bret harte","harte, bret, 1836-1902",en,365
+short.stories,SUCCESS,1743.txt,"twelve stories and a dream","wells, h. g. (herbert george), 1866-1946",en,266
+short.stories,SUCCESS,23218.txt,"the red room","wells, h. g. (herbert george), 1866-1946",en,471
+short.stories,SUCCESS,24879.txt,"curious, if true strange tales","gaskell, elizabeth cleghorn, 1810-1865",en,243
+short.stories,SUCCESS,26521.txt,"earthmen bearing gifts","brown, fredric, 1906-1972",en,233
+short.stories,SUCCESS,27462.txt,"the last evolution","campbell, john wood, 1910-1971",en,295
+short.stories,SUCCESS,2777.txt,"cabbages and kings","henry, o., 1862-1910",en,325
+short.stories,SUCCESS,29948.txt,"two timer","brown, fredric, 1906-1972",en,264
+short.stories,SUCCESS,3815.txt,"rolling stones","henry, o., 1862-1910",en,224
+short.stories,SUCCESS,8129.txt,"a dreamer's tales","dunsany, edward john moreton drax plunkett, baron, 1878-1957",en,298
+short.stories,FAILURE,12417.txt,"fishin' jimmy","slosson, annie trumbull, 1838-1926",en,6
+short.stories,FAILURE,14855.txt,"a few short sketches","sherley, douglass, 1857-1917",en,3
+short.stories,FAILURE,15095.txt,"the story of a picture","sherley, douglass, 1857-1917",en,6
+short.stories,FAILURE,19989.txt,"story-tell lib","slosson, annie trumbull, 1838-1926",en,2
+short.stories,FAILURE,22703.txt,"hooking watermelons 1898","bellamy, edward, 1850-1898",en,8
+short.stories,FAILURE,22704.txt,"to whom this may come 1898","bellamy, edward, 1850-1898",en,8
+short.stories,FAILURE,23011.txt,"eatin' crow; and the best man in garotte","harris, frank, 1856-1931",en,9
+short.stories,FAILURE,23167.txt,"the man in the reservoir","hoffman, charles fenno, 1806-1884",en,4
+short.stories,FAILURE,23177.txt,"the inmate of the dungeon","morrow, w.c., 1854-1923",en,10

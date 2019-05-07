@@ -1,0 +1,15 @@
+.Rproj.user
+TODO.html
+novels.Rproj
+*-old/
+*-old
+inst/doc
+doc
+Meta
+.Rhistory
+README.html
+NAMESPACE
+vignettes/glmnet_cache/
+man/
+data/
+data-raw/novels

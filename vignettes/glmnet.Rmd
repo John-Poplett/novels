@@ -1,0 +1,135 @@
+---
+title: "glmnet"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{glmnet}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r options, include = FALSE}
+knitr::opts_chunk$set(echo=TRUE, warning=FALSE, message=FALSE)
+```
+```{r, echo=FALSE}
+op = options(width = 80, str = strOptions(strict.width = "cut"))
+```
+
+# Introduction
+This vignette uses text2vec and Stonybrook's novels dataset to create a classification and regression model to predict the likelihood of success for novels and other literary texts.
+
+```{r setup, eval=TRUE, message=FALSE}
+library(dplyr)
+library(novels)
+library(data.table)
+library(text2vec)
+library(glmnet)
+library(tools)
+library(knitr)
+library(kableExtra)
+```
+# The "novels" dataset
+The novels dataset consists of `r dim(novels)[1]` entries. Some of the entries refer
+to the same text file, e.g. in the case where a literary work belongs in more than one category (fiction and short story). For training, it's important that we only train on a given text once. In the entire dataset there are `r sum(novels %>% select(file.name) %>% duplicated)` duplicates.
+
+Also, author's may have multiple works in the dataset. While we have a total of `r dim(novels)[1]` entries in the dataset, there are fewer authors `r length(unique(novels$author))`.
+
+# Create training and test sets
+```{r split, eval=TRUE, message=FALSE}
+# Make response value an integer for AUC computation. Test to prevent
+# confusion when rerunning code chunks.
+if(class(novels$response) == 'factor') {
+  stopifnot(novels$response == 'success' || novels$response == 'failure')
+  novels$response <- as.integer(novels$response == 'success')
+}
+setDT(novels)
+set.seed(2019L)
+all_ids = unique(novels$author)
+indices <- createSplit(novels)
+train = novels[indices$train]
+test = novels[indices$test]
+```
+
+# Feature extraction
+Create a text2vec iterator, vocabulary, vectorizer and document text matrix (dtm). The dtm represents the novels data set as trainable features.
+```{r document-text-matrix, cache = TRUE, eval = TRUE}
+it <- novels::getIterator(train$text, train$title)
+vocab <- novels::text2vocab(it, length(train$text))
+vectorizer = vocab_vectorizer(vocab)
+dtm = create_dtm(it, vectorizer)
+```
+
+# Normalization
+Transform the dtm to an idf to normalize the data and make it machine learning friendly.
+```{r tfidf, cache = TRUE, eval = TRUE}
+# define tfidf model
+tfidf = TfIdf$new()
+# fit model to train data and transform train data with fitted model
+dtm_tfidf = fit_transform(dtm, tfidf)
+```
+```{r, echo=FALSE}
+rm(dtm)
+```
+
+# Build classifier
+Build a classifier using a generalized linear model (glm) with cross-validation (cv).
+```{r classifier, cache = TRUE, eval = TRUE}
+glmnet_classifier = cv.glmnet(x = dtm_tfidf, y = train$response,
+                              family = 'binomial',
+                              alpha = 0.1,
+                              type.measure = "auc",
+                              nfolds = 5,
+                              thresh = 1e-5,
+                              maxit = 1e4)
+```
+
+# Display AUC for the resulting model
+Area under the curve (AUC) is a time-honored approach to evaluating the effectiveness of a model. Here we use the *glmnet* package to plot the AUC for different values of the control variable "lambda".
+```{r plot-auc}
+plot(glmnet_classifier)
+```
+# Evaluate test set
+To understand the quality of our classifier, we want the model's best AUC result for both training and test data sets. We want AUC scores as close to 1 as possible, ideally over .9.
+
+Although the test set rarely exceeds the training set results, we want a test set AUC result that is close to the training set AUC.
+```{r eval-test-set}
+classifier <- createPredictor(vectorizer, tfidf, glmnet_classifier)
+test_results <- classifier(test, type = "response")
+test_auc <- glmnet:::auc(test$response, test_results$prediction)
+train_auc <- max(glmnet_classifier$cvm)
+```
+The classifier produces an AUC of `r sprintf("%02.2f", train_auc * 100)` on training data and an AUC of `r sprintf("%02.2f", test_auc * 100)` on test data.
+
+# Some Test Scores for fiction
+Let's look at the relative scores for examples of fiction in the test set just to get a sense for how it performs.
+```{r test-scores}
+kable(test %>% select(author, title, genre, download.count, response) %>%
+        inner_join(test_results) %>%
+        mutate(author = toTitleCase(as.character(author)), title = 
+                 tools::toTitleCase(as.character(title)), score = prediction, prediction = ifelse(score > .5, "success", "failure"), response = ifelse(response == 1, "success","failure")) %>%
+        filter(genre == 'fiction') %>%
+        select(author, title, score, download.count, prediction, response) %>% arrange(desc(score)) %>%
+        mutate(score = sprintf("%02.2f", score * 100)) %>%
+        head(n = 100)) %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
+```
+# Define function to evaluate performance
+```{r define-evalauate-performance-function, cache=TRUE}
+evaluatePerformance <- function(data, results, genres = levels(data$genre)) {
+  data %>% select(author, title, genre, download.count, response) %>%
+        inner_join(results) %>%
+        mutate(author = toTitleCase(as.character(author)), title = 
+                 tools::toTitleCase(as.character(title)), score = prediction, prediction = ifelse(score > .5, "success", "failure"), response = ifelse(response == 1, "success","failure")) %>%
+        filter(genre %in% genres) %>% createConfusionMatrix() %>% addInformationRetrievalMetrics()
+}
+```
+
+# Model Performance for test set
+```{r model-performance-all-genres}
+evaluatePerformance(test, test_results) %>%
+        kable() %>% kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
+```
+# Model Performance for fiction subset
+```{r model-fiction-performance}
+evaluatePerformance(test, test_results, list('fiction')) %>%
+        kable() %>% kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
+```
