@@ -10,6 +10,4 @@ Meta
 README.html
 NAMESPACE
 vignettes/glmnet_cache/
-man/
-data/
 data-raw/novels
