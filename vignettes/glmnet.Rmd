@@ -99,12 +99,42 @@ train_auc <- max(glmnet_classifier$cvm)
 ```
 The classifier produces an AUC of `r sprintf("%02.2f", train_auc * 100)` on training data and an AUC of `r sprintf("%02.2f", test_auc * 100)` on test data.
 
+```{r summarize-scores, echo = FALSE}
+summarizeScores <- function(data, results) {
+  #
+  # Figure out, based on class type of the response column,
+  # how to convert the response column to type factor with values
+  # "success" and "failure"
+  #
+  tofactor <- ifelse(class(data$response) == 'integer',
+    function(value) ifelse(value == 1, "success", "failure"),
+    function(value) value)
+
+data %>% select(author, title, genre, download.count, response) %>%
+        inner_join(test_results) %>%
+        mutate(
+          author = toTitleCase(as.character(author)),
+          title = tools::toTitleCase(as.character(title)),
+          score = prediction,
+          prediction = ifelse(score > .5, "success", "failure"),
+          response = tofactor(response)) %>%
+        select(author, title, score, download.count, prediction, response) %>%
+        arrange(desc(score)) %>%
+        mutate(score = sprintf("%02.2f", score * 100))
+}
+
+prettyPrintScores <- function(data, results) {
+  kable(summarizeScores(data, results) %>% head(n = 100)) %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
+}
+```
+
 # Some Test Scores for fiction
 Let's look at the relative scores for examples of fiction in the test set just to get a sense for how it performs.
 ```{r test-scores}
 kable(test %>% select(author, title, genre, download.count, response) %>%
         inner_join(test_results) %>%
-        mutate(author = toTitleCase(as.character(author)), title = 
+        mutate(author = toTitleCase(as.character(author)), title =
                  tools::toTitleCase(as.character(title)), score = prediction, prediction = ifelse(score > .5, "success", "failure"), response = ifelse(response == 1, "success","failure")) %>%
         filter(genre == 'fiction') %>%
         select(author, title, score, download.count, prediction, response) %>% arrange(desc(score)) %>%
@@ -114,22 +144,48 @@ kable(test %>% select(author, title, genre, download.count, response) %>%
 ```
 # Define function to evaluate performance
 ```{r define-evalauate-performance-function, cache=TRUE}
-evaluatePerformance <- function(data, results, genres = levels(data$genre)) {
+evaluatePerformance <- function(data, results) {
+  tofactor <- ifelse(class(data$response) == 'integer',
+    function(value) ifelse(value == 1, "success", "failure"),
+    function(value) value)
   data %>% select(author, title, genre, download.count, response) %>%
-        inner_join(results) %>%
-        mutate(author = toTitleCase(as.character(author)), title = 
-                 tools::toTitleCase(as.character(title)), score = prediction, prediction = ifelse(score > .5, "success", "failure"), response = ifelse(response == 1, "success","failure")) %>%
-        filter(genre %in% genres) %>% createConfusionMatrix() %>% addInformationRetrievalMetrics()
+      inner_join(results) %>%
+      mutate(
+        author = toTitleCase(as.character(author)),
+        title = tools::toTitleCase(as.character(title)),
+        score = prediction,
+        prediction = ifelse(score > .5, "success", "failure"),
+        response = tofactor(response)
+      ) %>%
+      createConfusionMatrix %>%
+      addInformationRetrievalMetrics
 }
 ```
 
-# Model Performance for test set
+# Model Performance for Test Set
 ```{r model-performance-all-genres}
 evaluatePerformance(test, test_results) %>%
-        kable() %>% kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
+        kable %>% kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
 ```
-# Model Performance for fiction subset
+# Model Performance for Fiction Subset
 ```{r model-fiction-performance}
-evaluatePerformance(test, test_results, list('fiction')) %>%
-        kable() %>% kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
+evaluatePerformance(test %>% filter(genre == 'fiction'), test_results) %>%
+        kable %>% kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
+```
+
+# Classifier Results by Genre
+This table shows how the classifier performs for a given genre.
+```{r, results-by-genre}
+genres <- levels(novels$genre)
+resultsByGenre <- cbind(data.frame(Genre = c('all')), evaluatePerformance(test, test_results))
+for(g in genres) {
+  resultsByGenre <- rbind(
+    resultsByGenre,
+    cbind(
+      data.frame(Genre = c(g)),
+      evaluatePerformance(test %>% filter(genre == g), test_results)
+    )
+  )
+}
+resultsByGenre %>% kable() %>% kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
 ```

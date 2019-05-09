@@ -5,14 +5,14 @@
 createSplit <- function(data, split = .8) {
   stopifnot('data.frame' %in% class(data) && 'author' %in% names(data))
   all_ids <- unique(data$author)
-  train_ids <- sample(all_ids, as.integer(length(all_ids) * .8))
+  train_ids <- sample(all_ids, as.integer(length(all_ids) * split))
   test_ids <- setdiff(all_ids, train_ids)
   # Training and test split by author
   train_indices <- which(data$author %in% train_ids)
   test_indices <- which(data$author %in% test_ids)
-  # Eliminate duplicate filenames
-  duplicateFilenames <- data %>% duplicated(by = 'file.name')
-  train_indices <- which(train_indices %in% which(!duplicateFilenames))
-  test_indices <- which(test_indices %in% which(!duplicateFilenames))
+  # Strip any duplicate filenames from training and test sets
+  duplicate_indices <- data %>% duplicated(by = 'file.name') %>% which
+  train_indices <- setdiff(train_indices, duplicate_indices)
+  test_indices <- setdiff(test_indices, duplicate_indices)
   list("train" = train_indices, "test" = test_indices)
 }
