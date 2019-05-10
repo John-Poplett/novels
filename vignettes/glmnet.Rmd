@@ -1,10 +1,13 @@
 ---
-title: "glmnet"
+title: "Predicting the Success of Literary Text Based on a glmnet Model"
+author: "John Poplett"
+date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{glmnet}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
+bibliography: novels.bib
 ---
 
 ```{r options, include = FALSE}
@@ -15,7 +18,10 @@ op = options(width = 80, str = strOptions(strict.width = "cut"))
 ```
 
 # Introduction
-This vignette uses text2vec and Stonybrook's novels dataset to create a classification and regression model to predict the likelihood of success for novels and other literary texts.
+This vignette uses text2vec and Stonybrook's novels dataset to create a classification and regression model to predict the likelihood of success for novels and other literary texts. The dataset and various approaches to creating a classifier are discussed in the original article "*Success with Style*" [@ashok_success_2013].
+
+The authors of the original study chose to publish the raw data used for their dataset but did not publish the source code to their classifier. In the original study, the author's built a classifier using LibLinear SVM. They used a variety of approaches to transform text into "features" suitable for training a classifier. In this example, we make use of text2vec which, as its name implies, provides the tools to transform text into feature vectors.
+
 
 ```{r setup, eval=TRUE, message=FALSE}
 library(dplyr)
@@ -51,7 +57,7 @@ test = novels[indices$test]
 
 # Feature extraction
 Create a text2vec iterator, vocabulary, vectorizer and document text matrix (dtm). The dtm represents the novels data set as trainable features.
-```{r document-text-matrix, cache = TRUE, eval = TRUE}
+```{r document-text-matrix, eval = TRUE}
 it <- novels::getIterator(train$text, train$title)
 vocab <- novels::text2vocab(it, length(train$text))
 vectorizer = vocab_vectorizer(vocab)
@@ -60,7 +66,7 @@ dtm = create_dtm(it, vectorizer)
 
 # Normalization
 Transform the dtm to an idf to normalize the data and make it machine learning friendly.
-```{r tfidf, cache = TRUE, eval = TRUE}
+```{r tfidf, eval = TRUE}
 # define tfidf model
 tfidf = TfIdf$new()
 # fit model to train data and transform train data with fitted model
@@ -72,7 +78,7 @@ rm(dtm)
 
 # Build classifier
 Build a classifier using a generalized linear model (glm) with cross-validation (cv).
-```{r classifier, cache = TRUE, eval = TRUE}
+```{r classifier, eval = TRUE}
 glmnet_classifier = cv.glmnet(x = dtm_tfidf, y = train$response,
                               family = 'binomial',
                               alpha = 0.1,
@@ -129,21 +135,13 @@ prettyPrintScores <- function(data, results) {
 }
 ```
 
-# Some Test Scores for fiction
+# Some Test Scores for the Fiction Genre
 Let's look at the relative scores for examples of fiction in the test set just to get a sense for how it performs.
-```{r test-scores}
-kable(test %>% select(author, title, genre, download.count, response) %>%
-        inner_join(test_results) %>%
-        mutate(author = toTitleCase(as.character(author)), title =
-                 tools::toTitleCase(as.character(title)), score = prediction, prediction = ifelse(score > .5, "success", "failure"), response = ifelse(response == 1, "success","failure")) %>%
-        filter(genre == 'fiction') %>%
-        select(author, title, score, download.count, prediction, response) %>% arrange(desc(score)) %>%
-        mutate(score = sprintf("%02.2f", score * 100)) %>%
-        head(n = 100)) %>%
-  kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
+```{r test-scores, echo = FALSE}
+prettyPrintScores(test %>% filter(genre == 'fiction'), test_results)
 ```
 # Define function to evaluate performance
-```{r define-evalauate-performance-function, cache=TRUE}
+```{r define-evalauate-performance-function}
 evaluatePerformance <- function(data, results) {
   tofactor <- ifelse(class(data$response) == 'integer',
     function(value) ifelse(value == 1, "success", "failure"),
@@ -162,17 +160,6 @@ evaluatePerformance <- function(data, results) {
 }
 ```
 
-# Model Performance for Test Set
-```{r model-performance-all-genres}
-evaluatePerformance(test, test_results) %>%
-        kable %>% kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
-```
-# Model Performance for Fiction Subset
-```{r model-fiction-performance}
-evaluatePerformance(test %>% filter(genre == 'fiction'), test_results) %>%
-        kable %>% kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
-```
-
 # Classifier Results by Genre
 This table shows how the classifier performs for a given genre.
 ```{r, results-by-genre}
@@ -188,4 +175,20 @@ for(g in genres) {
   )
 }
 resultsByGenre %>% kable() %>% kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
+```
+# Comparison of text2vec performance versus the best of SunnyBrook
+This table shows how the GLMNET / text2vec classifier stacks up to the results reported in the "*Success with Style*" article. The GLMNET column shows the performance of our classifier. The best per genre column shows the best result obtained by each of Sunnybrook's 15 models in each genre. The best overall column shows the performance of the best single classifier over all the genres.
+
+In three genres, viz. fiction, poetry and short-stories, the GLMNET / text2vec classify has noticably poorer results.
+```{r best-of-sunnybrook, echo = FALSE}
+
+# c('all', 'adventure', 'fiction', 'historical.fiction', 'love.story', 'mystery', 'poetry', 'science.fiction', 'short.stories')
+sunnyBrookAccuracybyGenre <- data.frame(
+  Genre = append(c('all'), levels(novels$genre)),
+  BestPerGenre = c(73.5, 84.0, 75.0, 61.0, 82.0, 75.0, 74.0, 76.0, 77.0),
+  BestOverall = c(73.5, 75.0, 75.0, 58.0, 81.0, 75.0, 72.0, 76.0, 77.0)
+
+)
+resultsByGenre %>% inner_join(sunnyBrookAccuracybyGenre, by = 'Genre') %>% mutate(GLMNET = Accuracy) %>% select(Genre, GLMNET, BestPerGenre, BestOverall) %>% kable %>% kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
+
 ```
