@@ -1,6 +1,6 @@
 Package: novels
 Title: Predicting Success of Literary Texts
-Version: 1.0.2
+Version: 1.0.3
 Authors@R: person("John", "Poplett", email = "john.poplett@fastmail.com", role = c("aut", "cre"))
 Description: Generates a prediction for the success of literary texts.
 Depends: R (>= 3.5.0)

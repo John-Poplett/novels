@@ -24,9 +24,9 @@ op = options(width = 80, str = strOptions(strict.width = "cut"))
 
 # Text analysis pipeline
 
-Most text mining and NLP modeling use [bag of words](https://en.wikipedia.org/wiki/Bag-of-words_model) or [bag of n-grams](https://en.wikipedia.org/wiki/N-gram) methods. Despite their simplicity, these models usually demonstrate good performance on text categorization and classification tasks. But in contrast to their theoretical simplicity and practical efficiency building bag-of-words models involves technical challenges. This is especially the case in R because of its copy-on-modify semantics. 
+Most text mining and NLP modeling use [bag of words](https://en.wikipedia.org/wiki/Bag-of-words_model) or [bag of n-grams](https://en.wikipedia.org/wiki/N-gram) methods. Despite their simplicity, these models usually demonstrate good performance on text categorization and classification tasks. But in contrast to their theoretical simplicity and practical efficiency building bag-of-words models involves technical challenges. This is especially the case in R because of its copy-on-modify semantics.
 
-Let's briefly review some of the steps in a typical text analysis pipeline:  
+Let's briefly review some of the steps in a typical text analysis pipeline:
 
 1. The reseacher usually begins by constructing a [document-term matrix](https://en.wikipedia.org/wiki/Document-term_matrix) (DTM) or term-co-occurence matrix (TCM) from input documents. In other words, the first step is to  vectorize text by creating a map from words or n-grams to a [vector space](https://en.wikipedia.org/wiki/Vector_space_model).
 2. The researcher fits a model to that DTM. These models might include text classification, topic modeling, similarity search, etc. Fitting the model will include tuning and validating the model.
@@ -47,10 +47,11 @@ library(magrittr)
 library(novels)
 # Make response value an integer for AUC computation. Test to prevent
 # confusion when rerunning code chunks.
-if(class(novels$response) == 'factor') {
-  stopifnot(novels$response == 'success' || novels$response == 'failure')
-  novels$response <- as.integer(novels$response == 'success')
-}
+# if(class(novels$response) == 'factor') {
+#   stopifnot(novels$response == 'success' || novels$response == 'failure')
+#   novels$response <- as.integer(novels$response == 'success')
+# }
+novels <- copy(novels::novels)
 setDT(novels)
 setkey(novels, author)
 set.seed(2019L)
@@ -74,10 +75,10 @@ Let's first create a vocabulary-based DTM. Here we collect unique terms from all
 prep_fun = tolower
 tok_fun = word_tokenizer
 
-it_train = itoken(train$text, 
-             preprocessor = prep_fun, 
-             tokenizer = tok_fun, 
-             ids = train$title, 
+it_train = itoken(train$text,
+             preprocessor = prep_fun,
+             tokenizer = tok_fun,
+             ids = train$title,
              progressbar = FALSE)
 vocab = create_vocabulary(it_train)
 ```
@@ -90,8 +91,8 @@ Alternatively, we could create list of tokens and reuse it in further steps. Eac
 
 ```{r}
 train_tokens = tok_fun(prep_fun(train$text))
-  
-it_train = itoken(train_tokens, 
+
+it_train = itoken(train_tokens,
                   ids = train$title,
                   # turn off progressbar because it won't look nice in rmd
                   progressbar = FALSE)
@@ -126,8 +127,8 @@ Now we are ready to fit our first model. Here we will use the [glmnet](https://c
 library(glmnet)
 NFOLDS = 4
 t1 = Sys.time()
-glmnet_classifier = cv.glmnet(x = dtm_train, y = train[['response']], 
-                              family = 'binomial', 
+glmnet_classifier = cv.glmnet(x = dtm_train, y = train[['response']],
+                              family = 'binomial',
                               # L1 penalty
                               alpha = 1,
                               # interested in the area under ROC curve
@@ -148,9 +149,9 @@ Note that we use exactly the same functions from prepossessing and tokenization.
 ```{r, test_1, message=FALSE, warning=FALSE, eval=TRUE}
 # Note that most text2vec functions are pipe friendly!
 it_test = tok_fun(prep_fun(test$text))
+
 # turn off progressbar because it won't look nice in rmd
 it_test = itoken(it_test, ids = test$title, progressbar = FALSE)
-         
 
 dtm_test = create_dtm(it_test, vectorizer)
 
@@ -174,8 +175,8 @@ t1 = Sys.time()
 vocab = create_vocabulary(it_train, stopwords = stop_words)
 print(difftime(Sys.time(), t1, units = 'sec'))
 
-pruned_vocab = prune_vocabulary(vocab, 
-                                 term_count_min = 10, 
+pruned_vocab = prune_vocabulary(vocab,
+                                 term_count_min = 10,
                                  doc_proportion_max = 0.5,
                                  doc_proportion_min = 0.001)
 vectorizer = vocab_vectorizer(pruned_vocab)
@@ -205,7 +206,7 @@ t1 = Sys.time()
 vocab = create_vocabulary(it_train, ngram = c(1L, 2L))
 print(difftime(Sys.time(), t1, units = 'sec'))
 
-vocab = prune_vocabulary(vocab, term_count_min = 10, 
+vocab = prune_vocabulary(vocab, term_count_min = 10,
                          doc_proportion_max = 0.5)
 
 bigram_vectorizer = vocab_vectorizer(vocab)
@@ -213,8 +214,8 @@ bigram_vectorizer = vocab_vectorizer(vocab)
 dtm_train = create_dtm(it_train, bigram_vectorizer)
 
 t1 = Sys.time()
-glmnet_classifier = cv.glmnet(x = dtm_train, y = train[['response']], 
-                 family = 'binomial', 
+glmnet_classifier = cv.glmnet(x = dtm_train, y = train[['response']],
+                 family = 'binomial',
                  alpha = 1,
                  type.measure = "auc",
                  nfolds = NFOLDS,
@@ -242,7 +243,7 @@ Further tuning is left up to the reader.
 
 ## Feature hashing
 
-If you are not familiar with feature hashing (the so-called "hashing trick") I recommend you start with the [Wikipedia article](https://en.wikipedia.org/wiki/Feature_hashing), then read the [original paper](http://alex.smola.org/papers/2009/Weinbergeretal09.pdf) by a Yahoo! research team. This technique is very fast because we don't have to perform a lookup over an associative array. Another benefit is that it leads to a very low memory footprint, since we can map an arbitrary number of features into much more compact space. This method was popularized by Yahoo! and is widely used in [Vowpal Wabbit](https://github.com/JohnLangford/vowpal_wabbit/). 
+If you are not familiar with feature hashing (the so-called "hashing trick") I recommend you start with the [Wikipedia article](https://en.wikipedia.org/wiki/Feature_hashing), then read the [original paper](http://alex.smola.org/papers/2009/Weinbergeretal09.pdf) by a Yahoo! research team. This technique is very fast because we don't have to perform a lookup over an associative array. Another benefit is that it leads to a very low memory footprint, since we can map an arbitrary number of features into much more compact space. This method was popularized by Yahoo! and is widely used in [Vowpal Wabbit](https://github.com/JohnLangford/vowpal_wabbit/).
 
 Here is how to use feature hashing in *text2vec*.
 
@@ -254,8 +255,8 @@ dtm_train = create_dtm(it_train, h_vectorizer)
 print(difftime(Sys.time(), t1, units = 'sec'))
 
 t1 = Sys.time()
-glmnet_classifier = cv.glmnet(x = dtm_train, y = train[['response']], 
-                             family = 'binomial', 
+glmnet_classifier = cv.glmnet(x = dtm_train, y = train[['response']],
+                             family = 'binomial',
                              alpha = 1,
                              type.measure = "auc",
                              nfolds = 5,
@@ -319,8 +320,8 @@ More detailed overview of models and models API will be available soon in a sepa
 Once we have tf-idf reweighted DTM we can fit our linear classifier again:
 ```{r, fit_2, message=FALSE, warning=FALSE, eval=TRUE}
 t1 = Sys.time()
-glmnet_classifier = cv.glmnet(x = dtm_train_tfidf, y = train[['response']], 
-                              family = 'binomial', 
+glmnet_classifier = cv.glmnet(x = dtm_train_tfidf, y = train[['response']],
+                              family = 'binomial',
                               alpha = 1,
                               type.measure = "auc",
                               nfolds = NFOLDS,

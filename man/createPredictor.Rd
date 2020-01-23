@@ -4,7 +4,7 @@
 \alias{createPredictor}
 \title{Return a closure that can predict the success of a novel}
 \usage{
-createPredictor(vectorizer, tfidf, model)
+createPredictor(vectorizer, tfidf, model, threshold = 0.5)
 }
 \arguments{
 \item{vectorizer}{a text2vec vectorizer}
@@ -12,6 +12,8 @@ createPredictor(vectorizer, tfidf, model)
 \item{tfidf}{tfidf instance used to train model}
 
 \item{model}{a glmnet model}
+
+\item{threshold}{specify the threshold for success}
 }
 \description{
 Return a closure that can predict the success of a novel

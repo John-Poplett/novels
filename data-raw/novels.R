@@ -10,6 +10,7 @@ library(purrr)
 library(tibble)
 library(assertthat)
 library(gutenbergr)
+library(archive)
 
 genres <- list(
   Adventure_Stories = "adventure",
@@ -24,13 +25,9 @@ genres <- list(
 
 if (!file.exists("data-raw/novels")) {
   tmp <- tempfile(fileext = ".7z")
-  download.file("https://www3.cs.stonybrook.edu/~songfeng/success/data/novels.7z",
-                tmp,
-                quiet = TRUE)
-  setwd("data-raw")
-  system(sprintf("p7zip -d %s", tmp))
+  download.file("https://www3.cs.stonybrook.edu/~songfeng/success/data/novels.7z", tmp, quiet = TRUE)
+  archive_extract(tmp, "data-raw")
   unlink(tmp)
-  setwd("..")
 }
 
 build_dataset_info <- function(data_path = 'data-raw') {
@@ -38,10 +35,12 @@ build_dataset_info <- function(data_path = 'data-raw') {
   novel_metadata <- as_tibble(data.frame(text = readLines(meta_data_file_path)))
 
   novel_metadata <- novel_metadata %>% filter(grepl("^(SUCCESS|FAILURE):", text)) %>% mutate(
-    gutenberg_id = as.integer(sub("[^0-9]*([0-9]+)\\.txt.*", "\\1", text)),
-    download.count = as.integer(sub(".*,DownloadCount: ([0-9]+)$", "\\1", text)),
-    date = sub("(?:[^:]+:){4,4}\\D+(\\d{4,4}(?:-\\d{4,4})?).*$", "\\1", text)) %>%
-    select(gutenberg_id, date, download.count)
+    id = as.integer(sub("^(?:SUCCESS|FAILURE):\\s*FileName:\\s+([0-9]+)\\.txt.*", "\\1", text)),
+    gutenberg_id = id,
+    download.count = as.integer(sub("(?:[^:]+:){5,5}[^,]+,DownloadCount:\\s+(\\d+).*", "\\1", text)),
+    date = sub("(?:[^:]+:){4,4}\\D+(\\d{4,4}(?:-\\d{4,4})?).*$", "\\1", text),
+    date = ifelse(grepl("^(?:SUCCESS|FAILURE).*", date, perl=TRUE), NA, date)) %>%
+    select(id, gutenberg_id, date, download.count)
 
   files <- list.files(path = file.path(data_path, "novels"), pattern = "[0-9]+\\.txt", recursive = TRUE)
   # Creates a nested list of vectors
@@ -53,29 +52,63 @@ build_dataset_info <- function(data_path = 'data-raw') {
     genre = as.factor(as.character(genres[genre])),
     fold = as.integer(sub(".*_fold([0-9]+)", "\\1", fold)),
     response = as.integer(grepl("*success*", response)),
-    id = as.integer(sub("([0-9]+)\\.txt", "\\1", file.name)),
+    gutenberg_id = as.integer(sub("([0-9]+)\\.txt", "\\1", file.name)),
     dirpart = as.factor(dirname(as.character(text))),
     text = as.character(text))
+
+  #
+  # Insert rows with placeholder values for any rows found missing. The copy
+  # of novel_metadata.txt retrieved from the Sunnybrook site is corrupt
+  # and missing an entire entry.
+  #
+  missing_download_counts <- setdiff(df$gutenberg_id, novel_metadata$gutenberg_id)
+  novel_metadata <- rbind(
+    novel_metadata,
+    data.frame("id" = missing_download_counts) %>%
+      mutate(gutenberg_id = id, date = '', download.count = NA)
+  )
+
+  #
+  # Strip out any rows that refer to the same document. Perform this ahead of
+  # reading in the text for a slight efficiency gain. Do this both for the
+  # metadata values derived from novel_metadata.txt and metadata values derived
+  # from walking the dataset file structure.
+  #
+  novel_metadata <- novel_metadata %>% distinct(gutenberg_id, .keep_all = TRUE)
+  df <- df %>% distinct(gutenberg_id, .keep_all = TRUE)
+
+  #
+  # Now load up the relevant text
+  #
   df$text <- sapply(df$text, function(x) stringi::stri_enc_toutf8(readr::read_file(file.path('data-raw', 'novels', x))))
+
   #
-  # Strip out gutenberg_bookshelf column since it is incomplete and not useful.
+  # Merge in metadata from gutenbergr. Strip out gutenberg_bookshelf column
+  # since it is incomplete and not of any obvious use.
   #
-  df <- dplyr::inner_join(df %>% mutate(gutenberg_id = id), gutenberg_metadata %>% select(-gutenberg_bookshelf), by = c("gutenberg_id"))
+  df <- dplyr::inner_join(df, gutenberg_metadata %>% select(-gutenberg_bookshelf), by = c("gutenberg_id"))
+
+  #
+  # Merge in metadata values which we read in and parsed from novel_metadata.txt
+  #
   df <- dplyr::inner_join(df, novel_metadata, by = c("gutenberg_id"))
 
   #
-  # The last entry in the text file "novels_meta.txt" is truncated and produces an NA in the download.count column.
-  # The interpolated value for it is substituted. For now we only scan entries in the "short.stories" genre that
-  # have a response value for failure (0). Alternatively, we could have just searched for the last entry with
-  # gutenberg_id 23177.
+  # Compute the mean download count value for a given genre and response
+  # type.
   #
-  suspect_genre <- "short.stories"
-  suspect_response <- 0
-  download_counts <- df %>% filter(genre == suspect_genre, response == suspect_response) %>% select(download.count)
-  if(any(is.na(download_counts))) {
-    avg <- as.integer(mean(download_counts$download.count, na.rm = TRUE))
-    df <- df %>% mutate(download.count = ifelse(genre == suspect_genre && response == suspect_response && is.na(download.count), avg, download.count))
+  compute_mean <- function(genre_, response_) {
+    download.count.vector <-
+      (df %>% filter(genre == genre_ & response == response_))$download.count
+    as.integer(mean(download.count.vector, na.rm = TRUE))
   }
+
+  # Replace NAs in download count
+  df <- df %>% mutate(download.count = ifelse(is.na(download.count),
+    compute_mean(genre, response),
+    download.count))
+
+  assert_that(!any(is.na(df$download.count)))
 
   # Convert to tibble
   as_tibble(df)
@@ -85,7 +118,8 @@ novels <- build_dataset_info()
 
 names(novels) <- names(novels) %>% stri_enc_toutf8
 
-# Check for complete data
-assert_that(all(complete.cases(novels)))
+# Check for complete data in all columns but the date
+# column.
+assert_that(all(complete.cases(novels %>% select(-date))))
 
 usethis::use_data(novels, overwrite = TRUE)
