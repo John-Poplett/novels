@@ -7,6 +7,6 @@
 #' @importFrom text2vec itoken
 #' @export
 getIterator <- function(text, ids, progressbar = FALSE) {
-  tokens <- text %>% tolower() %>% word_tokenizer()
-  itoken(tokens, ids = ids, progressbar = progressbar)
+  text %>% tolower() %>% word_tokenizer() %>% 
+    itoken(ids = ids, progressbar = progressbar)
 }

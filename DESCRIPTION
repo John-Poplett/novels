@@ -1,6 +1,6 @@
 Package: novels
 Title: Predicting Success of Literary Texts
-Version: 1.0.1
+Version: 1.0.2
 Authors@R: person("John", "Poplett", email = "john.poplett@fastmail.com", role = c("aut", "cre"))
 Description: Generates a prediction for the success of literary texts.
 Depends: R (>= 3.5.0)
@@ -20,7 +20,7 @@ License: MIT + file LICENSE
 VignetteBuilder: knitr
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 6.1.1
+RoxygenNote: 7.0.2
 Suggests: 
     rmarkdown,
     testthat (>= 2.1.0)

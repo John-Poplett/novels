@@ -4,8 +4,13 @@
 \alias{text2vocab}
 \title{Convert a vector of texts into a vocabulary object}
 \usage{
-text2vocab(it, documentCount, ngram = c(1L, 3L), documentMinimum = 10,
-  stopWords = stopwords())
+text2vocab(
+  it,
+  documentCount,
+  ngram = c(1L, 3L),
+  documentMinimum = 10,
+  stopWords = stopwords()
+)
 }
 \arguments{
 \item{it}{a text2vec token iterator}

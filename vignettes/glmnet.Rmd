@@ -47,6 +47,7 @@ if(class(novels$response) == 'factor') {
   stopifnot(novels$response == 'success' || novels$response == 'failure')
   novels$response <- as.integer(novels$response == 'success')
 }
+novels = copy(novels::novels)
 setDT(novels)
 set.seed(2019L)
 all_ids = unique(novels$author)

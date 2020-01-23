@@ -8,6 +8,8 @@ doc
 Meta
 .Rhistory
 README.html
-NAMESPACE
 vignettes/glmnet_cache/
 data-raw/novels
+.RData
+Rplots.pdf
+novels.R
