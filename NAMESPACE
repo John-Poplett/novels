@@ -5,10 +5,7 @@ export(createConfusionMatrix)
 export(createPredictor)
 export(createSplit)
 export(getIterator)
-<<<<<<< HEAD
-=======
 export(results2Text)
->>>>>>> New version 1.0.3
 export(selectByAuthor)
 export(showMemoryUse)
 export(text2vocab)

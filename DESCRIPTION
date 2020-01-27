@@ -5,6 +5,7 @@ Authors@R: person("John", "Poplett", email = "john.poplett@fastmail.com", role =
 Description: Generates a prediction for the success of literary texts.
 Depends: R (>= 3.5.0)
 Imports:
+    archive,
     data.table,
     dplyr,
     glmnet,
