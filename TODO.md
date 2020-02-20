@@ -1,5 +1,5 @@
 # TODO
-* Document fixes and caveates from original study:
+* Document fixes and caveats from original study:
   * Corrupt meta-data file
   * Duplicate files in dataset
   * Authors duplicated across folds

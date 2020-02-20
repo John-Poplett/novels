@@ -12,7 +12,7 @@ createPredictor <- function(vectorizer, tfidf, model, threshold = .5) {
     it <- getIterator(data$text, data$id)
     dtm_tfidf  = text2vec::create_dtm(it, vectorizer) %>%
       transform(tfidf)
-    prediction = predict(model, dtm_tfidf, type = 'response')[,1]
+    prediction = stats::predict(model, dtm_tfidf, type = 'response')[,1]
     data %>% mutate(
       score = round(prediction * 100, digits = 2),
       prediction = ifelse(prediction > threshold, 1, 0)

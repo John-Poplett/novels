@@ -25,7 +25,14 @@ genres <- list(
 
 if (!file.exists("data-raw/novels")) {
   tmp <- tempfile(fileext = ".7z")
-  download.file("https://www3.cs.stonybrook.edu/~songfeng/success/data/novels.7z", tmp, quiet = TRUE)
+  #
+  # Source no longer available from Song Feng's home directory at stonybrook.edu. 
+  #
+  # download.file("https://www3.cs.stonybrook.edu/~songfeng/success/data/novels.7z", tmp, quiet = TRUE).
+  #
+  # Use my Backblaze account indefinitely. Url updated accordingly.
+  #
+  download.file("https://f005.backblazeb2.com/file/public-johnpoplett-09477/novels.7z", tmp, quiet = TRUE)
   archive_extract(tmp, "data-raw")
   unlink(tmp)
 }

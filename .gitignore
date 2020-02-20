@@ -1,3 +1,6 @@
+.RDataTmp
+.backups_*
+*.DS_Store
 .Rproj.user
 TODO.html
 novels.Rproj
@@ -13,3 +16,4 @@ data-raw/novels
 .RData
 Rplots.pdf
 novels.R
+tmp/
