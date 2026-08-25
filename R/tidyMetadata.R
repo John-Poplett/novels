@@ -7,5 +7,5 @@
 tidyMetadata <- function(metadata) {
   metadata <- metadata  %>%
     mutate(author = toTitleCase(as.character(.data$author)), title = toTitleCase(as.character(.data$title)))
-  metadata %>% select(.data$author, .data$title, .data$genre, .data$language, .data$file.name, .data$download.count, .data$response)
+  metadata %>% select(.data$author, .data$title, .data$genre, .data$language, .data$file.name, .data$download_count, .data$response)
 }

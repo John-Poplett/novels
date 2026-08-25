@@ -1,4 +1,4 @@
-genre,response,file.name,title,author,language,download.count
+genre,response,file.name,title,author,language,download_count
 adventure,SUCCESS,103.txt,"around the world in 80 days","verne, jules, 1828-1905",en,3260
 adventure,SUCCESS,1145.txt,"rupert of hentzau","hope, anthony, 1863-1933",en,141
 adventure,SUCCESS,1947.txt,"scaramouche","sabatini, rafael, 1875-1950",en,434

@@ -25,17 +25,20 @@ The authors of the original study chose to publish the raw data used for their d
 
 ```{r setup, eval=TRUE, message=FALSE}
 library(dplyr)
-library(novels)
 library(data.table)
 library(text2vec)
 library(glmnet)
 library(tools)
 library(knitr)
 library(kableExtra)
+library(devtools)
+
+library(novels)
+
 ```
 # The "novels" dataset
 The novels dataset consists of `r dim(novels)[1]` entries. Some of the entries refer
-to the same text file, e.g. in the case where a literary work belongs in more than one category (fiction and short story). For training, it's important that we only train on a given text once. In the entire dataset there are `r sum(novels %>% select(file.name) %>% duplicated)` duplicates.
+to the same text file, e.g. in the case where a literary work belongs in more than one category (fiction and short story). For training, it's important that we only train on a given text once. In the entire dataset there are `r sum(novels %>% select(id) %>% duplicated)` duplicates.
 
 Also, author's may have multiple works in the dataset. While we have a total of `r dim(novels)[1]` entries in the dataset, there are fewer authors `r length(unique(novels$author))`.
 
@@ -47,11 +50,14 @@ if(class(novels$response) == 'factor') {
   stopifnot(novels$response == 'success' || novels$response == 'failure')
   novels$response <- as.integer(novels$response == 'success')
 }
-novels = copy(novels::novels)
+#
+# Since this demonstration ignores genres and folds and trains with neither,
+# we have to explicitly deduplicate the dataset. As noted elsewhere, a given
+# text may appear more than once if it belongs to more than one genre.
+#
+novels = dedupe_by_group(copy(novels::novels), "id")
 setDT(novels)
-set.seed(2019L)
-all_ids = unique(novels$author)
-indices <- createSplit(novels)
+indices <- createSplit(novels, seed = 2026L)
 train = novels[indices$train]
 test = novels[indices$test]
 ```
@@ -82,11 +88,13 @@ Build a classifier using a generalized linear model (glm) with cross-validation 
 ```{r classifier, eval = TRUE}
 glmnet_classifier = cv.glmnet(x = dtm_tfidf, y = train$response,
                               family = 'binomial',
-                              alpha = 0.1,
+                              alpha = 0.05,
                               type.measure = "auc",
                               nfolds = 5,
-                              thresh = 1e-5,
-                              maxit = 1e4)
+                              control = list(
+                                thresh = 1e-5,
+                                maxit = 1e4
+                                ))
 ```
 
 # Display AUC for the resulting model
@@ -116,7 +124,7 @@ summarizeScores <- function(results) {
           prediction = novels::results2Text(prediction),
           response = novels::results2Text(response)
         ) %>%
-        select(author, title, score, download.count, prediction, response) %>%
+        select(author, title, score, download_count, prediction, response) %>%
         arrange(desc(score))
 }
 
@@ -129,7 +137,7 @@ prettyPrintScores <- function(results) {
 # Some Test Scores for the Fiction Genre
 Let's look at the relative scores for examples of fiction in the test set just to get a sense for how it performs.
 ```{r test-scores, echo = FALSE}
-prettyPrintScores(test_results %>% filter(genre == 'fiction'))
+prettyPrintScores(test_results %>% filter(genre == 'Fiction'))
 ```
 # Define function to evaluate performance
 ```{r define-evalauate-performance-function}
