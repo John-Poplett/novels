@@ -22,7 +22,6 @@ This vignette uses text2vec and Stonybrook's novels dataset to create a classifi
 
 The authors of the original study chose to publish the raw data used for their dataset but did not publish the source code to their classifier. In the original study, the author's built a classifier using LibLinear SVM. They used a variety of approaches to transform text into "features" suitable for training a classifier. In this example, we make use of text2vec which, as its name implies, provides the tools to transform text into feature vectors.
 
-
 ```{r setup, eval=TRUE, message=FALSE}
 library(dplyr)
 library(data.table)
@@ -38,7 +37,7 @@ library(novels)
 ```
 # The "novels" dataset
 The novels dataset consists of `r dim(novels)[1]` entries. Some of the entries refer
-to the same text file, e.g. in the case where a literary work belongs in more than one category (fiction and short story). For training, it's important that we only train on a given text once. In the entire dataset there are `r sum(novels %>% select(id) %>% duplicated)` duplicates.
+to the same text file, e.g. in the case where a literary work belongs in more than one category (fiction and short story). For training, it's important that we only train on a given text once. In the entire dataset there are `r sum(novels %>% select(gutenberg_id) %>% duplicated)` duplicates.
 
 Also, author's may have multiple works in the dataset. While we have a total of `r dim(novels)[1]` entries in the dataset, there are fewer authors `r length(unique(novels$author))`.
 
@@ -55,7 +54,7 @@ if(class(novels$response) == 'factor') {
 # we have to explicitly deduplicate the dataset. As noted elsewhere, a given
 # text may appear more than once if it belongs to more than one genre.
 #
-novels = dedupe_by_group(copy(novels::novels), "id")
+novels = dedupe_by_group(copy(novels::novels), "gutenberg_id")
 setDT(novels)
 indices <- createSplit(novels, seed = 2026L)
 train = novels[indices$train]
@@ -109,8 +108,10 @@ To understand the quality of our classifier, we want the model's best AUC result
 Although the test set rarely exceeds the training set results, we want a test set AUC result that is close to the training set AUC.
 ```{r eval-test-set}
 classifier <- createPredictor(vectorizer, tfidf, glmnet_classifier)
-test_results <- classifier(test)
-test_auc <- glmnet:::auc(test$response, test_results$prediction)
+# get a prediction for confusion-matrix consumers
+test_results <- classifier(test) %>% classifyAt(threshold = 0.5)
+# compute test_auc from test_results$probability
+test_auc <- glmnet:::auc(test$response, test_results$probability)
 train_auc <- max(glmnet_classifier$cvm)
 ```
 The classifier produces an AUC of `r sprintf("%02.2f", train_auc * 100)` on training data and an AUC of `r sprintf("%02.2f", test_auc * 100)` on test data.
@@ -163,7 +164,7 @@ for(g in genres) {
 }
 resultsByGenre %>% kable() %>% kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
 ```
-# Comparison of text2vec performance versus the best of SunnyBrook
+# Text2vec Performance Compared to Stony Brook EMNLP13
 This table shows how the GLMNET / text2vec classifier stacks up to the results reported in the "*Success with Style*" article. The GLMNET column shows the performance of our classifier. The best per genre column shows the best result obtained by each of Sunnybrook's 15 models in each genre. The best overall column shows the performance of the best single classifier over all the genres.
 
 In three genres, viz. fiction, poetry and short-stories, the GLMNET / text2vec classify has noticably poorer results.
