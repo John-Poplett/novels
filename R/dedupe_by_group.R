@@ -1,7 +1,7 @@
-#' Title dedup_by_group
+#' Title dedupe_by_group
 #'
 #' @param df remove duplicates from this data frame based on columns_to_group
-#' @param columns_to_group 
+#' @param columns_to_group columns identifying a group; only the first row within each group is kept
 #'
 #' @returns dataset stripped of duplicate entries within the specified group
 #' @export

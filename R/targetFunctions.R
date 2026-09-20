@@ -2,11 +2,6 @@
 #'
 #' @returns relative path to the dataset
 #' @export
-#'
-#' @examples
-#'
-#'
-
 fetchRawData <- function(data_path = 'data-raw') {
   tar_assert_true(dir.exists(data_path))
   dataset_path <- file.path(data_path, 'novels')
@@ -73,9 +68,11 @@ parseMetaData <- function(dataset_path) {
       response = as.integer(str_equal(response, "SUCCESS")),
       gutenberg_id = as.integer(id),
       fold = as.integer(fold),
-      download_count = as.integer(download_count)
+      download_count = as.integer(download_count),
     ) |>
     select(-id)
+
+  novel_metadata$genre <- as.factor(novel_metadata$genre)
 
   novel_metadata
 }
@@ -109,7 +106,7 @@ tidyRawData <- function(dataset_path, novel_metadata) {
   # since it is incomplete and not of any obvious use.
   #
 
-  novel_metadata <- dplyr::inner_join(novel_metadata, gutenberg_metadata %>% select(-gutenberg_bookshelf), by = c("gutenberg_id"))
+  novel_metadata <- dplyr::inner_join(novel_metadata, gutenberg_metadata, by = c("gutenberg_id"))
 
   novel_metadata <- novel_metadata |>
     group_by(gutenberg_id, genre, fold) |>
@@ -234,8 +231,7 @@ fitGlmnetModel <- function(dtm_train, response, alpha, foldid) {
     family = "binomial",
     alpha = alpha,
     foldid = foldid,
-    thresh = 1e-5,
-    maxit = 1e4
+    control = list(thresh = 1e-5, maxit = 1e4)
   )
 }
 

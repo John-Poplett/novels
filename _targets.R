@@ -11,7 +11,7 @@ library(tarchetypes)
 tar_option_set(
   tidy_eval = FALSE,
   packages = c("dplyr", "readr", "usethis", "tibble", "stringi",
-  "stringr", "purrr", "tibble", "tidyr", "assertthat", "gutenbergr", "archive",
+  "stringr", "purrr", "tidyr", "assertthat", "gutenbergr", "archive",
   "text2vec", "glmnet", "pROC", "tm")
   # format = "qs", # Optionally set the default storage format. qs is fast.
  )
@@ -40,19 +40,38 @@ tar_source("R")
 # that's most reliably built explicitly rather than depending on
 # tar_map()'s cross-branch substitution behavior for a case this shaped.
 
-# Per-fold data prep: train/test split, vectorizer (unigrams only -- see
-# README's ngram isolation test), DTMs, TF-IDF fit, and this fold's own
-# fixed inner-CV foldid (shared across every alpha *within* this fold,
-# same reasoning as the single-split version's cv_foldid).
+# Per-fold data prep: train/test split, dedup, vectorizer (unigrams only
+# -- see README's ngram isolation test), DTMs, TF-IDF fit, and this
+# fold's own fixed inner-CV foldid (shared across every alpha *within*
+# this fold, same reasoning as the single-split version's cv_foldid).
 fold_prep_targets <- unlist(lapply(seq_len(k_folds), function(k) {
   list(
     tar_target_raw(
-      paste0("train_data_", k),
+      paste0("train_data_raw_", k),
       bquote(novels[fold_assignments[[.(k)]]$train, ])
     ),
     tar_target_raw(
-      paste0("test_data_", k),
+      paste0("test_data_raw_", k),
       bquote(novels[fold_assignments[[.(k)]]$test, ])
+    ),
+    # Deduped by gutenberg_id, scoped to *this fold*, *after* the split --
+    # never globally, before splitting. A book belonging to more than one
+    # genre otherwise contributes multiple identical-text rows to the same
+    # fold (author-based splitting guarantees a book's genre-duplicates
+    # always land together), double-weighting its response in the model
+    # fit and skewing the vectorizer's document-frequency-based pruning
+    # thresholds. Doing this per-fold, post-split, keeps a book's full
+    # multi-genre membership intact in `novels`/`fold_assignments` for
+    # anything else that still needs it (genre-mapping work, any future
+    # per-genre reporting) -- only "how many times does this text get fed
+    # into this fold's model" is affected, not the corpus's own structure.
+    tar_target_raw(
+      paste0("train_data_", k),
+      bquote(dedupe_by_group(.(as.symbol(paste0("train_data_raw_", k))), "gutenberg_id"))
+    ),
+    tar_target_raw(
+      paste0("test_data_", k),
+      bquote(dedupe_by_group(.(as.symbol(paste0("test_data_raw_", k))), "gutenberg_id"))
     ),
     tar_target_raw(
       paste0("vectorizer_", k),

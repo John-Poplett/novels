@@ -6,3 +6,4 @@
 ^doc$
 ^Meta$
 ^vignettes/glmnet_cache/
+^\.posit/assistant$

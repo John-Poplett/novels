@@ -6,6 +6,7 @@
 *-old
 *-old/
 *.DS_Store
+data/novels.rda
 data-raw/novels
 doc
 inst/doc
@@ -20,3 +21,4 @@ TODO.html
 Untitled.R
 vignettes/glmnet_cache/
 vignettes/glmnet_files/
+.posit/assistant

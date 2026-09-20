@@ -2,7 +2,9 @@
 title: "Predicting the Success of Literary Text Based on a glmnet Model"
 author: "John Poplett"
 date: "`r Sys.Date()`"
-output: rmarkdown::html_vignette
+output: 
+  rmarkdown::html_vignette:
+    md_extensions: -smart
 vignette: >
   %\VignetteIndexEntry{glmnet}
   %\VignetteEngine{knitr::rmarkdown}
@@ -11,7 +13,7 @@ bibliography: novels.bib
 ---
 
 ```{r options, include = FALSE}
-knitr::opts_chunk$set(echo=TRUE, warning=FALSE, message=FALSE)
+knitr::opts_chunk$set(echo=TRUE, warning=FALSE, message=FALSE, autodep = TRUE)
 ```
 ```{r, echo=FALSE}
 op = options(width = 80, str = strOptions(strict.width = "cut"))
@@ -52,7 +54,11 @@ if(class(novels$response) == 'factor') {
 #
 # Since this demonstration ignores genres and folds and trains with neither,
 # we have to explicitly deduplicate the dataset. As noted elsewhere, a given
-# text may appear more than once if it belongs to more than one genre.
+# text may appear more than once if it belongs to more than one genre. This
+# dedup is scoped to training/prediction only -- the per-genre reporting
+# further below re-expands predictions against novels::novels's full,
+# un-deduped genre membership, rather than relying on whichever single
+# genre happened to survive this dedup for a given book.
 #
 novels = dedupe_by_group(copy(novels::novels), "gutenberg_id")
 setDT(novels)
@@ -63,7 +69,7 @@ test = novels[indices$test]
 
 # Feature extraction
 Create a text2vec iterator, vocabulary, vectorizer and document text matrix (dtm). The dtm represents the novels data set as trainable features.
-```{r document-text-matrix, eval = TRUE}
+```{r document-text-matrix, eval = TRUE, cache = TRUE, cache.extra = list(packageVersion("novels"), digest::digest(novels::novels))}
 it <- novels::getIterator(train$text, train$title)
 vocab <- novels::text2vocab(it, length(train$text))
 vectorizer = vocab_vectorizer(vocab)
@@ -72,7 +78,7 @@ dtm = create_dtm(it, vectorizer)
 
 # Normalization
 Transform the dtm to an idf to normalize the data and make it machine learning friendly.
-```{r tfidf, eval = TRUE}
+```{r tfidf, eval = TRUE, cache = TRUE, cache.extra = list(packageVersion("novels"), digest::digest(novels::novels))}
 # define tfidf model
 tfidf = TfIdf$new()
 # fit model to train data and transform train data with fitted model
@@ -84,7 +90,7 @@ rm(dtm)
 
 # Build classifier
 Build a classifier using a generalized linear model (glm) with cross-validation (cv).
-```{r classifier, eval = TRUE}
+```{r classifier, eval = TRUE, cache = TRUE, cache.extra = list(packageVersion("novels"), digest::digest(novels::novels))}
 glmnet_classifier = cv.glmnet(x = dtm_tfidf, y = train$response,
                               family = 'binomial',
                               alpha = 0.05,
@@ -113,6 +119,18 @@ test_results <- classifier(test) %>% classifyAt(threshold = 0.5)
 # compute test_auc from test_results$probability
 test_auc <- glmnet:::auc(test$response, test_results$probability)
 train_auc <- max(glmnet_classifier$cvm)
+
+# test_results has one row per unique book (test was deduped above), each
+# carrying only whichever single genre survived that dedup. For per-genre
+# reporting, re-expand each book's prediction against novels::novels's
+# full, un-deduped genre membership -- a book belonging to both Fiction
+# and Short Stories should get real credit under both, not just whichever
+# one happened to survive the earlier training-focused dedup. The pooled
+# "all" row further below still uses test_results directly, so no book is
+# double-counted there.
+test_results_by_genre <- test_results %>%
+  select(-genre) %>%
+  inner_join(novels::novels %>% select(gutenberg_id, genre), by = "gutenberg_id")
 ```
 The classifier produces an AUC of `r sprintf("%02.2f", train_auc * 100)` on training data and an AUC of `r sprintf("%02.2f", test_auc * 100)` on test data.
 
@@ -138,7 +156,7 @@ prettyPrintScores <- function(results) {
 # Some Test Scores for the Fiction Genre
 Let's look at the relative scores for examples of fiction in the test set just to get a sense for how it performs.
 ```{r test-scores, echo = FALSE}
-prettyPrintScores(test_results %>% filter(genre == 'Fiction'))
+prettyPrintScores(test_results_by_genre %>% filter(genre == 'Fiction'))
 ```
 # Define function to evaluate performance
 ```{r define-evalauate-performance-function}
@@ -151,32 +169,109 @@ evaluatePerformance <- function(results) {
 # Classifier Results by Genre
 This table shows how the classifier performs for a given genre.
 ```{r, results-by-genre}
-genres <- levels(novels$genre)
+# Read from novels::novels directly, not the local (deduped, data.table-
+# converted) `novels` variable -- the local one happens to still carry
+# the full factor levels today, but that's incidental to how dedup and
+# setDT() were implemented, not something this should depend on.
+genres <- levels(novels::novels$genre)
 resultsByGenre <- cbind(data.frame(Genre = c('all')), evaluatePerformance(test_results))
 for(g in genres) {
   resultsByGenre <- rbind(
     resultsByGenre,
     cbind(
       data.frame(Genre = c(g)),
-      evaluatePerformance(test_results %>% filter(genre == g))
+      evaluatePerformance(test_results_by_genre %>% filter(genre == g))
     )
   )
 }
 resultsByGenre %>% kable() %>% kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
 ```
 # Text2vec Performance Compared to Stony Brook EMNLP13
-This table shows how the GLMNET / text2vec classifier stacks up to the results reported in the "*Success with Style*" article. The GLMNET column shows the performance of our classifier. The best per genre column shows the best result obtained by each of Sunnybrook's 15 models in each genre. The best overall column shows the performance of the best single classifier over all the genres.
+This table shows how the GLMNET / text2vec classifier stacks up to the results reported in the "*Success with Style*" article. The GLMNET column shows the performance of our classifier. The best per genre column shows the best result obtained by each of Sunnybrook's 15 models in each genre. The best overall column shows the performance of the best single classifier over all the genres. The n column carries over each genre's test-set book count from the table above -- worth weighing before trusting any single genre's number too far; a handful of books can swing a percentage a long way. Genres below the flagged threshold are shown in red.
 
-In three genres, viz. fiction, poetry and short-stories, the GLMNET / text2vec classify has noticably poorer results.
+The narrative below judges "meets or beats Stonybrook" against the best overall column, not the best per genre column. Best per genre reflects the best of 15 separately genre-tuned models; best overall is Stonybrook's own single classifier evaluated across every genre, the fair like-for-like comparison against this vignette's own single pooled GLMNET classifier. A genuinely per-genre GLMNET pipeline, comparable to best per genre on equal terms, is on the roadmap but not yet built -- until then, treat any gap against best per genre specifically as expected, not as evidence of a real shortfall.
 ```{r best-of-sunnybrook, echo = FALSE}
 
-# c('all', 'adventure', 'fiction', 'historical.fiction', 'love.story', 'mystery', 'poetry', 'science.fiction', 'short.stories')
+# Explicit mapping from this corpus's actual genre strings to the
+# Success with Style paper's Table 1 numbers, independent of whatever
+# order resultsByGenre's rows happen to come in. (This used to be built
+# by zipping the raw number vector positionally against
+# resultsByGenre$Genre, which broke once levels() started sorting
+# alphabetically instead of matching the original corpus's directory
+# order -- see project history.)
 sunnyBrookAccuracybyGenre <- data.frame(
-  Genre = resultsByGenre$Genre,
-  BestPerGenre = c(73.5, 84.0, 75.0, 61.0, 82.0, 75.0, 74.0, 76.0, 77.0),
-  BestOverall = c(73.5, 75.0, 75.0, 58.0, 81.0, 75.0, 72.0, 76.0, 77.0)
-
+  Genre = c('all', 'Adventure', 'Detective/Mystery', 'Fiction', 'Historical Fiction',
+            'Love Story', 'Poetry', 'Sci-Fi', 'Short Stories'),
+  BestPerGenre = c(73.5, 84.0, 75.0, 75.0, 61.0, 82.0, 74.0, 76.0, 77.0),
+  BestOverall  = c(73.5, 75.0, 75.0, 75.0, 58.0, 81.0, 72.0, 76.0, 77.0)
 )
-resultsByGenre %>% inner_join(sunnyBrookAccuracybyGenre, by = 'Genre') %>% mutate(GLMNET = Accuracy) %>% select(Genre, GLMNET, BestPerGenre, BestOverall) %>% kable %>% kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
 
+comparisonTable <- resultsByGenre %>%
+  inner_join(sunnyBrookAccuracybyGenre, by = 'Genre') %>%
+  mutate(GLMNET = Accuracy, n = Total) %>%
+  select(Genre, n, GLMNET, BestPerGenre, BestOverall)
+
+# Small-sample flag threshold, in test-set books. A judgment call, not a
+# statistically derived cutoff -- worth revisiting if it ever matters.
+small_sample_threshold <- 15
+
+comparisonTable %>%
+  mutate(n = kableExtra::cell_spec(
+    n,
+    format = "html",
+    color = ifelse(n < small_sample_threshold, "red", "black"),
+    bold = n < small_sample_threshold
+  )) %>%
+  kable(escape = FALSE, format = "html") %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
+
+```
+```{r sunnybrook-narrative, echo = FALSE, results = 'asis'}
+# Built from comparisonTable itself, not hand-typed -- this paragraph
+# stays correct automatically as results change, rather than needing a
+# human to remember to rewrite it every time the pipeline changes. (This
+# replaces a static sentence -- "fiction, poetry and short-stories" --
+# that survived two later, real fixes to the underlying data unnoticed,
+# because nothing forced it to be re-checked against the actual numbers.)
+#
+# "Meets or beats Stonybrook" is measured against BestOverall, not
+# BestPerGenre: BestOverall is Stonybrook's own single, one-classifier-
+# across-every-genre result, the fair like-for-like comparison against
+# this vignette's own single pooled GLMNET classifier. BestPerGenre
+# reflects the best of 15 separately genre-tuned models, which isn't a
+# fair comparison to one model's per-genre breakdown.
+non_all <- comparisonTable %>% filter(Genre != 'all')
+meets_or_beats <- non_all %>% filter(GLMNET >= BestOverall) %>% pull(Genre)
+underperforms <- non_all %>%
+  filter(GLMNET < BestOverall) %>%
+  arrange(GLMNET - BestOverall) %>%
+  pull(Genre)
+
+meets_sentence <- if (length(meets_or_beats) > 0) {
+  paste0(
+    length(meets_or_beats), " of ", nrow(non_all), " genres -- ",
+    paste(meets_or_beats, collapse = ", "),
+    " -- meet or exceed Stonybrook's single best-overall classifier's result for that genre."
+  )
+} else {
+  "No genre currently meets Stonybrook's single best-overall classifier's result for that genre."
+}
+
+underperform_sentence <- if (length(underperforms) > 0) {
+  worst_n <- non_all$n[non_all$Genre == underperforms[1]]
+  paste0(
+    "The remaining ", length(underperforms), " underperform, with **", underperforms[1],
+    "** showing the largest gap (n = ", worst_n, ").",
+    if (worst_n < small_sample_threshold) {
+      paste0(" That genre's test set is small enough (fewer than ", small_sample_threshold,
+             " books) that this gap should be treated cautiously rather than as a settled finding.")
+    } else {
+      ""
+    }
+  )
+} else {
+  ""
+}
+
+cat(meets_sentence, underperform_sentence)
 ```
