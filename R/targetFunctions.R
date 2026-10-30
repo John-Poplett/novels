@@ -1,25 +1,158 @@
 #' Title fetchDataSet
 #'
+#' Retrieves and unpacks the "golden" source corpus archive, refusing to use
+#' it unless its SHA-256 matches the pinned digest. The URL is configuration
+#' (the `NOVELS_ARCHIVE_URL` environment variable, see `.env.example`) so the
+#' archive may move -- from Backblaze to HuggingFace, say -- without touching
+#' package code. The digest is deliberately a literal in `_targets.R`, not an
+#' environment variable: `targets` does not hash environment variables, so a
+#' changed URL would be invisible to the dependency graph. The digest is what
+#' makes switched bytes an error instead of a silent new result.
+#'
+#' @param data_path directory into which the source corpus is downloaded and
+#'   unpacked (default "data-raw")
+#' @param archive_url location of the 7z archive, defaulting to the
+#'   `NOVELS_ARCHIVE_URL` environment variable
+#' @param archive_sha256 expected SHA-256 of the archive, pinned in `_targets.R`
 #' @returns relative path to the dataset
+#' @seealso verify_sha256
 #' @export
-fetchRawData <- function(data_path = 'data-raw') {
+fetchRawData <- function(data_path = 'data-raw',
+                         archive_url = Sys.getenv("NOVELS_ARCHIVE_URL"),
+                         archive_sha256) {
   tar_assert_true(dir.exists(data_path))
+  tar_assert_true(
+    nzchar(archive_url),
+    "NOVELS_ARCHIVE_URL is not set -- copy .env.example to .env and fill it in"
+  )
+  tar_assert_true(
+    nzchar(archive_sha256),
+    "archive_sha256 must be pinned in _targets.R, never read from the environment"
+  )
+
   dataset_path <- file.path(data_path, 'novels')
   if (!file.exists(dataset_path)) {
     tmp <- tempfile(fileext = ".7z")
-    download.file(
-      "https://f005.backblazeb2.com/file/public-johnpoplett-09477/novels.7z",
-      tmp,
-      quiet = TRUE
-    )
-    archive_extract(tmp, "data-raw")
-    unlink(tmp)
+    on.exit(unlink(tmp), add = TRUE)
+    download.file(archive_url, tmp, quiet = TRUE, mode = "wb")
+    verify_sha256(tmp, archive_sha256, what = "source archive")
+    archive_extract(tmp, data_path)
   }
   tar_assert_true(file.exists(dataset_path), "raw dataset retrieval failed.")
   dataset_path
 }
 
+#' Verify a file's SHA-256 against an expected value
+#'
+#' Used by fetchRawData() to pin the source archive. A mismatch aborts, and
+#' the error names both digests so a legitimately moved or re-cut archive can
+#' be told apart from a corrupted download.
+#'
+#' @param path path to the file to check
+#' @param expected expected SHA-256, hex, case-insensitive
+#' @param what label for the file in the error message
+#' @returns the actual digest, invisibly
+#' @keywords internal
+verify_sha256 <- function(path, expected, what = "file") {
+  actual <- digest::digest(path, algo = "sha256", file = TRUE)
+  tar_assert_true(
+    tolower(actual) == tolower(expected),
+    sprintf(
+      "%s failed SHA-256 verification\n  expected: %s\n  actual:   %s\n  file:     %s",
+      what, expected, actual, path
+    )
+  )
+  invisible(actual)
+}
+
+
 parseMetaData <- function(dataset_path) {
+  meta_path <- file.path(dataset_path, "novel_meta.txt")
+  lines <- readr::read_lines(meta_path)          # will warn: incomplete final line
+
+  is_record   <- str_detect(lines, "^(SUCCESS|FAILURE):")
+  is_complete <- str_detect(lines, "DownloadCount:")
+  is_trunc    <- is_record & !is_complete
+
+  # Header census -- structure, not defect
+  tar_assert_identical(sum(str_detect(lines, "^\\*+DATASET:")),           8L)
+  tar_assert_identical(sum(str_detect(lines, "^\\*+\\s*FOLD\\d+")),       40L)
+
+  lines_clean <- lines[!(str_detect(lines, "^(SUCCESS|FAILURE)") & !is_complete)]
+
+  # SUCCESS: FileName: 103.txt ,Title: around the world in 80 days ,Author: "verne, jules, 1828-1905" ,Language: en ,DownloadCount: 3260
+  novel_metadata <- tibble(raw = lines_clean) |>
+    mutate(
+      genre = if_else(
+        str_detect(raw, "^\\*+DATASET:"),
+        str_trim(str_extract(raw, "(?<=DATASET:)[^*]+")),
+        NA_character_
+      ),
+      fold = if_else(
+        str_detect(raw, "^\\*+\\s*FOLD\\d+"),
+        str_extract(raw, "\\d+"),
+        NA_character_
+      ),
+      is_record = str_detect(raw, "^(SUCCESS|FAILURE)")
+    ) |>
+    fill(genre, fold, .direction = "down") |>
+    filter(is_record) |>
+    select(-is_record) |>
+    separate_wider_regex(
+      raw,
+      patterns = c(
+        response = "^(?:SUCCESS|FAILURE)",
+        ":\\s*FileName:\\s+",
+        id = "[0-9]+",
+        "\\.txt\\s+,Title:.*?,DownloadCount:\\s+",
+        download_count = "[0-9]+",
+        ".*$"
+      )
+    ) |>
+    mutate(
+      response = as.integer(str_equal(response, "SUCCESS")),
+      gutenberg_id = as.integer(id),
+      fold = as.integer(fold),
+      download_count = as.integer(download_count),
+    ) |>
+    select(-id)
+
+  # Independent witness: the directory tree
+  fs <- list.files(dataset_path, pattern = "[0-9]+\\.txt$",
+                   recursive = TRUE, full.names = TRUE)
+  ids_fs <- as.integer(sub("\\.txt$", "", basename(fs)))
+  absent <- setdiff(ids_fs, novel_metadata$gutenberg_id)
+
+  tar_assert_true(
+    nrow(novel_metadata) + sum(ids_fs %in% absent) == length(ids_fs),
+    sprintf(
+      "file conservation failed: %d parsed rows + %d absent-file rows = %d, but %d files on disk. absent = {%s}",
+      nrow(novel_metadata), sum(ids_fs %in% absent),
+      nrow(novel_metadata) + sum(ids_fs %in% absent),
+      length(ids_fs), paste(absent, collapse = ", ")
+    )
+  )
+
+  novel_metadata$genre <- novel_metadata$genre |>
+    str_replace_all("Love Story", "Romance") |>
+    str_replace_all("Sci-Fi", "Science Fiction")
+
+  novel_metadata$genre <- as.factor(novel_metadata$genre)
+
+  list(
+    data   = novel_metadata,   # tibble, unchanged content
+    census = list(
+      n_blocks    = sum(is_record),
+      n_parseable = nrow(novel_metadata),
+      n_files     = length(ids_fs),
+      truncated   = lines[is_trunc],
+      absent      = absent,
+      ts          = Sys.time()
+    )
+  )
+}
+
+XparseMetaData <- function(dataset_path) {
   meta_data_file_path <- file.path(dataset_path, 'novel_meta.txt')
 
   lines <- read_lines(meta_data_file_path)
@@ -72,12 +205,18 @@ parseMetaData <- function(dataset_path) {
     ) |>
     select(-id)
 
+  novel_metadata$genre <- novel_metadata$genre |>
+    str_replace_all("Love Story", "Romance") |>
+    str_replace_all("Sci-Fi", "Science Fiction")
+
   novel_metadata$genre <- as.factor(novel_metadata$genre)
 
   novel_metadata
 }
 
-tidyRawData <- function(dataset_path, novel_metadata) {
+tidyRawData <- function(dataset_path, parsed_metadata) {
+  novel_metadata <- parsed_metadata$data
+
   files <- list.files(path = dataset_path, pattern = "[0-9]+\\.txt", recursive = TRUE)
 
   df <- data.frame(text = files) %>% mutate(
@@ -102,11 +241,13 @@ tidyRawData <- function(dataset_path, novel_metadata) {
   }
 
   #
-  # Merge in metadata from gutenbergr. Strip out gutenberg_bookshelf column
-  # since it is incomplete and not of any obvious use.
+  # Merge in metadata from gutenbergr, including gutenberg_bookshelf --
+  # kept deliberately (not stripped) for the genre-mapping/corpus-
+  # expansion work, which reads it directly (see assignGenre.R,
+  # compareGenreAssignment.R).
   #
 
-  novel_metadata <- dplyr::inner_join(novel_metadata, gutenberg_metadata, by = c("gutenberg_id"))
+  novel_metadata <- dplyr::inner_join(novel_metadata, gutenbergr::gutenberg_metadata, by = c("gutenberg_id"))
 
   novel_metadata <- novel_metadata |>
     group_by(gutenberg_id, genre, fold) |>
@@ -127,13 +268,13 @@ tidyRawData <- function(dataset_path, novel_metadata) {
 
   tar_assert_true(
     is_distinct(novel_metadata, c("gutenberg_id", "genre", "fold")),
-    "Duplicate (gutenberg_id, genre, fold) combination found — check join for fan-out"
+    "Duplicate (gutenberg_id, genre, fold) combination found -- check join for fan-out"
   )
 
   #
   # Now load up the relevant text
   #
-  df$text <- sapply(df$text, function(x) stringi::stri_enc_toutf8(readr::read_file(file.path('data-raw', 'novels', x))))
+  df$text <- sapply(df$text, function(x) stringi::stri_enc_toutf8(readr::read_file(file.path(dataset_path, x))))
 
   #
   # A handful of books in the original corpus have their gutenberg_id
@@ -206,14 +347,27 @@ buildDtm <- function(df, vectorizer) {
 #' targets) -- so without this, each alpha's model could be scored against a
 #' *different* fold assignment, adding noise on top of alpha's real effect.
 #'
-#' @param n number of training observations
+#' Grouped by author, not assigned per row: without this, a prolific
+#' author's books can land in both cv.glmnet's inner-training and inner-
+#' validation partitions simultaneously, letting lambda selection partially
+#' fit to that author's own style rather than to genuinely held-out data --
+#' the same leakage risk createSplit()/createKFoldSplit() already guard
+#' against for the outer split, just previously left unguarded for the
+#' inner one. Authors are assigned to folds first, then every row inherits
+#' its author's fold, so no author ever spans more than one fold here.
+#'
+#' @param author character vector of authors, one per training row, in the
+#'   same row order as the DTM this foldid will be used against
 #' @param nfolds number of CV folds
 #' @param seed random seed
-#' @returns an integer vector of fold assignments, length n
+#' @returns an integer vector of fold assignments, length length(author)
 #' @export
-makeFoldid <- function(n, nfolds = 5, seed = 42) {
+makeFoldid <- function(author, nfolds = 5, seed = 42) {
   set.seed(seed)
-  sample(rep(1:nfolds, length.out = n))
+  unique_authors <- unique(author)
+  author_fold <- sample(rep(1:nfolds, length.out = length(unique_authors)))
+  names(author_fold) <- unique_authors
+  unname(author_fold[author])
 }
 
 #' Title fitGlmnetModel
@@ -226,11 +380,17 @@ makeFoldid <- function(n, nfolds = 5, seed = 42) {
 #' @returns a cv.glmnet fit object
 #' @export
 fitGlmnetModel <- function(dtm_train, response, alpha, foldid) {
+  tar_assert_true(all(response %in% c(0, 1)))
   glmnet::cv.glmnet(
     dtm_train, response,
     family = "binomial",
     alpha = alpha,
     foldid = foldid,
+    # cv.glmnet's own default (type.measure = "deviance") would pick
+    # lambda.min by minimizing binomial deviance, not by the AUC that
+    # evaluateModel() reports -- explicit here so lambda selection and
+    # reported performance are judged by the same criterion.
+    type.measure = "auc",
     control = list(thresh = 1e-5, maxit = 1e4)
   )
 }
@@ -245,6 +405,7 @@ fitGlmnetModel <- function(dtm_train, response, alpha, foldid) {
 #' @param fit a cv.glmnet fit, from fitGlmnetModel()
 #' @param dtm a TF-IDF-weighted document-term matrix to score against
 #' @param response integer 0/1 response vector, same row order as dtm
+#' @param alpha glmnet elastic net mixing parameter this fit was produced with
 #' @returns a one-row tibble: alpha, auc, n_nonzero_coef
 #' @export
 evaluateModel <- function(fit, dtm, response, alpha) {

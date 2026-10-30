@@ -7,6 +7,13 @@
 library(targets)
 library(tarchetypes)
 
+# Local configuration (see .env.example). targets does not hash environment
+# variables, so NOVELS_ARCHIVE_URL is captured as its own target below --
+# visible in the graph -- while the archive's SHA-256 is pinned in code.
+# A moved or re-cut archive then fails verification instead of silently
+# producing a different dataset.
+if (file.exists(".env")) readRenviron(".env")
+
 # Set target options:
 tar_option_set(
   tidy_eval = FALSE,
@@ -33,9 +40,9 @@ tar_source("R")
 # --- Build per-fold and per-(fold, alpha) targets programmatically ---
 #
 # This uses the same base-R metaprogramming approach as
-# alpha_sweep_summary_command below (as.symbol/as.call/bquote), rather
-# than a second tar_map() dimension layered on the existing alpha one:
-# referencing "this fold's train_data" from the modeling step needs a
+# cv_results_command/cv_summary_command below (as.symbol/as.call/bquote),
+# rather than a second tar_map() dimension layered on the existing alpha
+# one: referencing "this fold's train_data" from the modeling step needs a
 # literal, verifiable symbol reference in each target's command, and
 # that's most reliably built explicitly rather than depending on
 # tar_map()'s cross-branch substitution behavior for a case this shaped.
@@ -99,7 +106,7 @@ fold_prep_targets <- unlist(lapply(seq_len(k_folds), function(k) {
     ),
     tar_target_raw(
       paste0("cv_foldid_", k),
-      bquote(makeFoldid(nrow(.(as.symbol(paste0("dtm_train_", k)))), nfolds = 5))
+      bquote(makeFoldid(.(as.symbol(paste0("train_data_", k)))$author, nfolds = 5))
     )
   )
 }), recursive = FALSE)
@@ -160,9 +167,17 @@ cv_summary_command <- quote(
 # Replace the target list below with your own:
 c(
   list(
-    tar_target(rawdataset_path, fetchRawData("data-raw")),
-    tar_target(novel_metadata, parseMetaData(rawdataset_path)),
-    tar_target(novels, tidyRawData(rawdataset_path, novel_metadata)),
+    # Where the "golden" archive lives (configuration), and what it must
+    # hash to (pinned). Both are targets so they appear in the dependency
+    # graph; only the digest is authoritative.
+    tar_target(archive_url, Sys.getenv("NOVELS_ARCHIVE_URL")),
+    tar_target(
+      archive_sha256,
+      "f775ad52849e48800c7021f6f31eebd624fbcb998c02093d7054569d0763f03c"
+    ),
+    tar_target(rawdataset_path, fetchRawData("data-raw", archive_url, archive_sha256)),
+    tar_target(parsed_metadata, parseMetaData(rawdataset_path)),
+    tar_target(novels, tidyRawData(rawdataset_path, parsed_metadata)),
 
     # K author-safe folds, computed once and indexed into by every
     # per-fold target below (see createKFoldSplit()'s comment).

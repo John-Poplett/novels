@@ -9,6 +9,5 @@
 #' @examples deduped_novels <- dedupe_by_group(novels, c("gutenberg_id", "genre", "fold"))
 #'
 dedupe_by_group <- function(df, columns_to_group = c("gutenberg_id", "genre", "fold")) {
-  df |> group_by(across(all_of(columns_to_group))) |>
-    slice_head(n = 1) |> ungroup()
+  dplyr::distinct(df, dplyr::across(dplyr::all_of(columns_to_group)), .keep_all = TRUE)
 }

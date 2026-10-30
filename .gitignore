@@ -2,6 +2,7 @@
 .RData
 .RDataTmp
 .Rhistory
+.env
 .Rproj.user
 *-old
 *-old/

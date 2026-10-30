@@ -36,16 +36,28 @@
 #' @param allow_flagged passed through to assignGenre() -- set FALSE to
 #'   see which disagreements persist even after dropping every
 #'   judgment-call mapping from the allow-list
-#' @returns a tibble, one row per gutenberg_id: stonybrook_genres and
+#' @returns a tibble, one row per gutenberg_id: title, stonybrook_genres and
 #'   assigned_genres (each a comma-joined string), genres_only_in_stonybrook,
 #'   genres_only_in_assigned, and agrees (TRUE if the two sets match exactly)
 #' @export
 compareGenreAssignment <- function(novel_metadata, bookshelf_data, allowlist,
                                      genre_rename_map = c(
-                                       "Detective/Mystery" = "Mystery/Detective",
+                                       "Sci-Fi" = "Science Fiction",
                                        "Love Story" = "Romance"
                                      ),
                                      allow_flagged = TRUE) {
+
+  # novel_metadata (as parseMetaData() currently builds it) has no title
+  # column -- its parsing regex discards the title text as an unnamed
+  # separator. bookshelf_data carries it instead, since it's built from
+  # gutenberg_metadata directly (which always has title natively).
+  stopifnot(
+    "bookshelf_data must have a title column (expected via gutenberg_metadata)" =
+      "title" %in% names(bookshelf_data)
+  )
+  book_titles <- bookshelf_data |>
+    dplyr::distinct(gutenberg_id, .keep_all = TRUE) |>
+    dplyr::select(gutenberg_id, title)
 
   stonybrook_by_book <- novel_metadata |>
     dplyr::mutate(
@@ -66,6 +78,7 @@ compareGenreAssignment <- function(novel_metadata, bookshelf_data, allowlist,
     )
 
   dplyr::inner_join(stonybrook_by_book, assigned_by_book, by = "gutenberg_id") |>
+    dplyr::left_join(book_titles, by = "gutenberg_id") |>
     dplyr::mutate(
       only_in_stonybrook = purrr::map2(stonybrook_genres_set, assigned_genres_set, setdiff),
       only_in_assigned = purrr::map2(assigned_genres_set, stonybrook_genres_set, setdiff),
@@ -79,6 +92,6 @@ compareGenreAssignment <- function(novel_metadata, bookshelf_data, allowlist,
       genres_only_in_stonybrook = purrr::map_chr(only_in_stonybrook, paste, collapse = "; "),
       genres_only_in_assigned = purrr::map_chr(only_in_assigned, paste, collapse = "; ")
     ) |>
-    dplyr::select(gutenberg_id, stonybrook_genres, assigned_genres,
+    dplyr::select(gutenberg_id, title, stonybrook_genres, assigned_genres,
                    genres_only_in_stonybrook, genres_only_in_assigned, agrees)
 }

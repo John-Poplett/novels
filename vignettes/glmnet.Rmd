@@ -2,7 +2,7 @@
 title: "Predicting the Success of Literary Text Based on a glmnet Model"
 author: "John Poplett"
 date: "`r Sys.Date()`"
-output: 
+output:
   rmarkdown::html_vignette:
     md_extensions: -smart
 vignette: >
@@ -26,13 +26,11 @@ The authors of the original study chose to publish the raw data used for their d
 
 ```{r setup, eval=TRUE, message=FALSE}
 library(dplyr)
-library(data.table)
 library(text2vec)
 library(glmnet)
 library(tools)
 library(knitr)
 library(kableExtra)
-library(devtools)
 
 library(novels)
 
@@ -60,20 +58,27 @@ if(class(novels$response) == 'factor') {
 # un-deduped genre membership, rather than relying on whichever single
 # genre happened to survive this dedup for a given book.
 #
-novels = dedupe_by_group(copy(novels::novels), "gutenberg_id")
-setDT(novels)
+# Plain data-frame subsetting (train/test), not data.table's no-comma [ ]
+# shorthand -- that shorthand goes through a heavier, substitution-based
+# dispatch path that occasionally hit R's nested-evaluation recursion
+# limit specifically when run deep inside knitr's own call stack during a
+# knit (non-deterministic: the same code succeeded at a bare console
+# prompt, which starts from a much shallower stack). Nothing else in this
+# vignette needs data.table at all.
+novels = dedupe_by_group(novels::novels, "gutenberg_id")
 indices <- createSplit(novels, seed = 2026L)
-train = novels[indices$train]
-test = novels[indices$test]
+train = novels[indices$train, ]
+test = novels[indices$test, ]
 ```
 
 # Feature extraction
-Create a text2vec iterator, vocabulary, vectorizer and document text matrix (dtm). The dtm represents the novels data set as trainable features.
+Create a text2vec iterator, vocabulary, vectorizer and document text matrix (dtm). The dtm represents the novels data set as trainable features. Note that a fresh iterator is built for `create_dtm()` rather than reusing the one that built the vocabulary -- text2vec's `itoken` iterators are single-use (consumed as they're iterated), and this is the pattern text2vec's own `create_dtm()` documentation uses for exactly that reason. Reusing an already-consumed iterator here previously produced a `dtm` with fewer rows than `train` -- silently, since `cv.glmnet`'s own default `foldid`/`weights` were both derived from that same (wrong) row count and so always agreed with each other, even though neither matched `train`. That stayed invisible until an externally-built, `train`-sized `foldid` (see the classifier chunk below) finally surfaced the mismatch as an error.
 ```{r document-text-matrix, eval = TRUE, cache = TRUE, cache.extra = list(packageVersion("novels"), digest::digest(novels::novels))}
 it <- novels::getIterator(train$text, train$title)
 vocab <- novels::text2vocab(it, length(train$text))
 vectorizer = vocab_vectorizer(vocab)
-dtm = create_dtm(it, vectorizer)
+it2 <- novels::getIterator(train$text, train$title)
+dtm = create_dtm(it2, vectorizer)
 ```
 
 # Normalization
@@ -89,13 +94,14 @@ rm(dtm)
 ```
 
 # Build classifier
-Build a classifier using a generalized linear model (glm) with cross-validation (cv).
+Build a classifier using a generalized linear model (glm) with cross-validation (cv). The fold assignment is author-grouped, via `novels::makeFoldid()`, rather than left to `cv.glmnet`'s own default -- an ungrouped fold assignment can let a prolific author's books sit in both the inner training and validation partitions simultaneously, letting lambda selection partially fit to that author's own style rather than to genuinely held-out data.
 ```{r classifier, eval = TRUE, cache = TRUE, cache.extra = list(packageVersion("novels"), digest::digest(novels::novels))}
+train_foldid <- novels::makeFoldid(train$author, nfolds = 5)
 glmnet_classifier = cv.glmnet(x = dtm_tfidf, y = train$response,
                               family = 'binomial',
                               alpha = 0.05,
                               type.measure = "auc",
-                              nfolds = 5,
+                              foldid = train_foldid,
                               control = list(
                                 thresh = 1e-5,
                                 maxit = 1e4
@@ -169,10 +175,10 @@ evaluatePerformance <- function(results) {
 # Classifier Results by Genre
 This table shows how the classifier performs for a given genre.
 ```{r, results-by-genre}
-# Read from novels::novels directly, not the local (deduped, data.table-
-# converted) `novels` variable -- the local one happens to still carry
-# the full factor levels today, but that's incidental to how dedup and
-# setDT() were implemented, not something this should depend on.
+# Read from novels::novels directly, not the local (deduped) `novels`
+# variable -- the local one happens to still carry the full factor
+# levels today, but that's incidental to how dedupe_by_group() is
+# implemented, not something this should depend on.
 genres <- levels(novels::novels$genre)
 resultsByGenre <- cbind(data.frame(Genre = c('all')), evaluatePerformance(test_results))
 for(g in genres) {
