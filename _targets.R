@@ -184,7 +184,8 @@ c(
 
     # K author-safe folds, computed once and indexed into by every
     # per-fold target below (see createKFoldSplit()'s comment).
-    tar_target(fold_assignments, createKFoldSplit(novels, k_folds))
+    # Uses stored fold assignments to ensure consistent author-based splits.
+    tar_target(fold_assignments, createKFoldSplit(novels, k_folds, use_stored_folds = TRUE))
   ),
   fold_prep_targets,
   model_targets,
