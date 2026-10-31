@@ -14,10 +14,8 @@
 #' @export
 createKFoldSplit <- function(data, k = 5, seed = 42) {
   stopifnot('data.frame' %in% class(data) && 'author' %in% names(data))
-  set.seed(seed)
   all_authors <- unique(data$author)
-  fold_assignment <- sample(rep(1:k, length.out = length(all_authors)))
-  names(fold_assignment) <- all_authors
+  fold_assignment <- assignAuthorFolds(all_authors, k, seed)
 
   lapply(seq_len(k), function(i) {
     test_authors <- all_authors[fold_assignment == i]
