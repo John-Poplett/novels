@@ -179,6 +179,9 @@ c(
     tar_target(parsed_metadata, parseMetaData(rawdataset_path)),
     tar_target(novels, tidyRawData(rawdataset_path, parsed_metadata)),
 
+    # The shipped dataset (data/novels.rda) is built here and nowhere else.
+    tar_target(novels_data, writeNovelsData(novels), format = "file"),
+
     # K author-safe folds, computed once and indexed into by every
     # per-fold target below (see createKFoldSplit()'s comment).
     tar_target(fold_assignments, createKFoldSplit(novels, k_folds))

@@ -331,6 +331,22 @@ tidyRawData <- function(dataset_path, parsed_metadata) {
   novels
 }
 
+#' Title writeNovelsData
+#'
+#' Saves the dataset to the package's data directory, so the pipeline is the
+#' single way the shipped dataset is produced. Returns the path, for use with
+#' a targets `format = "file"` target.
+#'
+#' @param novels the tidied dataset from tidyRawData()
+#' @param path where to write it
+#' @returns path
+#' @noRd
+writeNovelsData <- function(novels, path = "data/novels.rda") {
+  dir.create(dirname(path), showWarnings = FALSE, recursive = TRUE)
+  save(novels, file = path, compress = "bzip2")
+  path
+}
+
 #' Title buildDtm
 #'
 #' Uses getIterator() (the same tokenization -- lowercasing + word_tokenizer
