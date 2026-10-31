@@ -190,6 +190,14 @@ c(
   model_targets,
   list(
     tar_target_raw("cv_results", cv_results_command),
-    tar_target_raw("cv_summary", cv_summary_command)
+    tar_target_raw("cv_summary", cv_summary_command),
+
+    # Flags (as a warning) any alpha whose mean AUC moved more than two
+    # standard errors from the recorded baseline. See baselines/README.md.
+    tar_target(cv_baseline_file, "baselines/cv_summary.csv", format = "file"),
+    tar_target(
+      cv_baseline_check,
+      checkCvBaseline(cv_summary, readr::read_csv(cv_baseline_file, show_col_types = FALSE), k_folds)
+    )
   )
 )

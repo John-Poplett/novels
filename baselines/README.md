@@ -35,6 +35,17 @@ indistinguishable from fold-to-fold noise, so this baseline can catch gross
 regressions in the modelling or the pipeline, not small data-integrity
 problems. Those are covered by the unit tests.
 
+## Automatic check
+
+The pipeline target `cv_baseline_check` compares each run's `cv_summary` with
+`cv_summary.csv` and **warns** for any `alpha` whose mean AUC moved by more
+than two standard errors. It warns and does not fail, because legitimate data
+or model changes move AUC. `tar_make()` reports it as "1 targets produced
+warnings"; `targets::tar_meta(fields = warnings, complete_only = TRUE)` shows
+the message, and `tar_read(cv_baseline_check)` shows the full comparison. If
+the alpha grid changes, the target stops with an error, because the results are
+no longer comparable.
+
 ## Updating
 
 When a change is expected to move AUC, replace these files in the same commit
