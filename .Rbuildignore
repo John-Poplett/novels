@@ -30,3 +30,4 @@
 ^\.env\.example$
 ^SKILL\.md$
 ^\.opencode$
+^baselines$
