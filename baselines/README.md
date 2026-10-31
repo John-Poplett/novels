@@ -11,11 +11,21 @@ compared against them. The files are what `tar_read(cv_summary)` and
 
 ## Current baseline
 
-Produced before the LibriVox contamination fix.
+Produced after the LibriVox contamination fix.
 
-- Pipeline run: `tar_make()`, 2026-10-29 21:26.
-- Corpus: 798 rows over 756 books (digest `f87ed8388486cdf9476bfcb559a93cb2`).
+- Pipeline run: `tar_make()`, 2026-10-30, 207 targets, 5m 28s.
+- Corpus: 796 rows over 754 books (digest `25f3cb40af928b414c6f03e9dd53d1f7`).
 - Folds: `createKFoldSplit(novels, 5)`, seed 42, author-grouped.
+
+## History
+
+| Baseline | Corpus | Mean test AUC range across `alpha` | Where to find it |
+|---|---|---|---|
+| Pre-fix, 2026-10-29 | 798 rows, 756 books (`f87ed8388486cdf9476bfcb559a93cb2`) | 0.686–0.739 | git commit `23b5baf` |
+| Post-fix, 2026-10-30 | 796 rows, 754 books (`25f3cb40af928b414c6f03e9dd53d1f7`) | 0.695–0.746 | current files |
+
+The fix moved every `alpha`'s mean up by 0.002–0.015 (mean +0.0085); none by
+more than two standard errors.
 
 ## How to read a comparison
 

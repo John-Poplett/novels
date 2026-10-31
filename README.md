@@ -74,22 +74,24 @@ TF-IDF (unigrams) + `glmnet` (elastic net), five author-safe folds: the model is
 
 | alpha | mean test AUC | SD across folds | range | mean nonzero coefficients |
 |---|---|---|---|---|
-| 0.01 | 0.739 | 0.075 | 0.643–0.853 | 4294 |
-| 0.03 | 0.732 | 0.060 | 0.655–0.823 | 2601 |
-| 0.05 | 0.738 | 0.052 | 0.666–0.802 | 1916 |
-| 0.07 | 0.737 | 0.045 | 0.675–0.793 | 1732 |
-| 0.10 | 0.726 | 0.038 | 0.680–0.785 | 1536 |
-| 0.30 | 0.710 | 0.032 | 0.666–0.756 | 764 |
-| 0.50 | 0.694 | 0.020 | 0.659–0.708 | 426 |
-| 0.70 | 0.689 | 0.021 | 0.653–0.707 | 268 |
-| 0.90 | 0.688 | 0.023 | 0.649–0.708 | 252 |
-| 1.00 | 0.686 | 0.022 | 0.649–0.704 | 243 |
+| 0.01 | 0.744 | 0.073 | 0.658–0.856 | 4079 |
+| 0.03 | 0.734 | 0.053 | 0.665–0.809 | 2514 |
+| 0.05 | 0.746 | 0.045 | 0.678–0.798 | 1680 |
+| 0.07 | 0.742 | 0.038 | 0.688–0.786 | 1473 |
+| 0.10 | 0.736 | 0.036 | 0.693–0.782 | 1386 |
+| 0.30 | 0.715 | 0.028 | 0.670–0.745 | 497 |
+| 0.50 | 0.708 | 0.027 | 0.667–0.740 | 289 |
+| 0.70 | 0.704 | 0.034 | 0.654–0.750 | 265 |
+| 0.90 | 0.698 | 0.034 | 0.650–0.746 | 241 |
+| 1.00 | 0.695 | 0.035 | 0.647–0.745 | 239 |
 
-Read plainly: the fold-to-fold spread (SD 0.02–0.075) is as large as any difference among the low alphas, so `alpha` ≤ 0.1 is indistinguishable at this corpus size. The one clear effect is the decline at high `alpha`, where lasso-leaning models give up about five AUC points (0.739 → 0.686). Naming a single "best" `alpha` from this table would be selecting noise, which is exactly what the repeated folds exist to prevent. The 50 individual per-fold AUCs are in `cv_results`.
+These are the results on the 796-row corpus, after the LibriVox fix. On the earlier 798-row corpus every mean was 0.002–0.015 lower (see `baselines/` and `CHANGELOG.md`); no `alpha` moved by more than two standard errors, so the change is within fold-to-fold noise.
+
+Read plainly: the fold-to-fold spread (SD 0.03–0.07) is as large as any difference among the low alphas, so `alpha` ≤ 0.1 is indistinguishable at this corpus size. The one clear effect is the decline at high `alpha`, where lasso-leaning models give up about five AUC points (0.744 → 0.695). Naming a single "best" `alpha` from this table would be selecting noise, which is exactly what the repeated folds exist to prevent. The 50 individual per-fold AUCs are in `cv_results`.
 
 An earlier single-split, trigram run peaked at 0.820 (`alpha = 0.03`). It is not comparable to this table — different features, and one split rather than five — and survives only in git history.
 
-**In-sample train AUC is ~1.00 at every `alpha`** (0.990–1.000), against 0.69–0.74 on held-out folds — a gap of 0.26–0.31 that barely moves across the sweep. With 243–4,294 nonzero coefficients over roughly 600 training documents per fold, the model has enough capacity to memorise its training set at any regularisation strength here, so the gap does not discriminate between alphas; held-out AUC is the only informative comparison. Both sides of the gap come from the same fit (`eval_train_*` and `eval_test_*` share each `model_fit_*`), so they cannot drift apart.
+**In-sample train AUC is ~1.00 at every `alpha`** (0.996–1.000, mean across folds), against 0.69–0.75 on held-out folds — a gap of 0.25–0.30 that barely moves across the sweep. With 239–4,079 nonzero coefficients (mean per `alpha`) over roughly 600 training documents per fold, the model has enough capacity to memorise its training set at any regularisation strength here, so the gap does not discriminate between alphas; held-out AUC is the only informative comparison. Both sides of the gap come from the same fit (`eval_train_*` and `eval_test_*` share each `model_fit_*`), so they cannot drift apart.
 
 ## Roadmap
 
