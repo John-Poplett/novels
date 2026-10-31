@@ -93,6 +93,17 @@ An earlier single-split, trigram run peaked at 0.820 (`alpha = 0.03`). It is not
 
 **In-sample train AUC is ~1.00 at every `alpha`** (0.996–1.000, mean across folds), against 0.69–0.75 on held-out folds — a gap of 0.25–0.30 that barely moves across the sweep. With 239–4,079 nonzero coefficients (mean per `alpha`) over roughly 600 training documents per fold, the model has enough capacity to memorise its training set at any regularisation strength here, so the gap does not discriminate between alphas; held-out AUC is the only informative comparison. Both sides of the gap come from the same fit (`eval_train_*` and `eval_test_*` share each `model_fit_*`), so they cannot drift apart.
 
+**Learning curve: held-out AUC is still rising at the full training set.** Training on a random fraction of each fold's training *authors* (whole authors, so folds stay author-disjoint) and scoring on the unchanged test fold, with three random draws per fraction (`data-raw/learning-curve.R`; per-run results in `data-raw/learning-curve.csv`). At 100% the script reproduces the pipeline's own per-fold AUCs exactly.
+
+| training authors (books) | `alpha` 0.05 | `alpha` 0.5 | `alpha` 1.0 |
+|---|---|---|---|
+| 25% (153) | 0.679 | 0.650 | 0.619 |
+| 50% (301) | 0.721 | 0.668 | 0.656 |
+| 75% (451) | 0.724 | 0.693 | 0.684 |
+| 100% (603) | 0.746 | 0.708 | 0.695 |
+
+Each doubling adds roughly 0.025–0.04 AUC at every `alpha`, with no plateau — consistent with the train/test gap above: the model is limited by data, not (yet) by label noise. Treat it as suggestive, not conclusive: with five folds, the paired 50% → 100% gains (z = 1.7, 2.8, 2.6) need about 2.8 to clear a t-test at 4 degrees of freedom, and the 75% → 100% steps are within noise. It measures books and authors together, so it cannot say which matters more, and extrapolating past 100% assumes the trend continues.
+
 ## Roadmap
 
 - **Use the dataset's native fold structure for cross-validation, per genre, rather than the current generated `fold_assignments`/`cv_foldid_*`.** Requires switching to per-genre classifiers (fold is only unambiguous within a single genre). Would make results directly comparable to the original paper's published per-genre numbers. The native fold column cannot simply be pooled instead: **36 of the 41 multi-genre books sit in different native folds for different genres**, so a pooled model using that column would train and test on identical text. The generated author-grouped folds do not have this defect — measured against the current `fold_assignments`, **0 of 756 books appear in more than one test fold**.
