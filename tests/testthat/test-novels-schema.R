@@ -29,5 +29,5 @@ test_that("novels has no leftover parsing/join artifacts", {
 
 test_that("novels has no missing download counts, and the correct row count", {
   expect_false(any(is.na(novels$download_count)))
-  expect_equal(nrow(novels), 798)
+  expect_equal(nrow(novels), 796)
 })

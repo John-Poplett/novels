@@ -284,13 +284,21 @@ tidyRawData <- function(dataset_path, parsed_metadata) {
   # book here (df is still deduped, pre-join), not per genre row.
   contaminated_ids <- getLibrivoxContaminatedIds(df)
 
-  known_librivox_ids <- c(19513, 19640, 19678, 19782, 19836)
   tar_assert_true(
-    setequal(contaminated_ids, known_librivox_ids),
-    "Set of librivox-contaminated ids differs from the known baseline (see known_contamination.csv) -- corpus may have changed"
+    setequal(contaminated_ids, c(as.integer(names(librivox_replacements)), librivox_drops)),
+    "Set of librivox-contaminated ids differs from librivox_replacements + librivox_drops -- corpus may have changed"
   )
 
-  df <- patchContaminatedText(df, contaminated_ids)
+  df <- dropByGutenbergId(df, librivox_drops)
+  novel_metadata <- dropByGutenbergId(novel_metadata, librivox_drops)
+  df <- patchContaminatedText(df, librivox_replacements)
+
+  # Check the outcome, not just the input: the baseline assertion above ran
+  # before patching, so a patch that changed nothing used to pass silently.
+  tar_assert_true(
+    length(getLibrivoxContaminatedIds(df)) == 0,
+    "librivox text remains after patchContaminatedText()"
+  )
 
   # Strip Gutenberg's license header/footer boilerplate uniformly. A
   # full-corpus grep found this in at least 19 of 798 books -- far more
@@ -304,6 +312,7 @@ tidyRawData <- function(dataset_path, parsed_metadata) {
   )
 
   df <- dplyr::inner_join(df, novel_metadata, by = c("gutenberg_id"))
+  df <- applyTitleCorrections(df, librivox_title_corrections)
 
   tar_assert_true(
     nrow(df) == nrow(novel_metadata),
@@ -462,7 +471,7 @@ transformTfidf <- function(tfidf_fit, dtm_raw) {
 #' least a century -- so a match reliably indicates the original corpus
 #' grabbed a LibriVox recording's catalog metadata instead of the actual
 #' text edition for that gutenberg_id. Confirmed against a full-corpus
-#' manual grep; see known_contamination.csv for the authoritative record.
+#' manual grep; see librivox_replacements for the authoritative record.
 #'
 #' @param df tibble with gutenberg_id and text columns, one row per book
 #' @returns integer vector of contaminated gutenberg_ids
@@ -471,31 +480,103 @@ getLibrivoxContaminatedIds <- function(df) {
   df$gutenberg_id[grepl("librivox", df$text, ignore.case = TRUE)]
 }
 
+# The five LibriVox-contaminated ids: each points at an audio recording's
+# catalogue entry, not a text edition. Three are patched with a real text
+# edition; the other two are dropped.
+#
+# Patched: ids (names) and the text editions that replace them (values). A
+# contaminated id cannot be its own replacement -- re-downloading it returns
+# the same audio page. The replacements were chosen by hand and checked
+# against Gutenberg. Note 19836 (Fay Inchfawn, "Early Spring") is replaced by
+# a different work by the same author, "The Verse-Book of a Homely Woman"
+# (3477), because the collection itself is not available as text.
+librivox_replacements <- c(
+  "19513" = 18857L, # A Journey to the Center of the Earth
+  "19640" = 76L,    # Adventures of Huckleberry Finn
+  "19836" = 3477L   # Early Spring -> The Verse-Book of a Homely Woman
+)
+
+# Dropped: the real book is already in the corpus under another id, so
+# patching would only add a second copy of it (and the audio entry's download
+# count is the recording's, not the book's).
+librivox_drops <- c(
+  19678L, # The Call of the Wild -- the text edition is 215
+  19782L  # Daddy-Long-Legs -- the text edition is 157
+)
+
+#' Title dropByGutenbergId
+#'
+#' @param df tibble with a gutenberg_id column
+#' @param ids integer vector of gutenberg_ids to remove
+#' @returns df without the rows whose gutenberg_id is in ids
+#' @noRd
+dropByGutenbergId <- function(df, ids) {
+  df[!df$gutenberg_id %in% ids, ]
+}
+
+# Titles that no longer describe the replaced text. Only 19836 is a different
+# work, not another edition of the same one; the collection "Early Spring" is
+# not available as text anywhere we could find. The row keeps its original
+# download count and label until those are refreshed against the new book.
+librivox_title_corrections <- c(
+  "19836" = "The Verse-Book of a Homely Woman"
+)
+
+#' Title applyTitleCorrections
+#'
+#' @param df tibble with gutenberg_id and title columns
+#' @param corrections named character vector: names are gutenberg_ids,
+#'   values are the corrected titles
+#' @returns df with title replaced for every row whose id is in corrections
+#' @noRd
+applyTitleCorrections <- function(df, corrections) {
+  idx <- match(as.character(df$gutenberg_id), names(corrections))
+  hit <- !is.na(idx)
+  df$title[hit] <- unname(corrections[idx[hit]])
+  df
+}
+
 #' Title patchContaminatedText
 #'
-#' Replaces text for known-contaminated ids with the real text edition,
-#' fetched directly from Gutenberg via gutenbergr. The original archive
+#' Replaces the text of known-contaminated ids with a real text edition,
+#' fetched from Gutenberg via gutenbergr. The replacement is downloaded under
+#' a *different* id (see `replacements`), because the contaminated id is the
+#' audio recording itself. The contaminated id stays the row's key, so folds,
+#' labels and metadata are untouched and only the text changes. Replacement
+#' text is lowercased to match the rest of the corpus. The original archive
 #' (fetchRawData()) is left untouched -- this correction is applied as an
 #' explicit step here, so its provenance stays visible in code and git
 #' history rather than baked into a binary blob.
 #'
 #' @param df tibble with gutenberg_id and text columns, one row per book
-#' @param contaminated_ids integer vector from getLibrivoxContaminatedIds()
-#' @returns df with text replaced for any contaminated_ids present
+#' @param replacements named integer vector: names are contaminated ids,
+#'   values are the ids of the text editions that replace them
+#' @returns df with text replaced for any contaminated ids present
 #' @export
-patchContaminatedText <- function(df, contaminated_ids) {
-  affected <- intersect(df$gutenberg_id, contaminated_ids)
+patchContaminatedText <- function(df, replacements) {
+  affected <- intersect(as.character(df$gutenberg_id), names(replacements))
   if (length(affected) == 0) return(df)
 
-  replacement <- gutenbergr::gutenberg_download(affected, meta_fields = character(0))
+  source_ids <- unname(replacements[affected])
+  downloaded <- gutenbergr::gutenberg_download(source_ids, meta_fields = character(0))
 
-  for (id in affected) {
-    df$text[df$gutenberg_id == id] <-
-      paste(replacement$text[replacement$gutenberg_id == id], collapse = "\n")
+  missing <- setdiff(source_ids, downloaded$gutenberg_id)
+  if (length(missing) > 0) {
+    stop("Gutenberg returned no text for replacement id(s): ",
+         paste(missing, collapse = ", "), call. = FALSE)
   }
 
+  replacement_text <- function(source_id) {
+    downloaded$text[downloaded$gutenberg_id == source_id] |>
+      paste(collapse = "\n") |>
+      stringi::stri_trans_tolower()
+  }
+
+  df$text[match(affected, as.character(df$gutenberg_id))] <-
+    purrr::map_chr(source_ids, replacement_text)
+
   message(sprintf("patchContaminatedText: replaced text for %d id(s): %s",
-                   length(affected), paste(affected, collapse = ", ")))
+                  length(affected), paste(affected, collapse = ", ")))
   df
 }
 
