@@ -10,7 +10,6 @@ Imports:
     dplyr,
     glmnet,
     gutenbergr,
-    httr2,
     magrittr,
     pROC,
     purrr,

@@ -17,8 +17,8 @@ if (file.exists(".env")) readRenviron(".env")
 # Set target options:
 tar_option_set(
   tidy_eval = FALSE,
-  packages = c("dplyr", "readr", "usethis", "tibble", "stringi",
-  "stringr", "purrr", "tidyr", "assertthat", "gutenbergr", "archive",
+  packages = c("dplyr", "readr", "tibble", "stringi",
+  "stringr", "purrr", "tidyr", "gutenbergr", "archive",
   "text2vec", "glmnet", "pROC", "tm")
   # format = "qs", # Optionally set the default storage format. qs is fast.
  )

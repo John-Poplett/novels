@@ -43,12 +43,6 @@ importFrom(dplyr,
   slice_head,
   summarize
 )
-importFrom(httr2,
-  req_body_json,
-  req_perform,
-  request,
-  resp_body_json
-)
 importFrom(magrittr,"%>%")
 importFrom(readr,read_lines)
 importFrom(stats,

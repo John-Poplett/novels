@@ -11,7 +11,6 @@
 #' @importFrom tm stopwords
 #' @importFrom targets tar_assert_identical tar_assert_true
 #' @importFrom archive archive_extract
-#' @importFrom httr2 req_body_json req_perform request resp_body_json
 #' @importFrom utils download.file object.size
 #' @importFrom stats coef predict
 #' @keywords internal

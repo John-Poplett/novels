@@ -203,68 +203,6 @@ parseMetaData <- function(dataset_path) {
   )
 }
 
-XparseMetaData <- function(dataset_path) {
-  meta_data_file_path <- file.path(dataset_path, 'novel_meta.txt')
-
-  lines <- read_lines(meta_data_file_path)
-
-  is_complete <- str_detect(lines, "DownloadCount")
-  n_incomplete <- sum(str_detect(lines, "^(SUCCESS|FAILURE)") & !is_complete)
-
-  # should be exactly 1 given what we've now confirmed
-  tar_assert_true(
-    n_incomplete == 1,
-    paste("Expected exactly 1 truncated trailing record, found", n_incomplete)
-  )
-
-  lines_clean <- lines[!(str_detect(lines, "^(SUCCESS|FAILURE)") & !is_complete)]
-
-  # SUCCESS: FileName: 103.txt ,Title: around the world in 80 days ,Author: "verne, jules, 1828-1905" ,Language: en ,DownloadCount: 3260
-  novel_metadata <- tibble(raw = lines_clean) |>
-    mutate(
-      genre = if_else(
-        str_detect(raw, "^\\*+DATASET:"),
-        str_trim(str_extract(raw, "(?<=DATASET:)[^*]+")),
-        NA_character_
-      ),
-      fold = if_else(
-        str_detect(raw, "^\\*+\\s*FOLD\\d+"),
-        str_extract(raw, "\\d+"),
-        NA_character_
-      ),
-      is_record = str_detect(raw, "^(SUCCESS|FAILURE)")
-    ) |>
-    fill(genre, fold, .direction = "down") |>
-    filter(is_record) |>
-    select(-is_record) |>
-    separate_wider_regex(
-      raw,
-      patterns = c(
-        response = "^(?:SUCCESS|FAILURE)",
-        ":\\s*FileName:\\s+",
-        id = "[0-9]+",
-        "\\.txt\\s+,Title:.*?,DownloadCount:\\s+",
-        download_count = "[0-9]+",
-        ".*$"
-      )
-    ) |>
-    mutate(
-      response = as.integer(str_equal(response, "SUCCESS")),
-      gutenberg_id = as.integer(id),
-      fold = as.integer(fold),
-      download_count = as.integer(download_count),
-    ) |>
-    select(-id)
-
-  novel_metadata$genre <- novel_metadata$genre |>
-    str_replace_all("Love Story", "Romance") |>
-    str_replace_all("Sci-Fi", "Science Fiction")
-
-  novel_metadata$genre <- as.factor(novel_metadata$genre)
-
-  novel_metadata
-}
-
 tidyRawData <- function(dataset_path, parsed_metadata) {
   novel_metadata <- parsed_metadata$data
 
@@ -439,10 +377,7 @@ buildDtm <- function(df, vectorizer) {
 #' @returns an integer vector of fold assignments, length length(author)
 #' @export
 makeFoldid <- function(author, nfolds = 5, seed = 42) {
-  set.seed(seed)
-  unique_authors <- unique(author)
-  author_fold <- sample(rep(1:nfolds, length.out = length(unique_authors)))
-  names(author_fold) <- unique_authors
+  author_fold <- assignAuthorFolds(unique(author), nfolds, seed)
   unname(author_fold[author])
 }
 

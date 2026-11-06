@@ -18,11 +18,11 @@ Baseline (before any fix): `[ FAIL 2 | WARN 2 | PASS 99 ]` — both failures are
 | F5 | Pin the three replacement texts | Medium | done | — |
 | F14 | Re-verify extraction / track corpus files | Low | done | — |
 | F7 | Correct README/TODO claims | Low | pending | — |
-| F9 | Delete dead code (`XparseMetaData`, `R/embed.R`) | Low | pending | — |
-| F10 | Trim unused `packages` in `_targets.R` | Low | pending | — |
-| F11 | Untrack `tests/testthat/_problems/` | Low | pending | — |
-| F12 | Remove or document `data-raw/novel_meta.csv` | Low | pending | — |
-| F13 | De-duplicate fold logic | Low | pending | — |
+| F9 | Delete dead code (`XparseMetaData`, `R/embed.R`) | Low | done | — |
+| F10 | Trim unused `packages` in `_targets.R` | Low | done | — |
+| F11 | Untrack `tests/testthat/_problems/` | Low | done | — |
+| F12 | Remove or document `data-raw/novel_meta.csv` | Low | done | — |
+| F13 | De-duplicate fold logic | Low | done | — |
 | F16 | Vignette feature-space decision | Medium | pending | — |
 | F18 | Correct documented check behaviour | Low | pending | — |
 | F4 | Split `targetFunctions.R` | **High** | pending (after F3) | — |
@@ -55,6 +55,12 @@ Baseline (before any fix): `[ FAIL 2 | WARN 2 | PASS 99 ]` — both failures are
   checked against the pin, and an older extraction with no marker warns instead of
   being silently trusted. A missing `novel_meta.txt` is an error.
   Suite: 0 failures, 223 passes.
+- **F9/F10/F13** done: deleted `XparseMetaData()` and `R/embed.R`, dropped `httr2` from
+  `Imports`/NAMESPACE and `usethis`/`assertthat` from `_targets.R`'s `packages`, and made
+  `makeFoldid()` delegate to `assignAuthorFolds()` so the seed/sample logic exists once.
+- **F11/F12** done: untracked `tests/testthat/_problems/` (now ignored) and removed the
+  unused, obsolete `data-raw/novel_meta.csv` (preserved in git history).
+  Suite still 0 failures, 223 passes; `tar_manifest()` still 216 targets.
 
 ## New findings found during Phase 3
 - **F19 (LOW–MEDIUM): the corpus census is recorded but never asserted.** `parseMetaData()`

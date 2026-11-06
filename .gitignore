@@ -24,3 +24,6 @@ vignettes/glmnet_cache/
 vignettes/glmnet_files/
 .posit/assistant
 _targets/
+
+# testthat failure artifacts
+tests/testthat/_problems/
