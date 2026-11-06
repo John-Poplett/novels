@@ -76,6 +76,8 @@ each one covers a single pipeline concern.
 
 The verification story is what changed most:
 
+- `make lint` — tracked text files are LF-only with no trailing blanks (``R CMD check``
+  checks neither; see the "Remaining work" entry this gate closed).
 - `make test` — fast loop, seconds.
 - `make check` — regenerates Rd, builds the vignettes, then checks (6m50.8s measured;
   the pre-fix run took 36m59s under flags that also skipped building them).
@@ -136,7 +138,7 @@ c12e7f0 Phase 3 baseline: pre-fix state
 | Reproducibility & determinism | 5 | **9** | stored folds actually used and fail-loud, no live fetches, extraction marker |
 | Test coverage & test health | 4 | **8** | green suite, 99 → 243 passes, characterization tests for every core function; pipeline targets still not covered end-to-end |
 | Code organization & cohesion | 5 | **8** | one 630-line module → five modules, largest 236; duplicate fold logic removed |
-| Documentation accuracy | 6 | **8** | target counts, result provenance, check behaviour corrected; TODO/README still carry uncommitted user edits |
+| Documentation accuracy | 6 | **8** | target counts, result provenance, check behaviour corrected; the user's pending doc edits have since been committed |
 | Configuration & environment | 7 | **8** | hard-coded LAN address deleted with `embed.R`; `httr2` removed from `Imports` |
 | Packaging & API hygiene | 5 | **8** | Makefile gate, CI, shipped allow-list accessor; `man/`/`data/` remain git-ignored by policy, now mitigated mechanically |
 | Maintainability & extensibility | 5 | **8** | smaller modules, CI, dead code gone; the metaprogrammed `_targets.R` remains |
@@ -157,31 +159,31 @@ log `absent` by id, so a future metadata change cannot quietly shrink the corpus
 
 ### Deferred by decision
 
-1. **`TODO.md` reconciliation is applied but uncommitted.** The stale baseline-comparison item
-   was removed and a Done entry added, but the file also carries the user's in-progress rewrite.
-   Commit it with that rewrite, not separately.
-2. **`README.md` Zeitgeist bullet is uncommitted** (same reason: user's in-progress edit).
-3. **The installed `novels` package is still 1.0.3.** Everything this phase added — `extdata`,
+1. **The installed `novels` package is still 1.0.3.** Everything this phase added — `extdata`,
    `genreAllowlist()`, the split modules — is only visible after a release. Source-tree
    resolution keeps the pipeline working meanwhile.
-4. **A machine without LaTeX cannot run the PDF-manual step.** This one cannot
+2. **A machine without LaTeX cannot run the PDF-manual step.** This one cannot
    (`Sys.which("pdflatex")` is empty), so `make check-full` passes `--no-manual`. Both
    vignettes are HTML, so no vignette output is lost; what remains unverified locally is the
    `Rd -> LaTeX -> PDF` conversion of the reference manual, which CRAN builds on its own
    infrastructure. `tinytex::install_tinytex()` would close the gap if a PDF manual is ever a
    deliverable.
-5. **CI is unverified until the first push.** The YAML parses, and `tar_manifest(names =
+3. **CI is unverified until the first push.** The YAML parses, and `tar_manifest(names =
    "novels_data")` confirms the corpus-only target, but no run has happened yet. Expect the two
    `inst/doc` WARNINGs by design; the job fails on errors only.
-6. **No coverage measurement.** `covr` would say which branches of `tidyRawData()` and
+4. **Whitespace hygiene is now gated but was not before.** `make lint` was added after a
+   CRLF CSV and stray trailing blanks survived a green 0/0/0 check. Its first run found
+   pre-existing offenders in `DESCRIPTION`, `SCHEMA.md` and `TODO.md`; all are fixed. The
+   recipe is POSIX shell and untested under `dash` until CI runs it on Ubuntu.
+5. **No coverage measurement.** `covr` would say which branches of `tidyRawData()` and
    `corpusRepair()` the fixture tests actually reach. Not a defect, a missing instrument.
-7. **`data-raw/oops.txt` is tracked but referenced by nothing.** It is a useful hand-written
+6. **`data-raw/oops.txt` is tracked but referenced by nothing.** It is a useful hand-written
    list of known corpus defects (LibriVox metadata, trailing boilerplate). It should be either
    linked from the corpus documentation or folded into `corpusRepair.R`'s comments.
-8. **The genre API is not used by the pipeline.** `assignGenre()`/`compareGenreAssignment()`
+7. **The genre API is not used by the pipeline.** `assignGenre()`/`compareGenreAssignment()`
    are now usable rather than scaffolding, but they remain a roadmap surface: genre labels in
    `novels` still come from Stonybrook metadata.
-9. **`_targets.R` builds targets programmatically** (`as.symbol`/`bquote`) for the per-fold and
+8. **`_targets.R` builds targets programmatically** (`as.symbol`/`bquote`) for the per-fold and
    per-alpha grids. It is correct and verified by `tar_manifest()`, but it is the least
    readable part of the project; a `tar_map()` rewrite is a separate, riskier piece of work.
 
