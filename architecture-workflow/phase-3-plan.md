@@ -23,7 +23,7 @@ Baseline (before any fix): `[ FAIL 2 | WARN 2 | PASS 99 ]` — both failures are
 | F11 | Untrack `tests/testthat/_problems/` | Low | done | — |
 | F12 | Remove or document `data-raw/novel_meta.csv` | Low | done | — |
 | F13 | De-duplicate fold logic | Low | done | — |
-| F16 | Vignette feature-space decision | Medium | pending | — |
+| F16 | Vignette feature-space decision | Medium | done | — |
 | F18 | Correct documented check behaviour | Low | done | — |
 | F4 | Split `targetFunctions.R` | **High** | pending (after F3) | — |
 | F6 | Genre API: ship input or unexport | Low | **needs decision** | — |
@@ -61,6 +61,9 @@ Baseline (before any fix): `[ FAIL 2 | WARN 2 | PASS 99 ]` — both failures are
 - **F11/F12** done: untracked `tests/testthat/_problems/` (now ignored) and removed the
   unused, obsolete `data-raw/novel_meta.csv` (preserved in git history).
   Suite still 0 failures, 223 passes; `tar_manifest()` still 216 targets.
+- **F16** done as documentation: the glmnet vignette now states that it uses one split and
+  a 1–3-gram vocabulary, that its AUC is not comparable to the README table, and why it is
+  slower and more memory-hungry than the pipeline.
 - **F7** done in README and `baselines/README.md`: target count 213 → 216, the results
   table now says which store object feeds each column, and `fold_assignments` is described
   as reading the stored table. `baselines/README.md` keeps its historical 207-target line

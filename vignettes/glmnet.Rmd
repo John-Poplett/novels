@@ -24,6 +24,8 @@ This vignette uses text2vec and Stonybrook's novels dataset to create a classifi
 
 The authors of the original study chose to publish the raw data used for their dataset but did not publish the source code to their classifier. In the original study, the author's built a classifier using LibLinear SVM. They used a variety of approaches to transform text into "features" suitable for training a classifier. In this example, we make use of text2vec which, as its name implies, provides the tools to transform text into feature vectors.
 
+**This vignette is a standalone demonstration, not a reproduction of the README's results table.** It uses one 80/20 split (`createSplit()`, seed 2026) and `text2vocab()`'s default 1–3-gram vocabulary. The pipeline instead uses five author-safe folds and unigrams only (`buildVectorizer(..., ngram = c(1L, 1L))`). Because the split, the feature space and the training sample all differ, the AUC printed here is not comparable to the README's; the pipeline is the source of the published numbers. Trigrams also make this vignette slower and more memory-hungry than the pipeline — a deliberate feature demonstration, not an oversight.
+
 ```{r setup, eval=TRUE, message=FALSE}
 library(dplyr)
 library(text2vec)
