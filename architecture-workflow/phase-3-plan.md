@@ -14,7 +14,7 @@ Baseline (before any fix): `[ FAIL 2 | WARN 2 | PASS 99 ]` — both failures are
 |---|---|---|---|---|
 | F2 | Fix `test-foldAssignment.R` | Low | done | `52f73c8` |
 | F1 | Stored-fold resolution + fail-loud + regression test | Low–Medium | done | — |
-| F3 | Characterization + fix tests for core functions | Medium | pending | — |
+| F3 | Characterization + fix tests for core functions | Medium | done | — |
 | F5 | Pin the three replacement texts | Medium | **needs approval** | — |
 | F14 | Re-verify extraction / track corpus files | Low | pending | — |
 | F7 | Correct README/TODO claims | Low | pending | — |
@@ -41,3 +41,17 @@ Baseline (before any fix): `[ FAIL 2 | WARN 2 | PASS 99 ]` — both failures are
   `tar_source()` context (`system.file()` → `""`) that the source-tree path is found and
   that stored folds equal seeded folds for today's 514 authors.
   Suite: 0 failures, 145 passes.
+- **F3** done: added characterization tests for `parseMetaData` (fixture corpus, census,
+  renames, truncation, conservation error), `stripGutenbergBoilerplate`,
+  `results2Text`/`classifyAt`/`createConfusionMatrix`, the vectorizer/DTM/TF-IDF chain,
+  and `fitGlmnetModel`/`evaluateModel`. Suite: 0 failures, 213 passes.
+
+## New findings found during Phase 3
+
+- **F19 (LOW–MEDIUM): the corpus census is recorded but never asserted.** `parseMetaData()`
+  returns `census$truncated` and `census$absent`, and `tidyRawData()` then `inner_join`s
+  files to metadata, silently dropping any file with no metadata row. The file-conservation
+  assert only catches metadata rows with no file, not files with no metadata row. Today
+  exactly one trailing record is truncated (the known defect), but nothing pins that count:
+  a future metadata change could silently drop books. Candidate fix: assert
+  `length(census$truncated) == 1` and log `absent` by id. Deferred to Phase 4.
