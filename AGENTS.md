@@ -79,7 +79,8 @@ pkgload::load_all()
 testthat::test_file("tests/testthat/test-theThing.R")
 ```
 
-2. Package check with vignettes not built, measured 37 minutes here (2026-11-06):
+2. Package check, vignettes built once but not re-built — measured **6m50.8s**
+   with `0 errors | 0 warnings | 0 notes` (2026-11-06):
 
 ```bash
 make check  # roxygen2::roxygenise() then devtools::check(...)
@@ -94,25 +95,35 @@ devtools::check(
 )
 ```
 
-Still installs the package and runs every test, example, Rd, namespace
-and dependency check. `--no-build-vignettes` stops the documents from being
-knitted, but R CMD check still extracts and runs their R code ("checking
-running R code from vignettes"), which took 4 minutes of the 37. That mode
-also necessarily reports two `inst/doc` WARNINGs, so it cannot be a
-0-warning run. Adding `build_args = c("--no-build-vignettes")` skips building
-them once at build time too, but yields a tarball with no built vignettes —
-local iteration only, never a release check.
+`R CMD build` still knits the vignettes, so `inst/doc` is populated and the
+check does not report the missing-`inst/doc` warnings. The flag passed to
+`R CMD check` only skips "checking re-building of vignette outputs", which is
+the second, redundant execution of the vignette code. So this level runs every
+test, example, Rd, namespace and dependency check **and** the vignettes'
+modelling code, and it can reach 0/0/0.
 
-3. Full gate, vignettes on:
+> Two measurements disagree, deliberately recorded rather than averaged away.
+> The 2026-11-06 pre-fix run took **36m59s** with `build_args =
+> c("--no-build-vignettes")` as well; that variant skips building the
+> vignettes, necessarily reports two `inst/doc` WARNINGs, and so cannot be a
+> 0-warning run. The post-fix `make check` above, on the same machine a few
+> hours later, took 6m50.8s. The cause of the 30-minute difference was not
+> established (machine load or package-install cache is the obvious
+> candidate). Treat 6–40 minutes as the range and read the run's own
+> `Duration:` line rather than budgeting from a guess.
+
+3. Full gate, vignettes rebuilt:
 
 ```bash
 make check-full  # roxygen2::roxygenise() then devtools::check(document = FALSE)
 ```
 
-Must end `0 errors | 0 warnings | 0 notes`. This is the only level that runs
-the vignettes' modelling code end to end, so it is the only one that proves
-the pipeline still works from a clean install. Its duration was not measured
-in the 2026-11-06 run; budget more than the level-2 time.
+Must end `0 errors | 0 warnings | 0 notes`. The only difference from level 2 is
+that checks re-build the vignette outputs, so the vignette code runs a second
+time and the tarball is verified the way a consumer receives it. Its duration
+was not measured; expect roughly double the level-2 time. Run it before
+merging or publishing, and always when `R/`, `DESCRIPTION`, `man/` or
+`vignettes/` change.
 
 **`man/` is git-ignored**, so `document = FALSE` checks whatever Rd files
 happen to be on disk. After changing roxygen comments, run `make document`

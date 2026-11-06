@@ -26,9 +26,9 @@ Baseline (before any fix): `[ FAIL 2 | WARN 2 | PASS 99 ]` — both failures are
 | F16 | Vignette feature-space decision | Medium | done | — |
 | F18 | Correct documented check behaviour | Low | done | — |
 | F4 | Split `targetFunctions.R` | **High** | done | — |
-| F6 | Genre API: ship input or unexport | Low | **needs decision** | — |
-| F8 | `man/`/`data/` packaging policy | **Critical** | **needs approval** | — |
-| F15 | Minimal CI | Low | pending | — |
+| F6 | Genre API: ship input or unexport | Low | done | `e0665c2` |
+| F8 | `man/`/`data/` packaging policy | **Critical** | done | `5b41326` |
+| F15 | Minimal CI | Low | done | `ecefb26` |
 
 ## Log
 
@@ -80,6 +80,43 @@ Baseline (before any fix): `[ FAIL 2 | WARN 2 | PASS 99 ]` — both failures are
   code still runs under `--no-build-vignettes`, that this mode cannot be a 0-warning run,
   and that `man/` being git-ignored means `document = FALSE` can report stale codoc
   mismatches.
+- **F6** done: the allow-list moved from git-ignored `tmp/` to `inst/extdata/genre_allowlist.csv`
+  and is exposed by a documented `genreAllowlist()` accessor that resolves through
+  `system.file()` with a source-tree fallback (the `storedFoldPath()` pattern). Tests pin the
+  column contract, the include/exclude/review encoding, two known mappings and
+  `allow_flagged = FALSE`. `assignGenre()`/`compareGenreAssignment()` docs now point at it.
+  Suite: 0 failures, 243 passes.
+- **F8** done as a wrapper rather than committing `man/`: `Makefile` targets `test`,
+  `document`, `check`, `check-full`, `data`, `clean`. `check`/`check-full` run
+  `roxygen2::roxygenise()` first, so the stale-Rd failure (F17) cannot recur. `Makefile` is in
+  `.Rbuildignore`; AGENTS.md's Testing section now uses these targets and records that
+  `data/novels.rda` comes from `tar_make()`, not from the build.
+- **F15** done: `.github/workflows/R-CMD-check.yaml` regenerates Rd, builds only the
+  `novels_data` target from the pinned archive (the corpus is git-ignored), runs the fast
+  loop, then `R CMD check --no-manual --no-build-vignettes`. Vignettes are not built, so the
+  job fails on errors only. YAML parses and `tar_manifest(names = "novels_data")` resolves;
+  the workflow itself is unverified until the first push.
+
+## Phase 3 integration gate
+
+`make check` on the post-fix tree, 2026-11-06:
+
+```
+Duration: 6m 50.8s
+0 errors ✔ | 0 warnings ✔ | 0 notes ✔
+```
+
+This corrects two things the Phase 2 diagnosis recorded from a single pre-fix run:
+
+- **The level-2 check can reach 0/0/0.** The earlier run added
+  `build_args = c("--no-build-vignettes")`, which skips *building* the vignettes and
+  therefore reports two `inst/doc` WARNINGs. `make check` passes the flag only to
+  `R CMD check`, so `R CMD build` still knits the vignettes, `inst/doc` is populated, and the
+  warnings never appear.
+- **The 37-minute figure is not reproducible.** The same package checked 6m50.8s after that
+  measurement. The cause of the difference was not established, so AGENTS.md now records both
+  numbers and tells readers to use the run's own `Duration:` line.
+
 
 ## New findings found during Phase 3
 - **F19 (LOW–MEDIUM): the corpus census is recorded but never asserted.** `parseMetaData()`
