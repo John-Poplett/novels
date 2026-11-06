@@ -37,9 +37,60 @@ fetchRawData <- function(data_path = 'data-raw',
     download.file(archive_url, tmp, quiet = TRUE, mode = "wb")
     verify_sha256(tmp, archive_sha256, what = "source archive")
     archive_extract(tmp, data_path)
+    # Record which archive produced this extraction, so a later run can tell a
+    # verified corpus from one that merely happens to exist.
+    writeLines(archive_sha256, file.path(dataset_path, ".archive_sha256"))
+  } else {
+    verifyExtraction(dataset_path, archive_sha256)
   }
   tar_assert_true(file.exists(dataset_path), "raw dataset retrieval failed.")
   dataset_path
+}
+
+#' Verify an already-extracted corpus
+#'
+#' A directory that exists is not evidence that it is complete or that it came
+#' from the pinned archive. Newer extractions carry a `.archive_sha256` marker;
+#' older ones are accepted with a warning rather than forcing a re-download,
+#' but a marker that disagrees with the pin is an error.
+#'
+#' @param dataset_path extracted corpus directory
+#' @param archive_sha256 digest pinned in `_targets.R`
+#' @returns `TRUE` invisibly when the marker matches, `FALSE` when absent
+#' @noRd
+verifyExtraction <- function(dataset_path, archive_sha256) {
+  meta <- file.path(dataset_path, "novel_meta.txt")
+  if (!file.exists(meta)) {
+    stop(
+      "Extracted corpus at ", dataset_path, " has no novel_meta.txt. ",
+      "Delete the directory and re-run to extract and verify the pinned archive.",
+      call. = FALSE
+    )
+  }
+
+  marker <- file.path(dataset_path, ".archive_sha256")
+  if (!file.exists(marker)) {
+    warning(
+      "Corpus at ", dataset_path, " has no .archive_sha256 marker, so its ",
+      "provenance cannot be verified. Delete the directory to re-extract from ",
+      "the pinned archive.",
+      call. = FALSE
+    )
+    return(invisible(FALSE))
+  }
+
+  recorded <- readLines(marker, warn = FALSE)
+  recorded <- if (length(recorded) > 0) recorded[[1]] else ""
+
+  tar_assert_true(
+    tolower(recorded) == tolower(archive_sha256),
+    sprintf(
+      "Extracted corpus was built from a different archive: marker %s, pinned %s. Delete %s to re-extract.",
+      recorded, archive_sha256, dataset_path
+    )
+  )
+
+  invisible(TRUE)
 }
 
 #' Verify a file's SHA-256 against an expected value

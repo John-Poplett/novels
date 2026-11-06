@@ -16,7 +16,7 @@ Baseline (before any fix): `[ FAIL 2 | WARN 2 | PASS 99 ]` — both failures are
 | F1 | Stored-fold resolution + fail-loud + regression test | Low–Medium | done | — |
 | F3 | Characterization + fix tests for core functions | Medium | done | — |
 | F5 | Pin the three replacement texts | Medium | done | — |
-| F14 | Re-verify extraction / track corpus files | Low | pending | — |
+| F14 | Re-verify extraction / track corpus files | Low | done | — |
 | F7 | Correct README/TODO claims | Low | pending | — |
 | F9 | Delete dead code (`XparseMetaData`, `R/embed.R`) | Low | pending | — |
 | F10 | Trim unused `packages` in `_targets.R` | Low | pending | — |
@@ -51,6 +51,10 @@ Baseline (before any fix): `[ FAIL 2 | WARN 2 | PASS 99 ]` — both failures are
   Before committing, I verified the live Gutenberg texts are byte-identical to
   `data/novels.rda`, so this changes no corpus bytes and no baseline.
   Suite: 0 failures, 217 passes.
+- **F14** done: new extractions write `.archive_sha256`; a reused extraction is
+  checked against the pin, and an older extraction with no marker warns instead of
+  being silently trusted. A missing `novel_meta.txt` is an error.
+  Suite: 0 failures, 223 passes.
 
 ## New findings found during Phase 3
 - **F19 (LOW–MEDIUM): the corpus census is recorded but never asserted.** `parseMetaData()`
