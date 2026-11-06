@@ -79,6 +79,7 @@ The verification story is what changed most:
 - `make test` — fast loop, seconds.
 - `make check` — regenerates Rd, builds the vignettes, then checks (6m50.8s measured;
   the pre-fix run took 36m59s under flags that also skipped building them).
+- `make check-full` — additionally re-builds the vignette outputs (7m39.1s measured).
 - `make check-full` — regenerates Rd, then the release gate.
 - `make data` — `targets::tar_make()`; the only producer of `data/novels.rda`.
 - `.github/workflows/R-CMD-check.yaml` — builds the corpus from the pinned archive, runs the
@@ -163,10 +164,12 @@ log `absent` by id, so a future metadata change cannot quietly shrink the corpus
 3. **The installed `novels` package is still 1.0.3.** Everything this phase added — `extdata`,
    `genreAllowlist()`, the split modules — is only visible after a release. Source-tree
    resolution keeps the pipeline working meanwhile.
-4. **The level-3 gate's duration is unmeasured.** Level 2 was measured at 6m50.8s (after an
-   earlier 36m59s reading that could not be reproduced), and level 3 differs only by
-   re-building the vignette outputs, so it is expected to be roughly double. It was not run
-   here.
+4. **A machine without LaTeX cannot run the PDF-manual step.** This one cannot
+   (`Sys.which("pdflatex")` is empty), so `make check-full` passes `--no-manual`. Both
+   vignettes are HTML, so no vignette output is lost; what remains unverified locally is the
+   `Rd -> LaTeX -> PDF` conversion of the reference manual, which CRAN builds on its own
+   infrastructure. `tinytex::install_tinytex()` would close the gap if a PDF manual is ever a
+   deliverable.
 5. **CI is unverified until the first push.** The YAML parses, and `tar_manifest(names =
    "novels_data")` confirms the corpus-only target, but no run has happened yet. Expect the two
    `inst/doc` WARNINGs by design; the job fails on errors only.
@@ -202,7 +205,19 @@ Rscript -e 'devtools::check(document = FALSE, args = c("--no-manual", "--no-buil
 Status: OK
 Duration: 6m 50.8s
 0 errors ✔ | 0 warnings ✔ | 0 notes ✔
+
+$ make check-full
+Rscript -e 'roxygen2::roxygenise()'
+Rscript -e 'devtools::check(document = FALSE, args = c("--no-manual"))'
+...
+* checking re-building of vignette outputs ... [301s/251s] OK
+Status: OK
+Duration: 7m 39.1s
+0 errors ✔ | 0 warnings ✔ | 0 notes ✔
 ```
+
+Both gates are green, which also means the release gate is no longer a claim about a command
+nobody ran: the vignettes' code and re-built outputs both pass from an installed tarball.
 
 ## 6. What the gate actually covers
 

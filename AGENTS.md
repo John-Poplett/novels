@@ -120,10 +120,18 @@ make check-full  # roxygen2::roxygenise() then devtools::check(document = FALSE)
 
 Must end `0 errors | 0 warnings | 0 notes`. The only difference from level 2 is
 that checks re-build the vignette outputs, so the vignette code runs a second
-time and the tarball is verified the way a consumer receives it. Its duration
-was not measured; expect roughly double the level-2 time. Run it before
+time and the tarball is verified the way a consumer receives it. Measured
+**7m39.1s** (2026-11-06, vignette re-build 301s) — only ~50s longer than level 2,
+because both modes run the vignette code once and the reported duration covers
+`R CMD check`, not the preceding `R CMD build`. Run it before
 merging or publishing, and always when `R/`, `DESCRIPTION`, `man/` or
 `vignettes/` change.
+
+`make check-full` passes `--no-manual` because this machine has no LaTeX
+installation (`Sys.which("pdflatex")` is empty), and without the flag the PDF
+manual check fails for that reason alone. On a machine with LaTeX, drop the
+flag for a release — that is the only part of the CRAN check the wrapper does
+not cover.
 
 **`man/` is git-ignored**, so `document = FALSE` checks whatever Rd files
 happen to be on disk. After changing roxygen comments, run `make document`

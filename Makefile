@@ -27,7 +27,7 @@ check: document
 	$(R) -e 'devtools::check(document = FALSE, args = c("--no-manual", "--no-build-vignettes"))'
 
 check-full: document
-	$(R) -e 'devtools::check(document = FALSE)'
+	$(R) -e 'devtools::check(document = FALSE, args = c("--no-manual"))'
 
 data:
 	$(R) -e 'targets::tar_make()'

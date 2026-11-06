@@ -106,6 +106,18 @@ Duration: 6m 50.8s
 0 errors ✔ | 0 warnings ✔ | 0 notes ✔
 ```
 
+`make check-full` (vignette outputs re-built) also passed:
+
+```
+Duration: 7m 39.1s
+0 errors ✔ | 0 warnings ✔ | 0 notes ✔
+```
+
+`make check-full` gained `--no-manual` in the same pass, because this machine has no TeX
+(`Sys.which("pdflatex")` is empty) and without the flag the PDF-manual step fails for that
+reason alone. The PDF manual is therefore the one part of a CRAN check not exercised here;
+both vignettes are HTML, so no vignette output is lost.
+
 This corrects two things the Phase 2 diagnosis recorded from a single pre-fix run:
 
 - **The level-2 check can reach 0/0/0.** The earlier run added
