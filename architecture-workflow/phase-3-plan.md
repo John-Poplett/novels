@@ -12,8 +12,8 @@ Baseline (before any fix): `[ FAIL 2 | WARN 2 | PASS 99 ]` — both failures are
 
 | ID | Item | Risk | Status | Commit |
 |---|---|---|---|---|
-| F2 | Fix `test-foldAssignment.R` | Low | in progress | — |
-| F1 | Stored-fold resolution + fail-loud + regression test | Low–Medium | pending | — |
+| F2 | Fix `test-foldAssignment.R` | Low | done | `52f73c8` |
+| F1 | Stored-fold resolution + fail-loud + regression test | Low–Medium | done | — |
 | F3 | Characterization + fix tests for core functions | Medium | pending | — |
 | F5 | Pin the three replacement texts | Medium | **needs approval** | — |
 | F14 | Re-verify extraction / track corpus files | Low | pending | — |
@@ -35,3 +35,9 @@ Baseline (before any fix): `[ FAIL 2 | WARN 2 | PASS 99 ]` — both failures are
 - Baseline commit created with only `architecture-workflow/` and `.Rbuildignore`.
   User's uncommitted edits (`AGENTS.md`, `README.md`, `SKILL.md`, `TODO.md`) were left
   untouched and uncommitted.
+- **F2** done: suite green (0 failures, 136 passes).
+- **F1** done: `storedFoldPath()` resolves option → installed package → source tree, and
+  `use_stored_folds = TRUE` now errors instead of falling back. Verified in the exact
+  `tar_source()` context (`system.file()` → `""`) that the source-tree path is found and
+  that stored folds equal seeded folds for today's 514 authors.
+  Suite: 0 failures, 145 passes.
