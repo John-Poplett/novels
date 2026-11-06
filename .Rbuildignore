@@ -22,6 +22,7 @@
 ^novels\.R$
 ^_targets$
 ^_targets\.R$
+^architecture-workflow$
 ^legacy$
 ^papers$
 ^tmp$
