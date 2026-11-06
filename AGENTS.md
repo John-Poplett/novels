@@ -63,9 +63,16 @@ rather than silently changing the corpus.
 ## Testing
 
 Three levels, cheapest first. Use the light ones while developing; the full
-check is the gate before publishing a release.
+check is the gate before publishing a release. The `Makefile` wraps all three
+so the Rd regeneration cannot be forgotten (see the `man/` note below).
 
 1. Fast loop, seconds:
+
+```bash
+make test   # pkgload::load_all(); testthat::test_dir("tests/testthat")
+```
+
+For a single file, call the equivalent directly:
 
 ```r
 pkgload::load_all()
@@ -73,6 +80,12 @@ testthat::test_file("tests/testthat/test-theThing.R")
 ```
 
 2. Package check with vignettes not built, measured 37 minutes here (2026-11-06):
+
+```bash
+make check  # roxygen2::roxygenise() then devtools::check(...)
+```
+
+Equivalent to:
 
 ```r
 devtools::check(
@@ -92,8 +105,8 @@ local iteration only, never a release check.
 
 3. Full gate, vignettes on:
 
-```r
-devtools::check(document = FALSE)
+```bash
+make check-full  # roxygen2::roxygenise() then devtools::check(document = FALSE)
 ```
 
 Must end `0 errors | 0 warnings | 0 notes`. This is the only level that runs
@@ -102,14 +115,20 @@ the pipeline still works from a clean install. Its duration was not measured
 in the 2026-11-06 run; budget more than the level-2 time.
 
 **`man/` is git-ignored**, so `document = FALSE` checks whatever Rd files
-happen to be on disk. After changing roxygen comments, run
-`devtools::document()` first or the check reports stale codoc mismatches that
-do not exist in the source.
+happen to be on disk. After changing roxygen comments, run `make document`
+(or `devtools::document()`) first or the check reports stale codoc mismatches
+that do not exist in the source. `make check` and `make check-full` do this
+for you; `devtools::check()` called by hand does not.
 
 **Rule:** levels 1 and 2 while iterating on a feature; level 3 before merging
 or publishing, and always when `R/`, `DESCRIPTION`, `man/` or `vignettes/`
 change. Never delete a vignette, or disable it permanently, to make level 3
 pass — a failing vignette is a failing pipeline.
+
+`data/novels.rda` is git-ignored and produced by the pipeline, not by the
+package build: `make data` (i.e. `targets::tar_make()`) regenerates it. A
+check run on a fresh clone without it fails in the tests and vignettes that
+load the corpus.
 
 ## Build
 

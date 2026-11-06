@@ -32,3 +32,4 @@
 ^SKILL\.md$
 ^\.opencode$
 ^baselines$
+^Makefile$
