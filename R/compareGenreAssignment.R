@@ -22,8 +22,8 @@
 #'   already built via the earlier Category mutate/split -- e.g. what was
 #'   shown as `x` in the console: gutenberg_id, gutenberg_bookshelf,
 #'   Category)
-#' @param allowlist the allow-list tibble/data.frame, e.g. read from
-#'   genre_allowlist.csv
+#' @param allowlist the allow-list tibble/data.frame; see genreAllowlist()
+#'   for the canonical copy shipped with the package
 #' @param genre_rename_map a named character vector translating
 #'   Stonybrook's raw genre labels into the same target_genre naming
 #'   convention the allow-list uses, so the comparison is apples-to-apples

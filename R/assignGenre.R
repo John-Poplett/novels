@@ -27,7 +27,8 @@
 #'   the shape produced upstream: one row per (gutenberg_id, bookshelf
 #'   entry), Category already stripped of any "Category: " prefix)
 #' @param allowlist the allow-list tibble/data.frame (gutenberg_bookshelf_category,
-#'   target_genre, flag_for_review, note), e.g. read from genre_allowlist.csv
+#'   target_genre, flag_for_review, note); see genreAllowlist() for the
+#'   canonical copy shipped with the package
 #' @param allow_flagged if FALSE, ignore allow-list rows marked
 #'   flag_for_review == TRUE, so you can see which assigned genres are
 #'   robust to dropping the judgment-call mappings entirely

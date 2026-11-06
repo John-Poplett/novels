@@ -1,0 +1,423 @@
+gutenberg_bookshelf_category,target_genre,flag_for_review,note
+,,TRUE,empty level -- investigate source (missing bookshelf? artifact of earlier str_replace/split step?) before excluding permanently
+6 Best Loved Spanish Literary Classics,,FALSE,"specific collection, not a genre"
+Adventure,Adventure,FALSE,
+Africa,,FALSE,geography
+African American Writers,,FALSE,"author demographic, not genre"
+Agricultural,,FALSE,nonfiction subject
+Ainslee's,,FALSE,periodical
+Alcohol,,FALSE,subject
+American Literature,,FALSE,"too broad / national, not genre"
+American Revolutionary War,,FALSE,"historical subject, nonfiction-leaning"
+Anarchism,,FALSE,subject
+Animal,,FALSE,subject
+Animals,,FALSE,subject
+Animals-Domestic,,FALSE,subject
+Animals-Wild,,FALSE,subject
+Animals-Wild-Birds,,FALSE,subject
+Animals-Wild-Insects,,FALSE,subject
+Animals-Wild-Mammals,,FALSE,subject
+Animals-Wild-Reptiles and Amphibians,,FALSE,subject
+Animals-Wild-Trapping,,FALSE,subject
+Anthropology,,FALSE,subject
+Archaeology,,FALSE,subject
+Archaeology & Anthropology,,FALSE,subject
+Architecture,,FALSE,subject
+Argentina,,FALSE,geography
+Armour's Monthly Cook Book,,FALSE,specific periodical/book
+Art,,FALSE,subject
+Arthurian Legends,,TRUE,"mythology/legend -- could arguably feed Adventure; excluded for now, worth a second look"
+Astounding Stories,,TRUE,"famous SF pulp magazine -- a periodical name, but books tagged here are very likely genuine Sci-Fi; excluded under the periodical rule but worth reconsidering as a special-case Sci-Fi signal"
+Astronomy,,FALSE,subject
+Atheism,,FALSE,subject
+Australia,,FALSE,geography
+Bahá'í Faith,,FALSE,subject
+Banned Books from Anne Haight's list,,FALSE,"curated list, not genre"
+Banned Books List from the American Library Association,,FALSE,"curated list, not genre"
+Barnavännen,,FALSE,non-English periodical
+Best Books Ever Listings,,FALSE,"curated list, not genre"
+"Bestsellers, American, 1895-1923",,TRUE,"not a genre, but directly relevant to the wider success-prediction project -- worth keeping as a separate signal elsewhere, not folded into genre mapping"
+Bibliomania,,FALSE,subject
+Biochemistry,,FALSE,subject
+Biographies,,FALSE,nonfiction
+Biology,,FALSE,subject
+Bird-Lore,,FALSE,periodical
+"Birds, Illustrated by Color Photography",,FALSE,subject
+Blackwood's Edinburgh Magazine,,FALSE,periodical
+Boer War,,FALSE,historical subject
+Botany,,FALSE,subject
+British Law,,FALSE,subject
+British Literature,,FALSE,"too broad / national, not genre"
+Browsing: Fiction,Fiction,TRUE,site-navigation-style label; assumed equivalent to bare 'Fiction' -- confirm this assumption
+Browsing: Literature,,FALSE,too broad
+Browsing: Psychiatry,,FALSE,subject
+Browsing: Science-Fiction & Fantasy,Science Fiction,TRUE,"site-navigation-style label; assumed equivalent to bare 'Science-Fiction & Fantasy' -- confirm, and note this bundles Fantasy (see that entry's flag)"
+Bulgaria,,FALSE,geography
+Bulletin de Lille,,FALSE,non-English periodical
+Business,,FALSE,subject
+Camping,,FALSE,subject
+Canada,,FALSE,geography
+Canon Law,,FALSE,subject
+Celtic Magazine,,FALSE,periodical
+Chambers's Edinburgh Journal,,FALSE,periodical
+Chemistry,,FALSE,subject
+Child's Own Book of Great Musicians,,FALSE,specific book
+Children & Young Adult Reading,Children/YA,FALSE,
+Children's Anthologies,Children/YA,FALSE,
+Children's Biography,,FALSE,"nonfiction, even though children's"
+Children's Book Series,Children/YA,FALSE,
+Children's Fiction,Children/YA,FALSE,
+Children's History,,FALSE,"nonfiction, even though children's"
+Children's Instructional Books,,FALSE,"nonfiction, even though children's"
+Children's Literature,Children/YA,FALSE,
+"Children's Myths, Fairy Tales, etc.",Children/YA,FALSE,
+Children's Picture Books,Children/YA,FALSE,
+Children's Religion,,FALSE,"nonfiction, even though children's"
+Children's Verse,Children/YA,TRUE,poetry for children -- mapped to Children/YA rather than Poetry; could argue either way
+Christianity,,FALSE,subject
+Christmas,,FALSE,"too broad/ambiguous, could be fiction or nonfiction"
+CIA World Factbooks,,FALSE,"reference, not genre"
+Classical Antiquity,,FALSE,subject
+Classics of Literature,,FALSE,"too broad, prestige label not genre"
+Contemporary Reviews,,FALSE,not genre
+Continental Monthly,,FALSE,periodical
+Cookbooks and Cooking,,FALSE,subject
+Cooking & Drinking,,FALSE,subject
+Crafts,,FALSE,subject
+Crime Fiction,Detective/Mystery,FALSE,
+Crime Nonfiction,,FALSE,explicitly nonfiction
+"Crime, Thrillers and Mystery",Detective/Mystery,FALSE,
+Current History,,FALSE,subject
+Czech,,FALSE,language tag
+De Aarde en haar Volken,,FALSE,non-English periodical
+DE Drama,,FALSE,non-English sub-taxonomy
+DE Kinderbuch,,FALSE,non-English sub-taxonomy
+DE Lyrik,,FALSE,non-English sub-taxonomy
+DE Prosa,,FALSE,non-English sub-taxonomy
+DE Sachbuch,,FALSE,non-English sub-taxonomy
+Detective Fiction,Detective/Mystery,FALSE,
+Dew Drops,,FALSE,periodical
+Dictionaries,,FALSE,reference
+Donahoe's Magazine,,FALSE,periodical
+Dramas,,TRUE,theater/drama -- no target genre for this yet; flag as a possible future genre to add
+Drugs,,FALSE,subject
+Early English Text Society,,FALSE,"publisher/series, not genre"
+Ecology,,FALSE,subject
+Economics,,FALSE,subject
+Education,,FALSE,subject
+Egypt,,FALSE,geography
+Encyclopedias,,FALSE,reference
+Engineering,,FALSE,subject
+Engineering & Technology,,FALSE,subject
+English Civil War,,FALSE,historical subject
+Environmental Issues,,FALSE,subject
+Erotic Fiction,,TRUE,"not in Stonybrook's original genre set -- excluded, but worth a deliberate decision on whether to add it as a genre rather than silently dropping"
+Esperanto,,FALSE,language tag
+"Essays, Letters & Speeches",,FALSE,nonfiction form
+Famous Scots Series,,FALSE,"specific series, not genre"
+Fantasy,,TRUE,"genuinely adjacent to Sci-Fi but distinct -- deliberately excluded rather than merged; also bundled inside 'Science-Fiction & Fantasy' below, worth resolving consistently"
+Farming,,FALSE,subject
+Fashion,,FALSE,subject
+Films,,FALSE,subject
+Folklore,,TRUE,adjacent to Children's myths but too broad standalone -- flag
+Forestry,,FALSE,subject
+FR Beaux-Arts,,FALSE,non-English sub-taxonomy
+"FR Biographie, Mémoires, Journal intime, Correspondance",,FALSE,non-English sub-taxonomy
+FR Chansons,,FALSE,non-English sub-taxonomy
+FR Chroniques,,FALSE,non-English sub-taxonomy
+FR Contes,,FALSE,non-English sub-taxonomy
+FR Droit et Justice,,FALSE,non-English sub-taxonomy
+FR Education et Enseignement,,FALSE,non-English sub-taxonomy
+FR Femmes,,FALSE,non-English sub-taxonomy
+FR Guerres,,FALSE,non-English sub-taxonomy
+FR Histoire,,FALSE,non-English sub-taxonomy
+FR Humour,,FALSE,non-English sub-taxonomy
+FR Illustrateurs,,FALSE,non-English sub-taxonomy
+FR Jeunesse,,FALSE,non-English sub-taxonomy
+"FR La Première Guerre Mondiale, 1914-1918",,FALSE,non-English sub-taxonomy
+FR Langues,,FALSE,non-English sub-taxonomy
+FR Littérature,,FALSE,non-English sub-taxonomy
+FR Littérature francophone,,FALSE,non-English sub-taxonomy
+"FR Livres, Collections et Bibliophilie",,FALSE,non-English sub-taxonomy
+FR Métiers et Artisanat,,FALSE,non-English sub-taxonomy
+FR Musique,,FALSE,non-English sub-taxonomy
+FR Nouveautés,,FALSE,non-English sub-taxonomy
+FR Nouvelles,,FALSE,non-English sub-taxonomy
+FR Occultisme,,FALSE,non-English sub-taxonomy
+FR Peinture,,FALSE,non-English sub-taxonomy
+FR Peuples et Sociétés,,FALSE,non-English sub-taxonomy
+"FR Philosophie, Religion et Morale",,FALSE,non-English sub-taxonomy
+FR Poésie,,FALSE,non-English sub-taxonomy
+FR Politique,,FALSE,non-English sub-taxonomy
+FR Presse,,FALSE,non-English sub-taxonomy
+FR Prix Nobel,,FALSE,non-English sub-taxonomy
+FR Science fiction,,FALSE,non-English sub-taxonomy
+FR Sciences et Techniques,,FALSE,non-English sub-taxonomy
+FR Séduction et libertinage,,FALSE,non-English sub-taxonomy
+FR Services publics,,FALSE,non-English sub-taxonomy
+FR Sports et loisirs,,FALSE,non-English sub-taxonomy
+FR Théâtre,,FALSE,non-English sub-taxonomy
+FR Villes,,FALSE,non-English sub-taxonomy
+FR Voyages et pays,,FALSE,non-English sub-taxonomy
+France,,FALSE,geography
+French Literature,,FALSE,"too broad / national, not genre"
+Garden and Forest,,FALSE,periodical
+Gardening,,FALSE,subject
+Gender & Sexuality Studies,,FALSE,subject
+General Fiction,Fiction,FALSE,
+Geology,,FALSE,subject
+German Language Books,,FALSE,language tag
+German Literature,,FALSE,"too broad / national, not genre"
+Germany,,FALSE,geography
+Godey's Lady's Book,,FALSE,periodical
+Golden Days for Boys and Girls,,FALSE,"periodical, children's-adjacent"
+Gothic Fiction,,TRUE,Horror-adjacent -- no target genre for this yet; flag as a possible future genre
+Graham's Magazine,,FALSE,periodical
+Greece,,FALSE,geography
+Harper's New Monthly Magazine,,FALSE,periodical
+Harper's Young People,,FALSE,"periodical, children's-adjacent"
+Harvard Classics,,FALSE,"specific series, not genre"
+Health & Medicine,,FALSE,subject
+Hinduism,,FALSE,subject
+Historical Fiction,Historical Fiction,FALSE,
+Historical Novels,Historical Fiction,FALSE,
+History - American,,FALSE,nonfiction subject
+History - Ancient,,FALSE,nonfiction subject
+History - British,,FALSE,nonfiction subject
+History - Early Modern (c. 1450-1750),,FALSE,nonfiction subject
+History - European,,FALSE,nonfiction subject
+History - Medieval,,FALSE,nonfiction subject
+History - Modern (1750+),,FALSE,nonfiction subject
+History - Other,,FALSE,nonfiction subject
+History - Religious,,FALSE,nonfiction subject
+History - Royalty,,FALSE,nonfiction subject
+History - Schools & Universities,,FALSE,nonfiction subject
+History - Warfare,,FALSE,nonfiction subject
+Hobbies,,FALSE,subject
+Horror,,TRUE,no target genre for this yet -- flag as a possible future genre to add
+Horticulture,,FALSE,subject
+How To ...,,FALSE,"instructional, not genre"
+Humor,,FALSE,no clean target genre; excluded
+Humour,,FALSE,no clean target genre; excluded
+Illustrators,,FALSE,not genre
+India,,FALSE,geography
+Information Sys,,FALSE,subject
+Islam,,FALSE,subject
+IT Agraria,,FALSE,non-English sub-taxonomy
+IT Archeologia e Storia dell'arte,,FALSE,non-English sub-taxonomy
+IT Architettura,,FALSE,non-English sub-taxonomy
+IT Arte varia,,FALSE,non-English sub-taxonomy
+IT Biografie,,FALSE,non-English sub-taxonomy
+IT Botanica,,FALSE,non-English sub-taxonomy
+IT Cucina,,FALSE,non-English sub-taxonomy
+IT Discorsi e Orazioni,,FALSE,non-English sub-taxonomy
+IT Economia,,FALSE,non-English sub-taxonomy
+IT Filosofia,,FALSE,non-English sub-taxonomy
+IT Folklore,,FALSE,non-English sub-taxonomy
+IT Geografia,,FALSE,non-English sub-taxonomy
+IT Legge,,FALSE,non-English sub-taxonomy
+IT Letteratura,,FALSE,non-English sub-taxonomy
+IT Letteratura per ragazzi,,FALSE,non-English sub-taxonomy
+IT Linguistica,,FALSE,non-English sub-taxonomy
+IT Miscellanea,,FALSE,non-English sub-taxonomy
+IT Musica,,FALSE,non-English sub-taxonomy
+IT Narrativa varia,,FALSE,non-English sub-taxonomy
+IT Numismatica,,FALSE,non-English sub-taxonomy
+IT Poesia,,FALSE,non-English sub-taxonomy
+IT Psicologia e Sociologia,,FALSE,non-English sub-taxonomy
+IT Racconti,,FALSE,non-English sub-taxonomy
+IT Religione e Spiritualità,,FALSE,non-English sub-taxonomy
+IT Romanzi,,FALSE,non-English sub-taxonomy
+IT Romanzi storici,,FALSE,non-English sub-taxonomy
+IT Salute,,FALSE,non-English sub-taxonomy
+IT Scienza,,FALSE,non-English sub-taxonomy
+IT Scienze militari,,FALSE,non-English sub-taxonomy
+IT Scienze politiche,,FALSE,non-English sub-taxonomy
+IT Storia,,FALSE,non-English sub-taxonomy
+IT Teatro dialettale,,FALSE,non-English sub-taxonomy
+IT Teatro in prosa,,FALSE,non-English sub-taxonomy
+IT Teatro in versi,,FALSE,non-English sub-taxonomy
+IT Tecnologia,,FALSE,non-English sub-taxonomy
+IT Umorismo,,FALSE,non-English sub-taxonomy
+IT Viaggi,,FALSE,non-English sub-taxonomy
+Italy,,FALSE,geography
+Journal of Entomology and Zoology,,FALSE,periodical
+Journalism,,FALSE,subject
+Journals,,FALSE,"form, not genre"
+Judaism,,FALSE,subject
+L'Illustration,,FALSE,periodical
+Language & Communication,,FALSE,subject
+Language Education,,FALSE,subject
+Latter Day Saints,,FALSE,subject
+Law & Criminology,,FALSE,subject
+Lippincott's Magazine,,FALSE,periodical
+Literature - Other,,FALSE,"too vague, not genre"
+Little Folks,,FALSE,"periodical, children's-adjacent"
+London Medical Gazette,,FALSE,periodical
+Love,Romance,FALSE,
+Management,,FALSE,subject
+Manufacturing,,FALSE,subject
+Maps and Cartography,,FALSE,subject
+Masterpieces in Colour,,FALSE,specific series
+Mathematics,,FALSE,subject
+McClure's Magazine,,FALSE,periodical
+Media,,FALSE,subject
+Mediæval Town Series,,FALSE,specific series
+Medicine,,FALSE,subject
+Microbiology,,FALSE,subject
+Microscopy,,FALSE,subject
+Middle Ages,,FALSE,subject
+Mother Earth,,FALSE,periodical
+Movie Books,,FALSE,subject
+Mrs Whittelsey's Magazine for Mothers and Daughters,,FALSE,periodical
+Music,,FALSE,subject
+Mycology,,FALSE,subject
+Mystery Fiction,Detective/Mystery,FALSE,
+Mythology,,FALSE,subject
+"Mythology, Legends & Folklore",,FALSE,subject
+Napoleonic(Bookshelf),,FALSE,historical subject
+Native America,,FALSE,subject
+Natural History,,FALSE,subject
+Nature,,FALSE,subject
+New Zealand,,FALSE,geography
+Nobel Prizes in Literature,,FALSE,"award list, not genre"
+Northern Nut Growers Association,,FALSE,specific organization
+Norway,,FALSE,geography
+Notes and Queries,,FALSE,periodical
+Noteworthy Trials(Bookshelf),,FALSE,not genre
+Novels,Fiction,TRUE,"too generic to be a confident signal -- mapped to Fiction as a weak catch-all, low confidence"
+Nutrition,,FALSE,subject
+Old Age & the Elderly,,FALSE,subject
+One Act Plays,,FALSE,"theater, no target genre"
+Opera,,FALSE,subject
+Our Young Folks,,FALSE,"periodical, children's-adjacent"
+Paganism,,FALSE,subject
+Parenthood & Family Relations,,FALSE,subject
+Pharmacology,,FALSE,subject
+Philosophy,,FALSE,subject
+Philosophy & Ethics,,FALSE,subject
+Photography,,FALSE,subject
+Physics,,FALSE,subject
+Physiology,,FALSE,subject
+"Pirates, Buccaneers, Corsairs, etc.",Adventure,TRUE,"clear Adventure-fiction topic, but worded as a subject tag rather than a genre label -- confirm this is genuinely genre-equivalent"
+Plays,,FALSE,"theater, no target genre"
+Poetry,Poetry,FALSE,
+"Poetry, A Magazine of Verse",,TRUE,"periodical, but poetry-specific -- excluded under periodical rule; worth reconsidering as a Poetry signal"
+Politics,,FALSE,subject
+Popular Science Monthly,,FALSE,periodical
+Prairie Farmer,,FALSE,periodical
+Precursors of Science Fiction,Science Fiction,FALSE,
+Project Gutenberg,,FALSE,"meta/artifact, not genre"
+Psychiatry,,FALSE,subject
+Psychology,,FALSE,subject
+PT Arte,,FALSE,non-English sub-taxonomy
+PT Biografia,,FALSE,non-English sub-taxonomy
+PT Ciência e Técnica,,FALSE,non-English sub-taxonomy
+PT Contos,,FALSE,non-English sub-taxonomy
+PT História,,FALSE,non-English sub-taxonomy
+PT Infantil e Juvenil,,FALSE,non-English sub-taxonomy
+PT Língua Portuguesa,,FALSE,non-English sub-taxonomy
+PT Navegações e Explorações,,FALSE,non-English sub-taxonomy
+PT Periódicos,,FALSE,non-English sub-taxonomy
+PT Poesia,,FALSE,non-English sub-taxonomy
+PT Política e Sociedade,,FALSE,non-English sub-taxonomy
+PT Romance,,FALSE,non-English sub-taxonomy
+PT Teatro,,FALSE,non-English sub-taxonomy
+Punch,,FALSE,periodical
+Punchinello,,FALSE,periodical
+Racism,,FALSE,subject
+Reference,,FALSE,reference
+Religion,,FALSE,subject
+Reports & Conference Proceedings,,FALSE,not genre
+Research Methods,,FALSE,not genre
+Romance,Romance,FALSE,
+Romantic Fiction,Romance,FALSE,
+Russian Literature,,FALSE,"too broad / national, not genre"
+School Stories,Children/YA,TRUE,"could plausibly be Adventure or Fiction instead -- mapped to Children/YA, worth a second look"
+Science,,FALSE,subject
+Science - Biology,,FALSE,subject
+Science - Chemistry,,FALSE,subject
+Science - Earth,,FALSE,subject
+Science - Physics,,FALSE,subject
+Science Fiction,Science Fiction,FALSE,
+Science Fiction by Women,Science Fiction,FALSE,
+Science-Fiction & Fantasy,Science Fiction,TRUE,"bundles Fantasy in with Sci-Fi -- some tagged books may be pure Fantasy, not Sci-Fi; included with this caveat"
+Scientific American,,FALSE,periodical
+Scouts,,FALSE,subject
+Scribner's Magazine,,FALSE,periodical
+Sexuality & Erotica,,TRUE,"not in Stonybrook's original genre set -- excluded, but worth a deliberate decision on whether to add"
+Short Stories,Short Stories,FALSE,
+Slavery,,FALSE,subject
+Sociology,,FALSE,subject
+South Africa,,FALSE,geography
+South America,,FALSE,geography
+Spanish American War,,FALSE,historical subject
+Spirituality,,FALSE,subject
+Sports,,FALSE,subject
+St. Nicholas Magazine for Boys and Girls,,FALSE,"periodical, children's-adjacent"
+Statistics,,FALSE,subject
+Suffrage,,FALSE,subject
+Teaching & Education,,FALSE,subject
+Technology,,FALSE,subject
+The Aldine,,FALSE,periodical
+The American Architect and Building News,,FALSE,periodical
+The American Bee Journal,,FALSE,periodical
+The American Journal of Archaeology,,FALSE,periodical
+The American Missionary,,FALSE,periodical
+The American Quarterly Review,,FALSE,periodical
+The Arena,,FALSE,periodical
+The Argosy,,FALSE,periodical
+The Atlantic Monthly,,FALSE,periodical
+The Baptist Magazine,,FALSE,periodical
+The Bay State Monthly,,FALSE,periodical
+The Botanical Magazine,,FALSE,periodical
+The Brochure Series of Architectural Illustration,,FALSE,periodical
+The Catholic World,,FALSE,periodical
+The Christian Foundation,,FALSE,periodical
+The Church of England Magazine,,FALSE,periodical
+The Contemporary Review,,FALSE,periodical
+The Economist,,FALSE,periodical
+The Esperantist,,FALSE,periodical
+The Galaxy,,FALSE,periodical
+The Girls Own Paper,,FALSE,periodical
+The Great Round World And What Is Going On In It,,FALSE,periodical
+The Haslemere Museum Gazette,,FALSE,periodical
+The Idler,,FALSE,periodical
+The Illustrated War News,,FALSE,periodical
+"The International Magazine of Literature, Art, and Science",,FALSE,periodical
+The Irish Ecclesiastical Record,,FALSE,periodical
+The Irish Penny Journal,,FALSE,periodical
+The Journal of Negro History,,FALSE,periodical
+The Knickerbocker,,FALSE,periodical
+The Mayflower,,FALSE,periodical
+The Menorah Journal,,FALSE,periodical
+The Mentor,,FALSE,periodical
+"The Mirror of Literature, Amusement, and Instruction",,FALSE,periodical
+"The Mirror of Taste, and Dramatic Censor",,FALSE,periodical
+The National Preacher,,FALSE,periodical
+The North American Medical and Surgical Journal,,FALSE,periodical
+The Nursery,,FALSE,periodical
+The Philatelic Digital Library Project,,FALSE,not genre
+The Scrap Book,,FALSE,periodical
+The Speaker,,FALSE,periodical
+The Stars and Stripes,,FALSE,periodical
+The Strand Magazine,,FALSE,periodical
+The Unpopular Review,,FALSE,periodical
+The Writer,,FALSE,periodical
+The Yellow Book,,FALSE,periodical
+Transportation,,FALSE,subject
+Travel,,FALSE,subject
+Travel Writing,,FALSE,nonfiction form
+United Kingdom,,FALSE,geography
+United States,,FALSE,geography
+United States Law,,FALSE,subject
+US Civil War,,FALSE,historical subject
+Western,Adventure,TRUE,Westerns mapped to Adventure as closest fit -- could arguably be its own genre
+Witchcraft,,FALSE,subject
+"Women in Science, Technology, Engineering, and Mathematics",,FALSE,subject
+Women's Travel Journals,,FALSE,nonfiction form
+Woodwork,,FALSE,subject
+World War I,,FALSE,historical subject
+World War II,,FALSE,historical subject
+Writing,,FALSE,subject
+Zoology,,FALSE,subject
