@@ -13,9 +13,9 @@ compared against them. The files are what `tar_read(cv_summary)` and
 
 Produced after the LibriVox contamination fix.
 
-- Pipeline run: `tar_make()`, 2026-10-30, 207 targets, 5m 28s.
+- Pipeline run: `tar_make()`, 2026-10-30, 207 targets, 5m 28s. (The pipeline has since grown to 216 targets; this line records the run that produced these files.)
 - Corpus: 796 rows over 754 books (digest `25f3cb40af928b414c6f03e9dd53d1f7`).
-- Folds: `createKFoldSplit(novels, 5)`, seed 42, author-grouped.
+- Folds: the stored `author5_v1` table, author-grouped and append-only. For this corpus it equals `createKFoldSplit(novels, 5, seed = 42)`.
 
 ## History
 

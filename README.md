@@ -2,7 +2,7 @@
 
 Reproducing and extending [*Success with Style: Using Writing Style to Predict the Success of Novels*](https://aclanthology.org/D13-1181.pdf) (Ashok, Feng & Choi, EMNLP 2013) — a style-based classifier that predicts whether a novel will be more or less "successful," measured via Project Gutenberg download counts.
 
-This project builds the same dataset from the original paper's source metadata, then trains and evaluates a TF-IDF / elastic-net classifier on it as a modern R reproduction. The upstream corpus has several real data-quality issues (see below); this pipeline fixes them, with each fix backed by an assert that catches the problem if it ever reoccurs. The Results table below is read back from the `targets` store (`tar_read(cv_summary)`), not copied by hand, and the source archive is pinned by SHA-256, so the numbers and the bytes they came from cannot drift apart silently.
+This project builds the same dataset from the original paper's source metadata, then trains and evaluates a TF-IDF / elastic-net classifier on it as a modern R reproduction. The upstream corpus has several real data-quality issues (see below); this pipeline fixes them, with each fix backed by an assert that catches the problem if it ever reoccurs. The Results table below is read back from the `targets` store — the AUC columns from `tar_read(cv_summary)`, the nonzero-coefficient column from `tar_read(cv_results)` — not copied by hand, and the source archive is pinned by SHA-256, so the numbers and the bytes they came from cannot drift apart silently.
 
 ## Pipeline
 
@@ -19,7 +19,7 @@ HuggingFace, without a code change). The archive's SHA-256 is pinned as
 `archive_sha256` in `_targets.R` and checked before unpacking, so a moved
 mirror or a corrupted download aborts instead of silently changing the corpus.
 
-Key targets (213 in total):
+Key targets (216 in total):
 
 | Target | What it is |
 |---|---|
@@ -27,7 +27,7 @@ Key targets (213 in total):
 | `rawdataset_path` | Downloads, verifies and unpacks the source corpus — the archive is left untouched; all corrections below are applied as explicit pipeline code, not baked into the archive |
 | `parsed_metadata` | Parses the original hierarchical metadata file into a flat tibble (genre, fold, success/failure label, Gutenberg ID, download count), with a file-conservation assert against the directory tree |
 | `novels` | One row per (book, genre): deduplicates the file listing to one row per book, patches three known LibriVox-contaminated books and drops two (see below), strips Gutenberg boilerplate, joins against the metadata — 796 rows over 754 books |
-| `fold_assignments` | Five author-safe folds, generated once and indexed into by every per-fold target |
+| `fold_assignments` | Five author-safe folds, read from the stored `author5_v1` table (`inst/extdata/author_folds.csv`) and indexed into by every per-fold target. The table is append-only, so adding books does not reshuffle existing authors |
 | `train_data_*` / `test_data_*` | Per-fold splits, deduplicated per book within the fold |
 | `vectorizer_*`, `dtm_{train,test}_raw_*` | Unigram vocabulary and document-term matrices |
 | `tfidf_fit_*`, `dtm_{train,test}_*` | TF-IDF weighting, fit on train only |
@@ -70,9 +70,9 @@ The original metadata file (a plain-text, human-readable format with a hierarchi
 
 ## Results
 
-TF-IDF (unigrams) + `glmnet` (elastic net), five author-safe folds: the model is fit on four folds and scored on the fifth. This table is `tar_read(cv_summary)` from the store in this repository — not a hand-copied number:
+TF-IDF (unigrams) + `glmnet` (elastic net), five author-safe folds: the model is fit on four folds and scored on the fifth. The AUC columns are `tar_read(cv_summary)` from the store in this repository; the nonzero-coefficient column is the mean of `tar_read(cv_results)$n_nonzero_coef` — not hand-copied numbers:
 
-| alpha | mean test AUC | SD across folds | range | mean nonzero coefficients |
+| alpha | mean test AUC | SD across folds | range | mean nonzero coefficients (from `cv_results`) |
 |---|---|---|---|---|
 | 0.01 | 0.744 | 0.073 | 0.658–0.856 | 4079 |
 | 0.03 | 0.734 | 0.053 | 0.665–0.809 | 2514 |
