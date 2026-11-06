@@ -7,11 +7,11 @@ to evolve from the original both in "tidiness" and magnitude.
 The project uses the R language, almost exclusively. Python extensions
 are permissible when like facilities are not available in R.  The
 coding style leans towards functional coding (e.g., pipelines and
-closures)and should shy away from metaprogramming for the sake of
+closures) and should shy away from metaprogramming for the sake of
 simplicity.
 
 Version 1.03 was published in 2019.
-Version 1.04 at the least will be published before the end of 2026.
+At least one new version will be published before the end of 2026.
 
 Recommended reading: README.md, TODO.md and the project's source code files.
 
@@ -24,7 +24,9 @@ Recommended reading: README.md, TODO.md and the project's source code files.
 
 ## Correctness discipline
 * Validate inputs early; fail fast with actionable messages.
-* Preserve backward compatibility when not contradicted by a justifiable improvement.
+* Preserve backward compatibility but **not** at the expense of  justifiable improvements.
+* As the dataset evolves, at each significant milestone (e.g., a schema or sample-size change), 
+the code to reproduce the dataset is tracked in committed in the project's git repo and labeled.
 * Make behavior deterministic (tests should pass on any machine).
 
 ## Testing discipline

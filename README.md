@@ -119,6 +119,7 @@ Each doubling adds roughly 0.025â€“0.04 AUC at every `alpha`, with no plateau â€
   - Literary allusion, think of Joyce's religious allusions, his apple tree in a building courtyard and Buck Mulligan's razor and razor bowl.
   - Chekhov's gun better expressed as a juggler with knives in the air. How many does he have up in the air at one time, which one is coming down next, and what or why is the juggler doing tossing up another one in the air? This is the basis of suspense and author's credibility. Each time a gun goes off or a knife returns to earth, the write fulfills a promise to his reader.
   - Homage. Is it a useful signal when a work deliberately mirrors another work as in the example of Virginia Woolf's Mrs. Dalloway and Michael Cunningham's The Hours, Joyce's Ulysses and the Odyssey, Ring Lardner's short story, The Champion, and the rags-to-riches stories of Horatio Alger?
+  - Zeitgeist, does the work capture the "mood" of a specific era?
 
 ## Related work
 

@@ -1,14 +1,21 @@
 # TODO
-* [ ] Bring AGENTS.md up to snuff
-* [ ] Move fold configurations out of the dataset but preserve the attribute of making them constant and repeatable.
-  * Decided 2026-10-30: the original columns (`fold`, `download_count`, `response`) stay in `novels`, frozen and documented as Sunnybrook's. Anything new goes in separate tables.
-  * Generated folds become stored data, not a seed: `(author, scheme, fold)`, with `author5_v1` = today's seed-42 assignment, **append-only** (existing authors never move; new authors are assigned and recorded). R's `set.seed()` cannot be reproduced in other languages, and the current positional assignment reshuffles folds whenever the data grows. The author key must handle co-authored books.
-  * Fresh download counts go in their own table: `(gutenberg_id, snapshot_date, source, downloads)`. First find out what the 2013 count measured and what can be fetched per book now.
-  * Order: folds table before expanding the dataset; counts refresh together with the expansion.
-  * Done: `author5_v1` stored in `inst/extdata/author_folds.csv` (514 authors), verified against the pipeline's `fold_assignments`; `data-raw/author-folds.R` refuses to overwrite it. Next: make the pipeline read the table instead of recomputing the seed; a documented way to append new authors; export it with the Parquet dataset.
-* [ ] Swap out the current R-specific RDA format to Parquet for the default dataset format
-* [ ] Refresh the download counts and labels of the three patched LibriVox rows (19513, 19640, 19836). They still carry the audio entries' counts, not the books'. 19836 stands in for *Early Spring*; *The Verse-Book of a Homely Woman* (3477) has its own count. Replace `baselines/` afterwards and record the AUC effect in CHANGELOG.md.
-* [ ] CRAN size: the tarball would be ~76 MB against a ~5 MB guideline. Ship a small sample in the package (whole books, every genre) and fetch the full corpus through the pinned download, as Parquet. Measured: Parquet/zstd-22 is only ~11% smaller than the current bzip2 RDA, so format does not solve size.
+* [ ] Reconcile this list with the roadmap section in README.md
+* [ ] **Expand dataset**
+  * [ ] Propose two to three mechanisms for deducing a Gutenberg texts genre(s). Give the pros and cons. Write the proposal up in a document "deducing-genres.md". Consider:
+    * Training a multinomial genre classifier (titles can belong to more than one genre) based on the existing dataset 
+    * Connecting to an Open Library MCP server to scan a title's subjects for genre candidates.
+    * Using Gutenberg metadata to deduce genres
+  * Plan on adding at least two new genres: "Flash Fiction" and "Young Adult Fiction". Use the "Flash Fiction" category for a demo dataset
+that might produce a small enought dataset to meet CRAN's tight project size constraints.
+  * [ ] Refresh the download counts (this should care of the labels of the three patched LibriVox rows (19513, 19640, 19836). They still carry the audio entries' counts, not the books'. 19836 stands in for *Early Spring*; *The Verse-Book of a Homely Woman* (3477) has its own count. Replace `baselines/` afterwards and record the AUC effect in CHANGELOG.md.
+ * Initially qualify the expansion code by having it attempt to reproduce the existing dataset from scratch based solely on gutenberg_identifiers. 
+The quality of the expansion code corresponds to how faithfully it reproduces the existing dataset, e.g. getting the genre classifications to match) and evading prior pitfalls such as inclusion of Gutenberg boilerplate and mistaking librivox metadata for actual literary text.
+* Maintain the original 50/50 split of success and failure 
+* Decide when and how to replace binomial classification with a continuous response based on the pros and cons of each.
+* Then the expansion, with the download-count refresh and a decision on how labels are defined for old and new books together.
+* Parquet and the CRAN packaging (the sample, the download, the precompute run).
+  * [ ] Swap out the current R-specific RDA format to Parquet for the default dataset format
+  * [ ] CRAN size: the tarball would be ~76 MB against a ~5 MB guideline. Ship a small sample in the package (whole books, every genre) and fetch the full corpus through the pinned download, as Parquet. Measured: Parquet/zstd-22 is only ~11% smaller than the current bzip2 RDA, so format does not solve size.
 * [ ] Precompute the vignettes for CRAN: rename `vignettes/*.Rmd` to `.Rmd.orig`, add `^vignettes/.*\.Rmd\.orig$` to `.Rbuildignore`, run `data-raw/precompute-vignettes.R` against the full corpus.
 * [ ] Strip transcriber boilerplate that survives `stripGutenbergBoilerplate()`: 54 of 100 Science Fiction texts carry "extensive research did not uncover any evidence that the u.s. copyright… was renewed", a genre fingerprint. Also front matter in some replacements ("[this e-text comes in three forms…", "[redactor's note…").
 * [ ] Silence the intended many-to-many join warning in `tidyRawData()` with `relationship = "many-to-many"` (co-authored books × multi-genre books; the following `summarize()` collapses it).
@@ -31,6 +38,15 @@ in a Gutenberg mirror
   * [ ] Consider replacing metaprogramming logic in _targets.R with more pedestrian code. It's Lispy cool but difficult to debug.
 
 # Done (not published)
+
+&#9989; Add a target to compare a target run against the current baseline (`cv_baseline_check`, flagging any `alpha` more than two standard errors from `baselines/cv_summary.csv`).
+
+&#9989; Move fold configurations out of the dataset but preserve the attribute of making them constant and repeatable.
+  * Decided 2026-10-30: the original columns (`fold`, `download_count`, `response`) stay in `novels`, frozen and documented as Sunnybrook's. Anything new goes in separate tables.
+  * Generated folds become stored data, not a seed: `(author, scheme, fold)`, with `author5_v1` = today's seed-42 assignment, **append-only** (existing authors never move; new authors are assigned and recorded). R's `set.seed()` cannot be reproduced in other languages, and the current positional assignment reshuffles folds whenever the data grows. The author key must handle co-authored books.
+  * Fresh download counts go in their own table: `(gutenberg_id, snapshot_date, source, downloads)`. First find out what the 2013 count measured and what can be fetched per book now.
+  * Order: folds table before expanding the dataset; counts refresh together with the expansion.
+  * Done: `author5_v1` stored in `inst/extdata/author_folds.csv` (514 authors), verified against the pipeline's `fold_assignments`; `data-raw/author-folds.R` refuses to overwrite it. Next: make the pipeline read the table instead of recomputing the seed; documentation for appending new authors; export it with the Parquet dataset.
 
 &#9989; Fix LibriVox contamination (the patch had been a silent no-op)
   * Three books patched with text from a different id, two dropped as duplicates of books already in the corpus; 796 rows over 754 books
