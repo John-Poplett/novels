@@ -25,7 +25,7 @@ Recommended reading: README.md, TODO.md and the project's source code files.
 ## Correctness discipline
 * Validate inputs early; fail fast with actionable messages.
 * Preserve backward compatibility but **not** at the expense of  justifiable improvements.
-* As the dataset evolves, at each significant milestone (e.g., a schema or sample-size change), 
+* As the dataset evolves, at each significant milestone (e.g., a schema or sample-size change),
 the code to reproduce the dataset is tracked in committed in the project's git repo and labeled.
 * Make behavior deterministic (tests should pass on any machine).
 

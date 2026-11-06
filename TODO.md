@@ -2,15 +2,15 @@
 * [ ] Reconcile this list with the roadmap section in README.md
 * [ ] **Expand dataset**
   * [ ] Propose two to three mechanisms for deducing a Gutenberg texts genre(s). Give the pros and cons. Write the proposal up in a document "deducing-genres.md". Consider:
-    * Training a multinomial genre classifier (titles can belong to more than one genre) based on the existing dataset 
+    * Training a multinomial genre classifier (titles can belong to more than one genre) based on the existing dataset
     * Connecting to an Open Library MCP server to scan a title's subjects for genre candidates.
     * Using Gutenberg metadata to deduce genres
   * Plan on adding at least two new genres: "Flash Fiction" and "Young Adult Fiction". Use the "Flash Fiction" category for a demo dataset
 that might produce a small enought dataset to meet CRAN's tight project size constraints.
   * [ ] Refresh the download counts (this should care of the labels of the three patched LibriVox rows (19513, 19640, 19836). They still carry the audio entries' counts, not the books'. 19836 stands in for *Early Spring*; *The Verse-Book of a Homely Woman* (3477) has its own count. Replace `baselines/` afterwards and record the AUC effect in CHANGELOG.md.
- * Initially qualify the expansion code by having it attempt to reproduce the existing dataset from scratch based solely on gutenberg_identifiers. 
+ * Initially qualify the expansion code by having it attempt to reproduce the existing dataset from scratch based solely on gutenberg_identifiers.
 The quality of the expansion code corresponds to how faithfully it reproduces the existing dataset, e.g. getting the genre classifications to match) and evading prior pitfalls such as inclusion of Gutenberg boilerplate and mistaking librivox metadata for actual literary text.
-* Maintain the original 50/50 split of success and failure 
+* Maintain the original 50/50 split of success and failure
 * Decide when and how to replace binomial classification with a continuous response based on the pros and cons of each.
 * Then the expansion, with the download-count refresh and a decision on how labels are defined for old and new books together.
 * Parquet and the CRAN packaging (the sample, the download, the precompute run).
@@ -22,7 +22,7 @@ The quality of the expansion code corresponds to how faithfully it reproduces th
 * [ ] `createKFoldSplit()` assigns folds by position in `unique(data$author)`, so the fold map depends on row order (removing two rows moved 2 of 514 authors). Sorting the authors would fix it but reshuffles every fold; do it deliberately and reset `baselines/` with it.
 * [ ] **Embeddings**
   * [ ] Review and update chunking discipline
-  * [ ] Setup a local TEI server 
+  * [ ] Setup a local TEI server
   * [ ] Integrate code to use TEI server for features
 * [ ] Expand dataset
   * Consider replacing Sunny Brook's directory  structure for Gutenberg's and the possibility of keeping all texts
@@ -31,7 +31,7 @@ in a Gutenberg mirror
   * Create an extensions directory for larger data sets
 * [ ] Try linear regression modeling on download counts instead of imposing a binary classifier. (measured case for it, and the sampling caveat, under README Roadmap)
 * [ ] Finish SCHEMA.md. Make it a document of versions, including at least original and the first update.
-* [ ] Upgrade glmnet.rmd to litedown or Quarto 
+* [ ] Upgrade glmnet.rmd to litedown or Quarto
 * **Refactoring**
   * [ ] Upgrade all magrittr %>% pipe symbols to R's |>
   * [ ] Standardize on snake_case format for var and function names
@@ -76,7 +76,7 @@ in a Gutenberg mirror
   * Duplicate files in dataset
   * Authors duplicated across folds
   * Comment on download counts
-  
+ 
 &#9989; Integrate with gutenbergr
   * Define a novels\_metadata function
   * Use author\_id and gutenberg\_ids
