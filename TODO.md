@@ -76,7 +76,7 @@ in a Gutenberg mirror
   * Duplicate files in dataset
   * Authors duplicated across folds
   * Comment on download counts
- 
+
 &#9989; Integrate with gutenbergr
   * Define a novels\_metadata function
   * Use author\_id and gutenberg\_ids

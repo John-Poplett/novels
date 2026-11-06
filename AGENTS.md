@@ -64,9 +64,19 @@ rather than silently changing the corpus.
 
 ## Testing
 
-Three levels, cheapest first. Use the light ones while developing; the full
-check is the gate before publishing a release. The `Makefile` wraps all three
-so the Rd regeneration cannot be forgotten (see the `man/` note below).
+Four levels, cheapest first. Use the light ones while developing; the full
+check is the gate before publishing a release. The `Makefile` wraps them so
+the Rd regeneration cannot be forgotten (see the `man/` note below).
+
+0. Hygiene, milliseconds:
+
+```bash
+make lint   # tracked text files are LF-only, no trailing blanks
+```
+
+`R CMD check` inspects neither line endings nor trailing blanks, so this runs
+first in CI as well. It has already paid for itself: a CSV shipped CRLF and
+several docs carried stray spaces, and the check was green through all of it.
 
 1. Fast loop, seconds:
 
@@ -141,7 +151,7 @@ happen to be on disk. After changing roxygen comments, run `make document`
 that do not exist in the source. `make check` and `make check-full` do this
 for you; `devtools::check()` called by hand does not.
 
-**Rule:** levels 1 and 2 while iterating on a feature; level 3 before merging
+**Rule:** levels 0-2 while iterating on a feature; level 3 before merging
 or publishing, and always when `R/`, `DESCRIPTION`, `man/` or `vignettes/`
 change. Never delete a vignette, or disable it permanently, to make level 3
 pass — a failing vignette is a failing pipeline.
