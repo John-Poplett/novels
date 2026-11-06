@@ -1,4 +1,4 @@
-context('Librivox-contaminated text is actually replaced, not merely re-fetched')
+context('Librivox-contaminated text is replaced from pinned snapshots')
 
 # Background: five gutenberg_ids in the corpus point at LibriVox audio
 # recordings, not text editions. patchContaminatedText() used to re-download
@@ -7,9 +7,8 @@ context('Librivox-contaminated text is actually replaced, not merely re-fetched'
 # identical contamination. The pipeline's baseline assertion ran *before*
 # patching and never checked the outcome, so it passed silently.
 #
-# The gutenbergr download is mocked: tests must not need the network. The mock
-# behaves like Gutenberg -- the audio id yields the audio page, any other id
-# yields a real text -- and records which ids were requested.
+# The replacement texts are now shipped compressed and pinned by SHA-256, so
+# these tests never touch the network.
 
 audio_page <- "This audio reading of A Journey to the Center of the Earth is read by Annie Coleman. Librivox recording."
 
@@ -20,60 +19,65 @@ toy_corpus <- function() {
   )
 }
 
-mock_gutenberg <- function(requested) {
-  function(gutenberg_id, ...) {
-    requested$ids <- c(requested$ids, gutenberg_id)
-    tibble::tibble(gutenberg_id = rep(gutenberg_id, each = 2L)) |>
-      dplyr::mutate(text = ifelse(gutenberg_id == 19513L, audio_page, "Real Line One"))
-  }
-}
-
 replacements <- c("19513" = 18857L)
 
-test_that("the replacement is fetched under its own id, not the contaminated one", {
-  requested <- new.env()
-  testthat::local_mocked_bindings(gutenberg_download = mock_gutenberg(requested), .package = "gutenbergr")
+read_stored <- function(id) {
+  con <- xzfile(novels:::replacementTextPath(id), "rb")
+  on.exit(close(con), add = TRUE)
+  paste(readLines(con, warn = FALSE), collapse = "\n")
+}
 
-  suppressMessages(novels::patchContaminatedText(toy_corpus(), replacements))
+test_that("the shipped snapshots match their pinned digests", {
+  pinned <- novels:::librivox_replacement_sha256
 
-  expect_identical(requested$ids, 18857L)
+  for (id in names(pinned)) {
+    path <- novels:::replacementTextPath(as.integer(id))
+    actual <- digest::digest(path, algo = "sha256", file = TRUE)
+    expect_identical(tolower(actual), tolower(pinned[[id]]))
+  }
 })
 
-test_that("after patching, no librivox text remains (regression: the patch was a no-op)", {
-  requested <- new.env()
-  testthat::local_mocked_bindings(gutenberg_download = mock_gutenberg(requested), .package = "gutenbergr")
-  patched <- suppressMessages(novels::patchContaminatedText(toy_corpus(), replacements))
-
-  expect_length(novels::getLibrivoxContaminatedIds(patched), 0)
-})
-
-test_that("the contaminated id stays the key and the replacement is lowercased", {
-  requested <- new.env()
-  testthat::local_mocked_bindings(gutenberg_download = mock_gutenberg(requested), .package = "gutenbergr")
+test_that("patching uses the stored replacement text, lowercased", {
   patched <- suppressMessages(novels::patchContaminatedText(toy_corpus(), replacements))
 
   expect_identical(patched$gutenberg_id, c(19513L, 100L))
-  expect_identical(patched$text[1], "real line one\nreal line one")
+  expect_identical(patched$text[1], read_stored(18857L))
+  expect_false(grepl("librivox", patched$text[1], ignore.case = TRUE))
 })
 
 test_that("patching leaves uncontaminated books untouched", {
-  requested <- new.env()
-  testthat::local_mocked_bindings(gutenberg_download = mock_gutenberg(requested), .package = "gutenbergr")
   df <- toy_corpus()
   patched <- suppressMessages(novels::patchContaminatedText(df, replacements))
 
   expect_identical(patched$text[2], df$text[2])
 })
 
-test_that("a replacement id that returns no text is an error, not an empty book", {
-  testthat::local_mocked_bindings(
-    gutenberg_download = function(gutenberg_id, ...) tibble::tibble(gutenberg_id = integer(), text = character()),
-    .package = "gutenbergr"
-  )
+test_that("a missing replacement file is an error, not an empty book", {
+  empty <- tempfile("replacements-")
+  dir.create(empty)
+  old <- options(novels.replacements_path = empty)
+  on.exit(options(old), add = TRUE)
 
   expect_error(
     suppressMessages(novels::patchContaminatedText(toy_corpus(), replacements)),
-    "no text for replacement id"
+    "not found",
+    fixed = TRUE
+  )
+})
+
+test_that("a changed replacement file fails its digest check", {
+  dir <- tempfile("replacements-")
+  dir.create(dir)
+  con <- xzfile(file.path(dir, "18857.txt.xz"), "wb")
+  writeLines("tampered text", con)
+  close(con)
+  old <- options(novels.replacements_path = dir)
+  on.exit(options(old), add = TRUE)
+
+  expect_error(
+    suppressMessages(novels::patchContaminatedText(toy_corpus(), replacements)),
+    "SHA-256 mismatch",
+    fixed = TRUE
   )
 })
 
@@ -91,6 +95,13 @@ test_that("patched and dropped ids together are exactly the five known contamina
 
   expect_length(intersect(patched, dropped), 0)
   expect_setequal(c(patched, dropped), c(19513L, 19640L, 19678L, 19782L, 19836L))
+})
+
+test_that("every replacement source has a pinned digest", {
+  expect_setequal(
+    unname(novels:::librivox_replacements),
+    as.integer(names(novels:::librivox_replacement_sha256))
+  )
 })
 
 test_that("dropByGutenbergId removes only the listed ids and keeps the rest intact", {

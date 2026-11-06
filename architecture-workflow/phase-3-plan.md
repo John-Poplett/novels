@@ -15,7 +15,7 @@ Baseline (before any fix): `[ FAIL 2 | WARN 2 | PASS 99 ]` — both failures are
 | F2 | Fix `test-foldAssignment.R` | Low | done | `52f73c8` |
 | F1 | Stored-fold resolution + fail-loud + regression test | Low–Medium | done | — |
 | F3 | Characterization + fix tests for core functions | Medium | done | — |
-| F5 | Pin the three replacement texts | Medium | **needs approval** | — |
+| F5 | Pin the three replacement texts | Medium | done | — |
 | F14 | Re-verify extraction / track corpus files | Low | pending | — |
 | F7 | Correct README/TODO claims | Low | pending | — |
 | F9 | Delete dead code (`XparseMetaData`, `R/embed.R`) | Low | pending | — |
@@ -45,9 +45,14 @@ Baseline (before any fix): `[ FAIL 2 | WARN 2 | PASS 99 ]` — both failures are
   renames, truncation, conservation error), `stripGutenbergBoilerplate`,
   `results2Text`/`classifyAt`/`createConfusionMatrix`, the vectorizer/DTM/TF-IDF chain,
   and `fitGlmnetModel`/`evaluateModel`. Suite: 0 failures, 213 passes.
+- **F5** done: the three replacement texts are now shipped as pinned, compressed
+  snapshots in `inst/extdata/librivox_replacements/`, with SHA-256 verified before
+  use. `data-raw/librivox-replacements.R` regenerates them and refuses to overwrite.
+  Before committing, I verified the live Gutenberg texts are byte-identical to
+  `data/novels.rda`, so this changes no corpus bytes and no baseline.
+  Suite: 0 failures, 217 passes.
 
 ## New findings found during Phase 3
-
 - **F19 (LOW–MEDIUM): the corpus census is recorded but never asserted.** `parseMetaData()`
   returns `census$truncated` and `census$absent`, and `tidyRawData()` then `inner_join`s
   files to metadata, silently dropping any file with no metadata row. The file-conservation

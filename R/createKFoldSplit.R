@@ -105,17 +105,9 @@ storedFoldPath <- function() {
     return(installed)
   }
 
-  dir <- normalizePath(getwd(), mustWork = FALSE)
-  repeat {
-    candidate <- file.path(dir, "inst", "extdata", "author_folds.csv")
-    if (file.exists(candidate)) {
-      return(candidate)
-    }
-    parent <- dirname(dir)
-    if (identical(parent, dir)) {
-      break
-    }
-    dir <- parent
+  in_tree <- findInSourceTree(file.path("inst", "extdata", "author_folds.csv"))
+  if (nzchar(in_tree)) {
+    return(in_tree)
   }
 
   stop(
