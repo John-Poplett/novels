@@ -4,9 +4,13 @@
 # more involved here than for a plain package:
 #
 # * `data/novels.rda` is git-ignored and produced by the pipeline, so the
-#   corpus must be built before tests or checks can run. Only `novels_data`
-#   is built -- the modelling targets are not needed to test the package and
-#   would add hours.
+#   corpus must be built before anything else runs -- including roxygen.
+#   `roxygenise()` calls `load_all()`, and `LazyData: true` plus the `novels`
+#   dataset doc in R/data.R make it require the dataset: without it the step
+#   fails with `'novels' is not an exported object from 'namespace:novels'`,
+#   which names neither the cause nor the fix. Only `novels_data` is built --
+#   the modelling targets are not needed to test the package and would add
+#   hours.
 # * `man/` is git-ignored, so the Rd files must be regenerated before the
 #   check or it reports stale codoc mismatches (F8/F17).
 #
@@ -47,11 +51,13 @@ jobs:
             any::tarchetypes
           needs: check
 
-      - name: Regenerate Rd files
-        run: Rscript -e 'roxygen2::roxygenise()'
-
+      # Must precede the Rd step: roxygen loads the package and needs the
+      # dataset present (see the header note).
       - name: Build the corpus
         run: Rscript -e 'targets::tar_make(names = "novels_data")'
+
+      - name: Regenerate Rd files
+        run: Rscript -e 'roxygen2::roxygenise()'
 
       - name: Fast test loop
         run: Rscript -e 'pkgload::load_all(quiet = TRUE); testthat::test_dir("tests/testthat")'
