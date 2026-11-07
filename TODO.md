@@ -39,12 +39,18 @@ in a Gutenberg mirror
 
 # Done (not published)
 
+&#9989; Label-quality audit (`data-raw/label-audit.R`), 2026-11-07: five tests on one author-disjoint split — artefacts, stability under resampling, counting-noise reliability, non-text predictability, independent-source agreement. The last two need data the repo does not have yet and skip with a stated reason rather than a hard-coded result.
+  * Shipped 2013 label: bibliographic-only AUC 0.783, text model 0.745 (paired +0.038, t = 1.26, 3 of 5 folds), so the label is no more reducible to style than to genre, length and upload order.
+  * Adding author productivity raises the bibliographic model to 0.816; it is reported separately because it would not generalise to a new writer.
+  * Counting-noise curve replaces the earlier Poisson simulation over archived counts, which mixed a cumulative count with a 30-day window and was wrong in both directions.
+
 &#9989; Add a target to compare a target run against the current baseline (`cv_baseline_check`, flagging any `alpha` more than two standard errors from `baselines/cv_summary.csv`).
 
 &#9989; Move fold configurations out of the dataset but preserve the attribute of making them constant and repeatable.
   * Decided 2026-10-30: the original columns (`fold`, `download_count`, `response`) stay in `novels`, frozen and documented as Sunnybrook's. Anything new goes in separate tables.
   * Generated folds become stored data, not a seed: `(author, scheme, fold)`, with `author5_v1` = today's seed-42 assignment, **append-only** (existing authors never move; new authors are assigned and recorded). R's `set.seed()` cannot be reproduced in other languages, and the current positional assignment reshuffles folds whenever the data grows. The author key must handle co-authored books.
-  * Fresh download counts go in their own table: `(gutenberg_id, snapshot_date, source, downloads)`. First find out what the 2013 count measured and what can be fetched per book now.
+  * Fresh download counts go in their own table: `(gutenberg_id, snapshot_date, source, downloads)`. Answered 2026-11-07: the 2013 count was cumulative downloads as of the scrape (id 215 holds 3,433); Project Gutenberg now publishes only a trailing 30-day count (site totals: 12.9M last 7 days against 62.5M last 30 days, a ratio of 4.84, so the window rolls rather than resetting monthly). A refresh therefore measures current demand, not lifetime success.
+  * **Selection rule, answered 2026-11-07.** The 2013 corpus is not a median split. Per genre the authors set a lower and an upper download threshold (paper Table 1: Adventure 17/100, Detective 25/90, Fiction 7/125, Historical Fiction 25/115, Love Stories 16/85, Poetry 9/70, Science Fiction 30/100, Short Stories 9/224), labelled books below the lower and above the upper, discarded the middle band, took 50 per class, and capped an author at 2 books per genre. Verified against the shipped data: 0 of 796 rows fall inside their genre's band, and max(FAILURE) equals the lower threshold in 6 of 8 genres. Reuse the rule rather than the median split: the median sits where the distribution is densest, so a cut there is decided by counting noise.
   * Order: folds table before expanding the dataset; counts refresh together with the expansion.
   * Done: `author5_v1` stored in `inst/extdata/author_folds.csv` (514 authors), verified against the pipeline's `fold_assignments`; `data-raw/author-folds.R` refuses to overwrite it. Next: make the pipeline read the table instead of recomputing the seed; documentation for appending new authors; export it with the Parquet dataset.
 
