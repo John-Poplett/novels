@@ -217,7 +217,10 @@ after the fact:
 2. **Publication year.** The catalogue carries the ebook date, not the original
    publication date. Without a second source (Wikidata or MARC), the baseline
    cannot separate publication era from upload era, and that limitation is
-   reported.
+   reported. Measured 2026-11-07: the RDF's own imprint fields cover only about
+   17% of records (`pgterms:marc260` 13,381, `pgterms:marc906` 12,980 of
+   79,762), so the omission stands unless that source is added before the
+   freeze.
 3. **Withdrawals.** Books leave the catalogue. A `withdrawn_on` column is
    required; withdrawn books are reported, not silently dropped.
 4. **Form attributes.** Flash fiction and Young Adult are recorded as
@@ -233,6 +236,10 @@ after the fact:
 | 2028-12-31 | window closes |
 | 2029-01-31 | last snapshot for the window retrieved; label constructed |
 | 2029-03-31 | audit run; models fitted; results published with this document |
+
+The first snapshot was taken **2026-11-07** (trial), ahead of the date below and
+not part of any window; the series then runs monthly. It is stored as
+`data-raw/snapshots/2026-11-07/`.
 
 The 12-month window (2027 only) is reported as a pre-declared sensitivity
 analysis alongside the primary 24-month result. It is not a fallback: the

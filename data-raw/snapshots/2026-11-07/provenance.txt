@@ -1,0 +1,7 @@
+source_url: https://www.gutenberg.org/cache/epub/feeds/rdf-files.tar.bz2
+retrieved_at_utc: 2026-11-07T23:22:00Z
+payload_bytes: 126872936
+payload_sha256: 89a18c78d092988e8c7d53312b5fcc3334b51e913456c218bae80091d056f932
+rdf_files: 79762
+rows_written: 79762
+total_downloads: 68600747
