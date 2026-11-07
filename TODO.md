@@ -1,5 +1,6 @@
 # TODO
 * [ ] Reconcile this list with the roadmap section in README.md
+* [ ] Start the download series for the pre-registered label wave: monthly whole-catalogue snapshots into `(gutenberg_id, snapshot_date, source, downloads)`, plus `date_added` / `withdrawn_on` companion data. The frozen outcome, population, label rule and endpoint are in `PREREGISTRATION.md`; the first (trial) snapshot is due 2026-11-30 and the window opens 2027-01-01.
 * [ ] **Expand dataset**
   * [ ] Propose two to three mechanisms for deducing a Gutenberg texts genre(s). Give the pros and cons. Write the proposal up in a document "deducing-genres.md". Consider:
     * Training a multinomial genre classifier (titles can belong to more than one genre) based on the existing dataset
@@ -53,6 +54,11 @@ in a Gutenberg mirror
   * **Selection rule, answered 2026-11-07.** The 2013 corpus is not a median split. Per genre the authors set a lower and an upper download threshold (paper Table 1: Adventure 17/100, Detective 25/90, Fiction 7/125, Historical Fiction 25/115, Love Stories 16/85, Poetry 9/70, Science Fiction 30/100, Short Stories 9/224), labelled books below the lower and above the upper, discarded the middle band, took 50 per class, and capped an author at 2 books per genre. Verified against the shipped data: 0 of 796 rows fall inside their genre's band, and max(FAILURE) equals the lower threshold in 6 of 8 genres. Reuse the rule rather than the median split: the median sits where the distribution is densest, so a cut there is decided by counting noise.
   * Order: folds table before expanding the dataset; counts refresh together with the expansion.
   * Done: `author5_v1` stored in `inst/extdata/author_folds.csv` (514 authors), verified against the pipeline's `fold_assignments`; `data-raw/author-folds.R` refuses to overwrite it. Next: make the pipeline read the table instead of recomputing the seed; documentation for appending new authors; export it with the Parquet dataset.
+
+&#9989; Pre-register the 2027–2028 label wave (`PREREGISTRATION.md`), 2026-11-07: outcome, eligibility, instrumentation, label rule, folds, primary endpoint, power and audit gates fixed in a commit before any download series exists for the window.
+  * **Wave, not intake-year cohort.** Decided 2026-11-07: books added in one year number ~430 across the eight genres (~54 per genre), which a 20th/80th trim would cut to ~11 per class — too few to label. The wave instead admits every eligible book as of 2026-12-31 and gives all of them the same 24-month window (2027-01-01 to 2028-12-31), so exposure is equal by construction without shrinking the pool. Books added during the window join the next wave.
+  * `date_added` is the catalogue's `Issued` date (the ebook release date), not the original publication year; separating publication era from upload era needs Wikidata or MARC and is listed as an open dependency in §12.
+  * Currency is a share of Project Gutenberg's total downloads in the same months, not a raw count, so waves stay comparable as the platform's scale changes.
 
 &#9989; Fix LibriVox contamination (the patch had been a silent no-op)
   * Three books patched with text from a different id, two dropped as duplicates of books already in the corpus; 796 rows over 754 books
