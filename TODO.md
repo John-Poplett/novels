@@ -1,6 +1,6 @@
 # TODO
 * [ ] Reconcile this list with the roadmap section in README.md
-* [ ] Start the download series for the pre-registered label wave: monthly whole-catalogue snapshots into `(gutenberg_id, snapshot_date, source, downloads)`, plus `date_added` / `withdrawn_on` companion data. The frozen outcome, population, label rule and endpoint are in `PREREGISTRATION.md`; the first (trial) snapshot is due 2026-11-30 and the window opens 2027-01-01.
+* [ ] Keep the download series running: one snapshot a month (`Rscript data-raw/snapshot-downloads.R`), same day, from Project Gutenberg's own RDF dump. Trial snapshot taken 2026-11-07 (`data-raw/snapshots/2026-11-07/`: 79,762 books, 68,600,747 30-day downloads). Before 2026-12-31: freeze eligibility from that date's `pg_catalog.csv`, and settle the Fiction/Romance question recorded below.
 * [ ] **Expand dataset**
   * [ ] Propose two to three mechanisms for deducing a Gutenberg texts genre(s). Give the pros and cons. Write the proposal up in a document "deducing-genres.md". Consider:
     * Training a multinomial genre classifier (titles can belong to more than one genre) based on the existing dataset
@@ -39,6 +39,12 @@ in a Gutenberg mirror
   * [ ] Consider replacing metaprogramming logic in _targets.R with more pedestrian code. It's Lispy cool but difficult to debug.
 
 # Done (not published)
+
+&#9989; Download-snapshot series started (`R/downloadSnapshots.R`, `data-raw/snapshot-downloads.R`), 2026-11-07. One retrieval of Project Gutenberg's RDF dump produces an append-only `(gutenberg_id, snapshot_date, source, downloads)` table plus `date_added` and a provenance line (URL, UTC time, bytes, SHA-256, rows, total).
+  * Trial snapshot: 79,762 books, 68,600,747 30-day downloads, median 564, payload sha256 `89a18c78…`; no missing counts and no duplicate ids.
+  * Source is PG's own `rdf-files.tar.bz2` (121 MB, regenerated daily; 33 s unpack, 44 s parse), not Gutendex. The mirror agrees today, but a multi-year series should not depend on a third party's copy.
+  * Fail-fast instead of empty results: the parser errors on any missing `pgterms:downloads` or `dcterms:issued`, the script refuses a feed under 70,000 records, and a second write for the same date is refused. 18 unit tests.
+  * Publication year is available from the RDF for only ~17% of records (`marc260` 13,381, `marc906` 12,980 of 79,762), so `PREREGISTRATION.md` §12.2 still needs Wikidata or MARC.
 
 &#9989; Label-quality audit (`data-raw/label-audit.R`), 2026-11-07: five tests on one author-disjoint split — artefacts, stability under resampling, counting-noise reliability, non-text predictability, independent-source agreement. The last two need data the repo does not have yet and skip with a stated reason rather than a hard-coded result.
   * Shipped 2013 label: bibliographic-only AUC 0.783, text model 0.745 (paired +0.038, t = 1.26, 3 of 5 folds), so the label is no more reducible to style than to genre, length and upload order.

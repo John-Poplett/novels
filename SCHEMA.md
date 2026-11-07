@@ -93,3 +93,44 @@ Goodreads cannot serve as that second source: its API closed in December 2020
 and scraping would breach its terms. Open Library ratings are usable in
 principle but reach only 4.4% of the corpus with five or more ratings.
 
+## Download snapshots
+
+Project Gutenberg publishes a trailing 30-day flow, not a cumulative total: one
+number per ebook, counted as unique address-days, with addresses fetching more
+than 100 ebooks in a day excluded as robots. One snapshot a month is sufficient
+because consecutive 30-day windows are disjoint, so the sum over K snapshots is
+the downloads over K months without deconvolution. Daily snapshots would buy
+daily resolution, which nothing here uses.
+
+Source: `https://www.gutenberg.org/cache/epub/feeds/rdf-files.tar.bz2`, Project
+Gutenberg's own dump, regenerated daily (121 MB compressed, 79,762 `pg<id>.rdf`
+records on 2026-11-07). Gutendex reports the same numbers but is a third party;
+a multi-year series should not sit downstream of it.
+
+Layout under `data-raw/snapshots/`, append-only:
+
+| file | columns |
+| --- | --- |
+| `<date>/downloads.csv.gz` | `gutenberg_id`, `snapshot_date`, `source`, `downloads` |
+| `<date>/date_added.csv.gz` | `gutenberg_id`, `date_added` |
+| `<date>/provenance.txt` | source URL, retrieval time (UTC), payload bytes and SHA-256, record count, total downloads |
+
+`date_added` is the catalogue's `Issued` date: when the ebook was released, not
+when the work was published. The RDF carries the original imprint for only
+about 17% of records (`pgterms:marc260` 13,381, `pgterms:marc906` 12,980 of
+79,762 on 2026-11-07), so separating publication era from upload era still
+needs Wikidata or the MARC feed.
+
+Withdrawals are deliberately not a column. A book present in one snapshot and
+absent from the next was withdrawn; the analysis records that instead of
+deleting the book from history.
+
+The payload digest is recorded because the counter can change definition at
+source, and a changed instrument must be distinguishable from a changed
+reading. `writeDownloadSnapshot()` refuses to overwrite an existing date, and
+`readGutenbergRdf()` refuses to return a table with missing counts.
+
+The first snapshot is `2026-11-07`. It is a trial, not part of the 2027-2028
+wave window.
+
+
