@@ -44,6 +44,66 @@ the code to reproduce the dataset is tracked in committed in the project's git r
 * Treat devtools::check() as a gate, not a suggestion.
 * Track dependency intent: Imports (runtime) vs Suggests (tests/vignettes/optional).
 
+## Git workflow
+
+Three levels, only two of which ever move:
+
+| ref | written by | advances by |
+| --- | --- | --- |
+| `master` | the PR button | fast-forward from `dev`, `check` green |
+| `dev` | `--ff-only` merges of feature branches | never a commit of its own |
+| `feat/…`, `fix/…`, `docs/…` | you | rebased onto `dev` before merging |
+
+`master` is protected on GitHub: the `check` status is required, a PR is
+required (zero approving reviews, so a solo PR is not deadlocked on
+self-approval), admins are included, and force-pushes and deletions are
+refused. Verify with
+`gh api repos/{owner}/{repo}/branches/master/protection`. When the protection
+is inconvenient, change the commit, not the protection.
+
+**Never commit on `dev`.** A "quick fix on dev" is a one-commit feature
+branch:
+
+```bash
+git switch -c fix/the-thing dev
+# ... commits ...
+git rebase dev                 # only if dev has moved meanwhile
+git switch dev
+git merge --ff-only fix/the-thing
+```
+
+If that merge refuses, `dev` and the feature have diverged: rebase the
+feature, do not merge it. `--ff-only` is what keeps the history linear and
+the only thing that reports when it stops being linear. Same at the top:
+`master` only ever fast-forwards, so the commits CI checked are the commits
+that land.
+
+`dev` is pushed at checkpoints, not on every merge: after a feature lands,
+before rebasing onto `master`, before opening the `dev` → `master` PR, and
+before stepping away from the machine — until then the remote is not a
+backup. CI runs on the tip only, so a batch of merges gets one `check`
+covering the end state; a broken intermediate commit is invisible to it and
+only surfaces when bisecting.
+
+Releasing: PR `dev` → `master`, merged with **rebase** — never a merge commit,
+never a squash — then resync:
+
+```bash
+git fetch --prune
+git switch dev
+git reset --hard origin/master
+git push --force-with-lease origin dev
+```
+
+That reset rewrites `dev`'s SHAs: the one force-push this workflow allows, and
+only with `--force-with-lease`. It also **discards any commit on `dev` that
+`master` does not have** — land every feature before releasing, or it is gone.
+Never force-push `master`; the protection refuses it and so should you.
+
+`archive/targets-package-revision` is an annotated tag on the 41-commit
+pre-squash history, kept because it records how the architecture revision was
+done. Do not delete it, and do not merge from it.
+
 ## Setup
 
 ```bash
