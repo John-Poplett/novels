@@ -87,15 +87,56 @@ tidyRawData <- function(dataset_path, parsed_metadata) {
     "librivox text remains after patchContaminatedText()"
   )
 
-  # Strip Gutenberg's license header/footer boilerplate uniformly. A
-  # full-corpus grep found this in at least 19 of 798 books -- far more
-  # widespread than initially assumed -- so it's applied to every book
+  # Strip Gutenberg's license header/footer boilerplate uniformly. Measured
+  # on the shipped corpus: 48 of 754 books carried a header or footer line
+  # that survived the starred-marker strip -- far more widespread than the
+  # "at least 19" a first grep suggested -- so it's applied to every book
   # rather than deferred.
   df$text <- sapply(df$text, stripGutenbergBoilerplate)
 
   tar_assert_true(
     !any(grepl("\\*\\*\\* ?(START|END) OF", df$text, ignore.case = TRUE)),
     "Gutenberg boilerplate markers still present after stripping"
+  )
+
+  # The starred markers are not the only boilerplate shape. In the shipped
+  # corpus 37 books carried a bare "end of the project gutenberg ebook of
+  # <title>, by <author>" line just above the starred end marker, 11 the
+  # possessive "end of project gutenberg's <title>, by <author>" form, and 19
+  # a "produced by ..." credit after the start marker (some books have more
+  # than one shape; 48 books change in total). Assert on the residual shapes
+  # themselves, not only on the markers that are supposed to bracket them, so
+  # a stripping regression fails here instead of silently putting an author's
+  # name in the last tokens of a book.
+  #
+  # The footer phrase is Gutenberg-specific, so it is checked anywhere. The
+  # header phrases are checked only in the first lines of each book: "produced
+  # by" is ordinary English and opens real sentences deeper in (ids 13720,
+  # 19513, 2275). Two books cite Project Gutenberg in an editorial note, which
+  # is neither at a line start nor in the header region, and is left alone.
+  lines_of <- strsplit(df$text, "\n", fixed = TRUE)
+  footer_residual <- vapply(
+    lines_of,
+    function(l) any(stringr::str_detect(
+      l, stringr::regex("^[[:space:]]*(\\*+[[:space:]]*)?end of (this |the )?project gutenberg", ignore_case = TRUE)
+    )),
+    logical(1)
+  )
+  header_pat <- stringr::regex(
+    "^[[:space:]]*(produced by |and the online distributed proofreading team|the project gutenberg ebook of )",
+    ignore_case = TRUE
+  )
+  header_residual <- vapply(
+    lines_of,
+    function(l) any(stringr::str_detect(utils::head(l, 6L), header_pat)),
+    logical(1)
+  )
+  tar_assert_true(
+    !any(footer_residual | header_residual),
+    sprintf(
+      "%d book(s) still carry a Gutenberg header or footer line after stripping",
+      sum(footer_residual | header_residual)
+    )
   )
 
   df <- dplyr::inner_join(df, novel_metadata, by = c("gutenberg_id"))

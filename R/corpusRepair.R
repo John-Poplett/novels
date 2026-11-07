@@ -218,17 +218,67 @@ readReplacementText <- function(source_id) {
 #' boilerplate running to end of file) is already excluded by cutting the
 #' body off at the "end of...ebook" marker, which always precedes it.
 #'
+#' Three boilerplate shapes are *not* bracketed by starred markers, and were
+#' missed by an earlier version that required them:
+#'
+#'   * an unstarred footer, "end of the project gutenberg ebook of <title>,
+#'     by <author>", which sits one line ABOVE the starred end marker in 37
+#'     books (e.g. id 2727). Cutting at the starred line kept it, so the last
+#'     line of those bodies named the title and the author.
+#'   * a possessive footer without "ebook", "end of project gutenberg's
+#'     <title>, by <author>", in 11 books.
+#'   * a production credit, "produced by ...", placed AFTER the start marker
+#'     rather than before it (id 2883), which put a Gutenberg line at the head
+#'     of the kept body. 19 books carry such a credit.
+#'
+#' All three are treated as boilerplate here. Text that merely mentions
+#' Project Gutenberg mid-sentence or mid-line is left alone -- the patterns are
+#' anchored to the start of a line, which is what distinguishes the two.
+#'
 #' @param text a single string containing one book's full text
 #' @returns the same text with header/footer boilerplate removed
 #' @export
 stripGutenbergBoilerplate <- function(text) {
   lines <- strsplit(text, "\n", fixed = TRUE)[[1]]
 
-  start_idx <- which(grepl("\\*\\*\\* ?start of this project gutenberg ebook", lines, ignore.case = TRUE))
-  end_idx   <- which(grepl("\\*\\*\\* ?end of this project gutenberg ebook", lines, ignore.case = TRUE))
+  start_pat <- "^[[:space:]]*\\*+[[:space:]]*start of (this |the )?project gutenberg ebook"
+  end_pat   <- "^[[:space:]]*(\\*+[[:space:]]*)?end of (this |the )?project gutenberg"
+
+  start_idx <- which(grepl(start_pat, lines, ignore.case = TRUE, perl = TRUE))
+  end_idx   <- which(grepl(end_pat, lines, ignore.case = TRUE, perl = TRUE))
 
   body_start <- if (length(start_idx) > 0) max(start_idx) + 1 else 1
   body_end   <- if (length(end_idx) > 0) min(end_idx) - 1 else length(lines)
+
+  # Drop machine-generated lines at the head of the body. The book's own
+  # title page ("the gold bag", "by carolyn wells") sits below these and is
+  # deliberately kept: it is part of the scanned book, not of the licence.
+  #
+  # Bounded to the header region: "produced by" is also ordinary English and
+  # opens real sentences elsewhere in the corpus (id 13720, "produced by dead
+  # matter therein..."; id 19513, "produced by the noise of falling waters").
+  # A Gutenberg credit only ever sits in the header, so position is the
+  # discriminator. Only a *leading run* of credit lines is consumed -- skipping
+  # to the last credit in a window would take real text with it.
+  credit_pat <- "^[[:space:]]*(produced by |and the online distributed proofreading team|the project gutenberg ebook of )"
+  is_credit <- function(i) grepl(credit_pat, lines[i], ignore.case = TRUE, perl = TRUE)
+
+  if (body_start <= body_end) {
+    first_text <- body_start
+    while (first_text <= body_end && !nzchar(trimws(lines[first_text]))) {
+      first_text <- first_text + 1
+    }
+    if (first_text <= body_end && is_credit(first_text)) {
+      body_start <- first_text
+      while (body_start <= body_end) {
+        if (!nzchar(trimws(lines[body_start])) || is_credit(body_start)) {
+          body_start <- body_start + 1
+        } else {
+          break
+        }
+      }
+    }
+  }
 
   if (body_start > body_end) return("")  # defensive: malformed/unexpected marker order
 
