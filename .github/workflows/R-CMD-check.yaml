@@ -45,8 +45,13 @@ jobs:
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
+          # rcmdcheck drives the final check-r-package step and is not a
+          # DESCRIPTION dependency, so it must be named here or the step dies
+          # with "there is no package called 'rcmdcheck'" after every real
+          # check has already passed.
           extra-packages: |
             any::pkgload
+            any::rcmdcheck
             any::roxygen2
             any::tarchetypes
           needs: check
