@@ -3,25 +3,34 @@ Title: Predicting Success of Literary Texts
 Version: 1.0.3
 Authors@R: person("John", "Poplett", email = "john.poplett@fastmail.com", role = c("aut", "cre"))
 Description: Generates a prediction for the success of literary texts.
-Depends: R (>= 3.5.0)
+Depends: R (>= 4.1.0)
 Imports:
     archive,
-    data.table,
+    digest,
     dplyr,
     glmnet,
-    kableExtra,
-    knitr,
+    gutenbergr,
     magrittr,
-    plyr,
+    pROC,
+    purrr,
     readr,
-    tibble,
+    stringi,
+    stringr,
+    targets,
     text2vec,
+    tibble,
+    tidyr,
     tm
 License: MIT + file LICENSE
 VignetteBuilder: knitr
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.0.2
-Suggests: 
+LazyDataCompression: xz
+Suggests:
+    data.table,
+    kableExtra,
+    knitr,
+    plyr,
     rmarkdown,
     testthat (>= 2.1.0)
+Config/roxygen2/version: 8.1.1

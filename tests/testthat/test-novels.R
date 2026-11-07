@@ -3,7 +3,7 @@ library(novels)
 library(plyr)
 
 essential.columns = c("gutenberg_id", "genre", "response", "title",
-                   "author", "fold", "language", "download.count",
+                   "author", "fold", "language", "download_count",
                    "text")
 
 test_that("novels dataset has an expected subset of columns", {

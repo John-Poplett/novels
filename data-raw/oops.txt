@@ -1,0 +1,26 @@
+./Love_Stories/ls_fold1/success1/19782.txt, librivox metadata
+./Adventure_Stories/as_fold1/success1/19513.txt, librivox metadata, Jounery to the Center of the Earth
+./Adventure_Stories/as_fold1/success1/2727.txt, trailing boilerplate
+./Adventure_Stories/as_fold5/failure5/11997.txt, start and end boilerplate, *** start of this project gutenberg ebook 
+./Adventure_Stories/as_fold5/failure5/9968.txt, start and end boilerplate, *** end of this project gutenberg ebook ... ***
+./Adventure_Stories/as_fold2/failure2/10690.txt, start and end boilerplate, *** start|end of project gutenberg ... ***
+./Adventure_Stories/as_fold3/success3/19640.txt, metadata for a librivox recording, keyword "librivox", but should be the text for Huckleberry Finn!!!
+./Adventure_Stories/as_fold3/failure3/12611.txt, bracketed by gutenberg start and end boilerplate
+./Adventure_Stories/as_fold4/success4/19678.txt, librivox metadata
+./Adventure_Stories/as_fold3/failure3/12611.txt, start and end boilerplate, *** start|end of project gutenberg ... ***
+./Adventure_Stories/as_fold4/failure4/10988.txt, start and end boilerplate, *** start: full license *** / the full project gutenberg license
+./Adventure_Stories/as_fold4/failure4/9927.txt, start and end boilerplate
+./Love_Stories/ls_fold1/success1/19782.txt, librivox metadata, librivox audio recording public domain certification:
+./Mystery/dm_fold3/failure3/431.txt, start and end boilerplate
+./Mystery/dm_fold3/failure3/9808.txt, start and end boilerplate
+./Mystery/dm_fold4/failure4/4660.txt, start and end boilerplate
+./Mystery/dm_fold4/failure4/2691.txt, start and end boilerplate
+./Mystery/dm_fold5/failure5/9974.txt, start and end boilerplate
+./Mystery/dm_fold5/failure5/11085.txt, start and end boilerplate
+./Mystery/dm_fold2/failure2/9635.txt, start and end boilerplate
+./Mystery/dm_fold2/failure2/2883.txt, start and end boilerplate
+./Mystery/dm_fold1/failure1/2789.txt, start and end boilerplate
+./Mystery/dm_fold1/failure1/9300.txt
+./Poetry/po_fold2/failure2/19836.txt, librivox metadata
+./Fiction/fi_fold3/failure3/12181.txt, end boilerplate only, "*** end of project gutenberg... ***
+./Fiction/fi_fold5/success5/144.txt, end boilerplate only, end of project gutenberg / *** end of projecti gutenberg... ***, Virginia Woolf!
