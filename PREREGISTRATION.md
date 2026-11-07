@@ -206,6 +206,14 @@ after the fact:
 1. **Genre assignment for books outside the 2013 corpus.** The allow-list
    exists; its calibration against the 754 known books has not been run or
    recorded. The calibration result must be filed before the window opens.
+   *Filed 2026-11-07, before the freeze:* `data-raw/genre-calibration.R` scores
+   it on 753 books (19836 has no bookshelf entry). Per-genre recall/precision:
+   Poetry 0.89/1.00, Science Fiction 0.98/0.78, Historical Fiction 0.85/0.69,
+   Detective/Mystery 0.72/0.79, Adventure 0.75/0.49, Short Stories 0.57/0.51,
+   Fiction 0.82/0.17, Romance 0.25/0.39. The "Novels" shelf sits on 63.3% of
+   books and is the only source of Fiction; only 25.3% of Romance books carry a
+   Romance shelf. **Open decision due before 2026-12-31:** Fiction as residual
+   rather than level, and Romance's place in the eight. See SCHEMA.md.
 2. **Publication year.** The catalogue carries the ebook date, not the original
    publication date. Without a second source (Wikidata or MARC), the baseline
    cannot separate publication era from upload era, and that limitation is
