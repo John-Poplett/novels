@@ -59,7 +59,7 @@ The original metadata file (a plain-text, human-readable format with a hierarchi
 - **Co-authored books produce spurious duplicate rows** when joined against `gutenbergr::gutenberg_metadata`, which has one row per (book, author) pair. `novel_metadata` is deduplicated on `(gutenberg_id, genre, fold)` to collapse these correctly, without collapsing the intentional cross-genre repeats (see next item).
 - **`list.files()` finds one text-file copy per genre-directory a book belongs to.** Joining that against `novel_metadata` (already one row per genre) on `gutenberg_id` alone cross-multiplied mismatched genre/fold combinations (798 correct rows inflated to 884). Fixed by deduplicating the file listing to one row per book before the join, with a row-count assert guarding it.
 - **5 books had their `gutenberg_id` pointing at a LibriVox audio recording's catalog entry instead of the text edition** — confirmed by a full-corpus grep for the literal string "librivox" (which cannot appear in genuine prose predating LibriVox's 2005 founding), and independently corroborated by [Maharjan et al. (2017)](https://aclanthology.org/E17-1114.pdf), who found the same 5-book count in this corpus. The contaminated id is the audio recording itself, so re-downloading it returns the same audio page; a replacement must come from a *different* id. Three are patched with a text edition fetched via `gutenbergr::gutenberg_download()` and lowercased to match the corpus: 19513 → 18857 (Verne), 19640 → 76 (Twain) and 19836 → 3477. The last is a different work by the same author, *The Verse-Book of a Homely Woman* standing in for the collection *Early Spring*, which is not available as text; its title is corrected. The other two, 19678 and 19782, are dropped, because the real texts (The Call of the Wild, 215; Daddy-Long-Legs, 157) are already in the corpus and patching would only duplicate them. The ids, replacements and drops are recorded in `librivox_replacements` and `librivox_drops` (`R/targetFunctions.R`), and the pipeline aborts if any LibriVox text remains. **Not yet fixed:** the `download_count` and `response` of the three patched rows are still those of the audio entries, pending a refresh.
-- **Gutenberg license header/footer boilerplate is removed, but the matcher is not exhaustive.** [Maharjan et al. (2017)](https://aclanthology.org/E17-1114.pdf) hand-reviewed what appears to be this same 800-book corpus and report 58 affected books — 53 carrying the license repeated verbatim plus five more — and their five match this corpus's five LibriVox-contaminated books exactly. This pipeline's automated matcher flags 22. The gap measures the matcher's recall, not the corpus: it recognises only the standard `*** START/END OF THIS PROJECT GUTENBERG EBOOK ***` markers, so variants and truncated markers pass through. Stripping is applied uniformly to every book via a hand-rolled, case-insensitive matcher (see the next point for why hand-rolled).
+- **Gutenberg license header/footer boilerplate is removed, in three shapes.** [Maharjan et al. (2017)](https://aclanthology.org/E17-1114.pdf) hand-reviewed what appears to be this same 800-book corpus and report 58 affected books — 53 carrying the license repeated verbatim plus five more — and their five match this corpus's five LibriVox-contaminated books exactly. Here the matcher changes 48 of 754 books: 37 carried an unstarred `end of the project gutenberg ebook of <title>, by <author>` line just above the starred end marker (so it survived the cut), 11 the possessive `end of project gutenberg's <title>, by <author>` form, and 19 a `produced by …` credit inside the body after the start marker. Maharjan et al. count 53 license-verbatim books in the same corpus; this matcher changes 48, and the five-book difference has not been reconciled book by book. `tidyRawData()` asserts that none of the three shapes survives, so a regression fails the build; a fourth shape would still pass. Three books mention Project Gutenberg mid-line — two editorial notes and one proofreader-credit continuation — and are left alone as prose. Stripping is hand-rolled and case-insensitive (see the next point for why).
 - **This corpus's text was already lowercased during the original corpus prep**, discovered while debugging the boilerplate fix (`gutenbergr::gutenberg_strip()`, which expects Gutenberg's standard uppercase markers, would have silently matched nothing against this already-lowercased text). Worth knowing if you do anything downstream that depends on capitalization — sentence-boundary detection, proper-noun/NER work, etc. will not behave as expected on this text as-is.
 
 **Still open:**
@@ -74,24 +74,24 @@ TF-IDF (unigrams) + `glmnet` (elastic net), five author-safe folds: the model is
 
 | alpha | mean test AUC | SD across folds | range | mean nonzero coefficients (from `cv_results`) |
 |---|---|---|---|---|
-| 0.01 | 0.744 | 0.073 | 0.658–0.856 | 4079 |
-| 0.03 | 0.734 | 0.053 | 0.665–0.809 | 2514 |
-| 0.05 | 0.746 | 0.045 | 0.678–0.798 | 1680 |
-| 0.07 | 0.742 | 0.038 | 0.688–0.786 | 1473 |
-| 0.10 | 0.736 | 0.036 | 0.693–0.782 | 1386 |
-| 0.30 | 0.715 | 0.028 | 0.670–0.745 | 497 |
-| 0.50 | 0.708 | 0.027 | 0.667–0.740 | 289 |
-| 0.70 | 0.704 | 0.034 | 0.654–0.750 | 265 |
-| 0.90 | 0.698 | 0.034 | 0.650–0.746 | 241 |
-| 1.00 | 0.695 | 0.035 | 0.647–0.745 | 239 |
+| 0.01 | 0.743 | 0.073 | 0.658–0.856 | 3979 |
+| 0.03 | 0.734 | 0.053 | 0.665–0.808 | 2514 |
+| 0.05 | 0.745 | 0.045 | 0.679–0.798 | 1699 |
+| 0.07 | 0.742 | 0.038 | 0.687–0.786 | 1535 |
+| 0.10 | 0.739 | 0.034 | 0.693–0.782 | 1300 |
+| 0.30 | 0.715 | 0.028 | 0.669–0.744 | 493 |
+| 0.50 | 0.707 | 0.030 | 0.661–0.743 | 329 |
+| 0.70 | 0.703 | 0.034 | 0.654–0.749 | 261 |
+| 0.90 | 0.698 | 0.034 | 0.649–0.745 | 245 |
+| 1.00 | 0.696 | 0.034 | 0.649–0.745 | 237 |
 
-These are the results on the 796-row corpus, after the LibriVox fix. On the earlier 798-row corpus every mean was 0.002–0.015 lower (see `baselines/` and `CHANGELOG.md`); no `alpha` moved by more than two standard errors, so the change is within fold-to-fold noise.
+These are the results on the 796-row corpus, after the LibriVox fix. On the earlier 798-row corpus every mean was 0.002–0.015 lower (see `baselines/` and `CHANGELOG.md`); no `alpha` moved by more than two standard errors, so the change is within fold-to-fold noise. The later text-only repair to Gutenberg footers moved no `alpha` by more than 0.0025 (one standard error), which is the size to expect from a change to 0.002% of the corpus characters.
 
-Read plainly: the fold-to-fold spread (SD 0.03–0.07) is as large as any difference among the low alphas, so `alpha` ≤ 0.1 is indistinguishable at this corpus size. The one clear effect is the decline at high `alpha`, where lasso-leaning models give up about five AUC points (0.744 → 0.695). Naming a single "best" `alpha` from this table would be selecting noise, which is exactly what the repeated folds exist to prevent. The 50 individual per-fold AUCs are in `cv_results`.
+Read plainly: the fold-to-fold spread (SD 0.03–0.07) is as large as any difference among the low alphas, so `alpha` ≤ 0.1 is indistinguishable at this corpus size. The one clear effect is the decline at high `alpha`, where lasso-leaning models give up about five AUC points (0.743 → 0.696). Naming a single "best" `alpha` from this table would be selecting noise, which is exactly what the repeated folds exist to prevent. The 50 individual per-fold AUCs are in `cv_results`.
 
 An earlier single-split, trigram run peaked at 0.820 (`alpha = 0.03`). It is not comparable to this table — different features, and one split rather than five — and survives only in git history.
 
-**In-sample train AUC is ~1.00 at every `alpha`** (0.996–1.000, mean across folds), against 0.69–0.75 on held-out folds — a gap of 0.25–0.30 that barely moves across the sweep. With 239–4,079 nonzero coefficients (mean per `alpha`) over roughly 600 training documents per fold, the model has enough capacity to memorise its training set at any regularisation strength here, so the gap does not discriminate between alphas; held-out AUC is the only informative comparison. Both sides of the gap come from the same fit (`eval_train_*` and `eval_test_*` share each `model_fit_*`), so they cannot drift apart.
+**In-sample train AUC is ~1.00 at every `alpha`** (0.996–1.000, mean across folds), against 0.70–0.75 on held-out folds — a gap of 0.25–0.30 that barely moves across the sweep. With 237–3,979 nonzero coefficients (mean per `alpha`) over roughly 600 training documents per fold, the model has enough capacity to memorise its training set at any regularisation strength here, so the gap does not discriminate between alphas; held-out AUC is the only informative comparison. Both sides of the gap come from the same fit (`eval_train_*` and `eval_test_*` share each `model_fit_*`), so they cannot drift apart.
 
 **Learning curve: held-out AUC is still rising at the full training set.** Training on a random fraction of each fold's training *authors* (whole authors, so folds stay author-disjoint) and scoring on the unchanged test fold, with three random draws per fraction (`data-raw/learning-curve.R`; per-run results in `data-raw/learning-curve.csv`). At 100% the script reproduces the pipeline's own per-fold AUCs exactly.
 

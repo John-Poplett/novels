@@ -11,26 +11,40 @@ compared against them. The files are what `tar_read(cv_summary)` and
 
 ## Current baseline
 
-Produced after the LibriVox contamination fix.
+Produced after the Gutenberg boilerplate fix.
 
-- Pipeline run: `tar_make()`, 2026-10-30, 207 targets, 5m 28s. (The pipeline has since grown to 216 targets; this line records the run that produced these files.)
-- Corpus: 796 rows over 754 books (digest `25f3cb40af928b414c6f03e9dd53d1f7`).
+- Pipeline run: `tar_make()`, 2026-11-07, 216 targets, 5m 39.5s.
+- Corpus: 796 rows over 754 books, fingerprint `4cea80937cee9b4c8a1151717d7d4ff8`.
 - Folds: the stored `author5_v1` table, author-grouped and append-only. For this corpus it equals `createKFoldSplit(novels, 5, seed = 42)`.
+
+The fingerprint is `digest::digest(targets::tar_read(novels))`, which is the
+same value as `digest::digest(load("data/novels.rda")$novels)`. It identifies
+the shipped object, not the text corpus alone: it changes when any column
+changes, including one that no result depends on.
 
 ## History
 
 | Baseline | Corpus | Mean test AUC range across `alpha` | Where to find it |
 |---|---|---|---|
 | Pre-fix, 2026-10-29 | 798 rows, 756 books (`f87ed8388486cdf9476bfcb559a93cb2`) | 0.686–0.739 | git commit `23b5baf` |
-| Post-fix, 2026-10-30 | 796 rows, 754 books (`25f3cb40af928b414c6f03e9dd53d1f7`) | 0.695–0.746 | current files |
+| Post-fix, 2026-10-30 | 796 rows, 754 books (`25f3cb40af928b414c6f03e9dd53d1f7`) | 0.695–0.746 | git commit `a1ad0a8` |
+| Post-boilerplate, 2026-11-07 | 796 rows, 754 books (`4cea80937cee9b4c8a1151717d7d4ff8`) | 0.695–0.745 | current files |
 
-The fix moved every `alpha`'s mean up by 0.002–0.015 (mean +0.0085); none by
-more than two standard errors.
+The 2026-10-30 fingerprint was recorded by an earlier call whose exact form
+was not written down, and a digest depends on row order and attributes as well
+as content, so the three values identify snapshots rather than measure how far
+apart they are. The counts and dates are the reliable identifiers.
+
+The LibriVox fix moved every `alpha`'s mean up by 0.002–0.015 (mean +0.0085);
+none by more than two standard errors. The boilerplate fix moved them by at
+most 0.0025 in either direction (mean −0.0001); none by more than one standard
+error, and the automatic check raised no warning. That is the expected size
+for a change to 0.002% of the corpus characters.
 
 ## How to read a comparison
 
-The standard error of a 5-fold mean AUC is `sd_auc / sqrt(5)`, about 0.009 to
-0.034 depending on `alpha`. A change smaller than about 2 standard errors is
+The standard error of a 5-fold mean AUC is `sd_auc / sqrt(5)`, about 0.013 to
+0.033 depending on `alpha`. A change smaller than about 2 standard errors is
 indistinguishable from fold-to-fold noise, so this baseline can catch gross
 regressions in the modelling or the pipeline, not small data-integrity
 problems. Those are covered by the unit tests.
