@@ -34,26 +34,38 @@ One style of genre shaping is based on size of a literary narrative. Thus, short
 
 The original Stonybrook  application of the "Fiction" label is very probably better classed as "novel". It may be in a future release of the dataset, the current Fiction will be reworked as "Novel" and Fiction will become an amalgam of Novel, Historical Fiction, Short Story, and Young Adult.
 
-Novel could be identified as any fiction narrative work that
-exceeds 50,000 words. Novella then subsequently would be 15,000 to 49,999 words, short story between 1000 and 15,000 words, flash, 1,000 words or less.
+Novel is any fiction narrative work that exceeds 50,000 words. Novella is
+15,001 to 50,000 words, short story 1,501 to 15,000, and flash 1,500 words or
+fewer (published definitions vary between 1,000 and 1,500; this takes the wider
+cut).
 
-Two candidate categories are not genres, and are recorded as attributes
-instead (see `PREREGISTRATION.md` §5.5 for the measurements and the rule):
+Two candidate categories are not content genres. One is an attribute, the
+other a separate secondary track (see `PREREGISTRATION.md` §5.5–5.6 for the
+measurements and the rule):
 
-* **Form** — `flash` (≤ 1,000 words), `short story` (1,001–15,000), `novella`
-  (15,001–50,000), `novel` (> 50,000). Measured on the 2013 corpus: 5, 202,
-  138 and 409 books. Flash is five books, none under 500 words, so there is no
-  pool to label; and length alone reaches AUC 0.632, so making it a genre
-  would put a predictor on the label axis and partly circularise the
-  non-text baseline.
+* **Form** — `flash` (≤ 1,500 words), `short story` (1,501–15,000), `novella`
+  (15,001–50,000), `novel` (> 50,000). Measured on the 2013 corpus: 13, 194,
+  138 and 409 books. Flash is thirteen books, none under 500 words, twelve of
+  them Science Fiction, so there is no pool to label; and length alone reaches
+  AUC 0.632, so making it a genre would put a predictor on the label axis and
+  partly circularise the non-text baseline. The 1,500 ceiling is the wider end
+  of the 1,000–1,500 range used in published definitions.
 * **Children and Young Adult** — a boolean attribute
-  `children_or_ya_shelf`, deliberately not `is_ya`. Project Gutenberg has no
-  young-adult-only shelf: the subject heading "young adult" appears on 5 of
-  61,930 English texts, while the combined "Children & Young Adult Reading"
-  shelf appears on 6,346. In the 2013 corpus that shelf sits on 48 books
-  across seven of the eight genres (Adventure 19, Detective/Mystery 13, Short
-  Stories 11, Fiction 2, one each in three others), so a ninth genre would
-  double-count them and break the 50/50 balance per genre.
+  `children_or_ya_shelf` and, in the wave, a separate secondary track.
+  Project Gutenberg has no young-adult-only shelf: the subject heading "young
+  adult" appears on 5 of 61,930 English texts, while the combined
+  "Children & Young Adult Reading" shelf appears on 6,346, and 2,492 more were
+  added 2014–2025. In the 2013 corpus that shelf sits on 48 books across seven
+  of the eight genres (Adventure 19, Detective/Mystery 13, Short Stories 11,
+  Fiction 2, one each in three others), so it is analysed separately rather
+  than pooled as a ninth genre.
+
+What PG actually holds is early juvenile series, not contemporary YA: Tom Swift
+36, Rover Boys 31, Motor Boys 25, Radio Boys 21, Bobbsey Twins 19, Outdoor
+Girls 14 — and **Hardy Boys 0, Nancy Drew 0, The Catcher in the Rye 0**. The
+first two have not been uploaded; Salinger is not public domain in the US. The
+track is therefore "Children and Young Adult" as the shelf defines it, and the
+publication must say so.
 
 Goodreads cannot supply a reception measure: its API closed in December 2020
 and scraping would breach its terms. Open Library ratings reach only 4.4% of
