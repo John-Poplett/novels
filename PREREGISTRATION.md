@@ -119,6 +119,44 @@ coverage instead of a wrong label. The 2013 corpus's own audit measured the
 cost: 84 books sit within ±2 standard errors of a median cut, against 11 near a
 90th-percentile cut.
 
+## 5.5 Form and audience attributes
+
+Two things that could be called genres are recorded as **attributes** instead.
+Neither enters the label; either can be added, corrected or ignored without
+touching the outcome definition. They are supplementary columns in the released
+data and support pre-declared robustness analyses, nothing more.
+
+**`form` — length class.** One value per book, from a word count of the same
+normalised text the features are built from: `flash` (≤ 1,000 words),
+`short story` (1,001–15,000), `novella` (15,001–50,000), `novel` (> 50,000).
+Measured on the 2013 corpus (`stringi::stri_count_words()`): 5 flash, 202
+short story, 138 novella, 409 novel. Flash fiction is not a genre because there
+is no pool: 5 of 754 books, 0 under 500 words, and the median corpus book is
+56,972 words. More importantly, length is already a predictor — one length
+feature reaches AUC 0.632 on the 2013 label. Making form a genre would put a
+predictor on the label axis and make the bibliographic baseline partly
+circular, which would hollow out the one comparison (H2) this project exists
+to make.
+
+**`children_or_ya_shelf` — audience attribute.** A boolean, true when the
+catalogue's bookshelf list carries `Category: Children & Young Adult Reading`.
+Project Gutenberg has no Young Adult-only shelf: the only related subject
+heading, "young adult", appears on 5 of 61,930 English texts, while this
+combined shelf appears on 6,346 of them. The shelf therefore cannot separate
+young-adult books from children's books, and it cross-cuts content genre — in
+the 2013 corpus 48 books carry it across seven of the eight genres (Adventure
+19, Detective/Mystery 13, Short Stories 11, Fiction 2, one each in three
+others). A ninth genre would double-count those books and break the 50/50
+balance per genre. As an attribute it answers a robustness question instead:
+does the text model still beat the bibliographic baseline inside the children
+and young-adult subset?
+
+The attribute is deliberately not called `is_ya`. The name says what is
+measured: a combined children-and-young-adult shelf, not a young-adult one.
+
+Neither attribute is part of eligibility (section 3), the label rule (section
+5) or the primary endpoint (section 7).
+
 ## 6. Folds and models
 
 - **Folds**: 5 author-grouped folds from `inst/extdata/author_folds.csv`, or a
@@ -204,8 +242,8 @@ the window opens**. They are listed so that their absence cannot be discovered
 after the fact:
 
 1. **Genre assignment for books outside the 2013 corpus.** The allow-list
-   exists; its calibration against the 754 known books has not been run or
-   recorded. The calibration result must be filed before the window opens.
+   exists; its calibration against the 754 known books must be filed before
+   the window opens.
    *Filed 2026-11-07, before the freeze:* `data-raw/genre-calibration.R` scores
    it on 753 books (19836 has no bookshelf entry). Per-genre recall/precision:
    Poetry 0.89/1.00, Science Fiction 0.98/0.78, Historical Fiction 0.85/0.69,
@@ -223,8 +261,10 @@ after the fact:
    freeze.
 3. **Withdrawals.** Books leave the catalogue. A `withdrawn_on` column is
    required; withdrawn books are reported, not silently dropped.
-4. **Form attributes.** Flash fiction and Young Adult are recorded as
-   attributes (`form`, `is_ya`), never as genres, for the reasons in SCHEMA.md.
+
+Form and audience attributes are defined in section 5.5. They are not listed
+here because they are not dependencies: they change no label, and a wave can
+run with or without them.
 
 ## 13. Freeze and publication
 
