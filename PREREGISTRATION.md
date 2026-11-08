@@ -121,41 +121,83 @@ cost: 84 books sit within ±2 standard errors of a median cut, against 11 near a
 
 ## 5.5 Form and audience attributes
 
-Two things that could be called genres are recorded as **attributes** instead.
-Neither enters the label; either can be added, corrected or ignored without
+Two things that could be called genres are recorded as **attributes**. Neither
+enters the primary label; either can be added, corrected or ignored without
 touching the outcome definition. They are supplementary columns in the released
-data and support pre-declared robustness analyses, nothing more.
+data.
 
 **`form` — length class.** One value per book, from a word count of the same
-normalised text the features are built from: `flash` (≤ 1,000 words),
-`short story` (1,001–15,000), `novella` (15,001–50,000), `novel` (> 50,000).
-Measured on the 2013 corpus (`stringi::stri_count_words()`): 5 flash, 202
-short story, 138 novella, 409 novel. Flash fiction is not a genre because there
-is no pool: 5 of 754 books, 0 under 500 words, and the median corpus book is
-56,972 words. More importantly, length is already a predictor — one length
-feature reaches AUC 0.632 on the 2013 label. Making form a genre would put a
-predictor on the label axis and make the bibliographic baseline partly
-circular, which would hollow out the one comparison (H2) this project exists
-to make.
+normalised text the features are built from: `flash` (≤ 1,500 words),
+`short story` (1,501–15,000), `novella` (15,001–50,000), `novel` (> 50,000).
+The flash ceiling is 1,500 because published definitions vary between 1,000 and
+1,500; taking the wider end keeps borderline pieces in the category and makes
+the boundary explicit. Measured on the 2013 corpus
+(`stringi::stri_count_words()`): 13 flash, 194 short story, 138 novella, 409
+novel. Flash fiction is not a content genre because there is no pool: 13 of 754
+books, none under 500 words, 12 of the 13 Science Fiction, and the median
+corpus book is 56,972 words. More importantly, length is already a predictor —
+one length feature reaches AUC 0.632 on the 2013 label. Making form a genre
+would put a predictor on the label axis and make the bibliographic baseline
+partly circular, which would hollow out the one comparison (H2) this project
+exists to make.
 
 **`children_or_ya_shelf` — audience attribute.** A boolean, true when the
 catalogue's bookshelf list carries `Category: Children & Young Adult Reading`.
 Project Gutenberg has no Young Adult-only shelf: the only related subject
 heading, "young adult", appears on 5 of 61,930 English texts, while this
-combined shelf appears on 6,346 of them. The shelf therefore cannot separate
-young-adult books from children's books, and it cross-cuts content genre — in
-the 2013 corpus 48 books carry it across seven of the eight genres (Adventure
-19, Detective/Mystery 13, Short Stories 11, Fiction 2, one each in three
-others). A ninth genre would double-count those books and break the 50/50
-balance per genre. As an attribute it answers a robustness question instead:
-does the text model still beat the bibliographic baseline inside the children
-and young-adult subset?
+combined shelf appears on 6,346. The attribute is deliberately not called
+`is_ya`, because the name must say what is measured. Section 5.6 uses it for a
+separate audience track; it is not one of the eight content genres.
 
-The attribute is deliberately not called `is_ya`. The name says what is
-measured: a combined children-and-young-adult shelf, not a young-adult one.
+The form attribute is not part of eligibility (section 3), the label rule
+(section 5) or the primary endpoint (section 7).
 
-Neither attribute is part of eligibility (section 3), the label rule (section
-5) or the primary endpoint (section 7).
+## 5.6 The Children and Young Adult track
+
+An audience category is worth measuring even though it cross-cuts content
+genre, so the wave adds one **secondary** track defined by the shelf in section
+5.5. It is pre-registered because the alternative — constructing it after
+seeing results — is the failure mode the rest of this document exists to
+prevent.
+
+**Why a separate track and not a ninth genre.** The shelf is an audience
+marker, not a content marker: in the 2013 corpus its 48 books sit across seven
+of the eight genres (Adventure 19, Detective/Mystery 13, Short Stories 11,
+Fiction 2, one each in three others). Pooling it with the eight would count
+those books twice and break the 50/50 balance per genre. Analysed separately,
+the overlap is harmless, exactly as the 2013 corpus's existing multi-genre
+books are harmless in per-genre analyses.
+
+**What Project Gutenberg actually holds.** Measured 2026-11-07 against the
+English `Text` catalogue:
+
+| signal | records |
+|---|---|
+| "Category: Children & Young Adult Reading" shelf | 6,346 |
+| LCSH "juvenile fiction" | 5,715 |
+| LCSH "young adult" | 5 |
+| added to the shelf 2014–2025 | 2,492 (144–300 a year) |
+| shelf books carrying one of the eight genre subjects | 982 |
+| shelf books in the 2013 corpus | 48 |
+
+Named holdings: Tom Swift 36, Rover Boys 31, Motor Boys 25, Radio Boys 21,
+Bobbsey Twins 19, Outdoor Girls 14, Moving Picture Boys 4. **Hardy Boys 0,
+Nancy Drew 0, The Catcher in the Rye 0** — the first two have not been
+uploaded, and Salinger (1951) is not public domain in the United States. The
+pool is therefore historical juvenile series and children's classics, not
+contemporary YA. Any publication claim says so.
+
+**Definition.** Eligible books are those with the shelf, in the wave population
+(section 3, conditions 1, 2 and 4). The label uses the same window, the same
+20th/80th band trim, the same `4 * sqrt(c_lo)` separation rule and the same
+author cap as section 5, applied within the shelf pool. Folds are author-grouped
+as in section 6. A pool that cannot yield 50 per class is reported and the
+track is dropped for that wave.
+
+**Status.** Secondary and exploratory: it is reported with its own AUC and CI
+but is not part of the primary endpoint, is not powered by the calculation in
+section 7, and is never pooled with the eight-genre result. This keeps the
+multiplicity rule in section 10 intact.
 
 ## 6. Folds and models
 
@@ -262,9 +304,9 @@ after the fact:
 3. **Withdrawals.** Books leave the catalogue. A `withdrawn_on` column is
    required; withdrawn books are reported, not silently dropped.
 
-Form and audience attributes are defined in section 5.5. They are not listed
-here because they are not dependencies: they change no label, and a wave can
-run with or without them.
+Form and audience attributes are defined in section 5.5, and the Children and
+Young Adult track in section 5.6. Neither is a dependency in the sense above:
+the track is secondary and the attributes change no primary label.
 
 ## 13. Freeze and publication
 
