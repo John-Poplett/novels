@@ -6,8 +6,8 @@
     * Training a multinomial genre classifier (titles can belong to more than one genre) based on the existing dataset
     * Connecting to an Open Library MCP server to scan a title's subjects for genre candidates.
     * Using Gutenberg metadata to deduce genres
-  * Plan on adding at least two new genres: "Flash Fiction" and "Young Adult Fiction". Use the "Flash Fiction" category for a demo dataset
-that might produce a small enought dataset to meet CRAN's tight project size constraints.
+  * Youth and form are **attributes, not genres** (decided 2026-11-07): `children_or_ya_shelf` and `form` (flash / short story / novella / novel). Use the flash subset as a demo dataset
+that might produce a small enought dataset to meet CRAN's tight project size constraints. Measurements behind the decision — 5 flash books, no YA-only shelf, the combined shelf on 48 corpus books across seven genres — are in `PREREGISTRATION.md` §5.5 and `SCHEMA.md`.
   * [ ] Refresh the download counts (this should care of the labels of the three patched LibriVox rows (19513, 19640, 19836). They still carry the audio entries' counts, not the books'. 19836 stands in for *Early Spring*; *The Verse-Book of a Homely Woman* (3477) has its own count. Replace `baselines/` afterwards and record the AUC effect in CHANGELOG.md.
  * Initially qualify the expansion code by having it attempt to reproduce the existing dataset from scratch based solely on gutenberg_identifiers.
 The quality of the expansion code corresponds to how faithfully it reproduces the existing dataset, e.g. getting the genre classifications to match) and evading prior pitfalls such as inclusion of Gutenberg boilerplate and mistaking librivox metadata for actual literary text.

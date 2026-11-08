@@ -34,18 +34,30 @@ One style of genre shaping is based on size of a literary narrative. Thus, short
 
 The original Stonybrook  application of the "Fiction" label is very probably better classed as "novel". It may be in a future release of the dataset, the current Fiction will be reworked as "Novel" and Fiction will become an amalgam of Novel, Historical Fiction, Short Story, and Young Adult.
 
-Novel could be identified as any non-fiction narrative work that
+Novel could be identified as any fiction narrative work that
 exceeds 50,000 words. Novella then subsequently would be 15,000 to 49,999 words, short story between 1000 and 15,000 words, flash, 1,000 words or less.
 
-Some additional genre categories to consider--if mappings to gutenberg_metadata$bookshelf_metadata
-can be worked--include:
+Two candidate categories are not genres, and are recorded as attributes
+instead (see `PREREGISTRATION.md` §5.5 for the measurements and the rule):
 
-* Children and Young Adult
-* Flash Fiction
+* **Form** — `flash` (≤ 1,000 words), `short story` (1,001–15,000), `novella`
+  (15,001–50,000), `novel` (> 50,000). Measured on the 2013 corpus: 5, 202,
+  138 and 409 books. Flash is five books, none under 500 words, so there is no
+  pool to label; and length alone reaches AUC 0.632, so making it a genre
+  would put a predictor on the label axis and partly circularise the
+  non-text baseline.
+* **Children and Young Adult** — a boolean attribute
+  `children_or_ya_shelf`, deliberately not `is_ya`. Project Gutenberg has no
+  young-adult-only shelf: the subject heading "young adult" appears on 5 of
+  61,930 English texts, while the combined "Children & Young Adult Reading"
+  shelf appears on 6,346. In the 2013 corpus that shelf sits on 48 books
+  across seven of the eight genres (Adventure 19, Detective/Mystery 13, Short
+  Stories 11, Fiction 2, one each in three others), so a ninth genre would
+  double-count them and break the 50/50 balance per genre.
 
-Further alignment with the online rating book rating system, GoodReads, is of interest particulary if we plan to
-based our response value from a combination of Gutenberg download counts and Goodread's rating system. The
-proposal to transition from the Love Stories category to Romance is a nod to this goal.
+Goodreads cannot supply a reception measure: its API closed in December 2020
+and scraping would breach its terms. Open Library ratings reach only 4.4% of
+the corpus with five or more ratings; see the calibration note below.
 
 ## Calibration against the 2013 labels (2026-11-07)
 
