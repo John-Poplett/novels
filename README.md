@@ -97,12 +97,12 @@ An earlier single-split, trigram run peaked at 0.820 (`alpha = 0.03`). It is not
 
 | training authors (books) | `alpha` 0.05 | `alpha` 0.5 | `alpha` 1.0 |
 |---|---|---|---|
-| 25% (153) | 0.679 | 0.650 | 0.619 |
+| 25% (153) | 0.678 | 0.649 | 0.620 |
 | 50% (301) | 0.721 | 0.668 | 0.656 |
-| 75% (451) | 0.724 | 0.693 | 0.684 |
-| 100% (603) | 0.746 | 0.708 | 0.695 |
+| 75% (451) | 0.723 | 0.693 | 0.684 |
+| 100% (603) | 0.745 | 0.707 | 0.696 |
 
-Each doubling adds roughly 0.025–0.04 AUC at every `alpha`, with no plateau — consistent with the train/test gap above: the model is limited by data, not (yet) by label noise. Treat it as suggestive, not conclusive: with five folds, the paired 50% → 100% gains (z = 1.7, 2.8, 2.6) need about 2.8 to clear a t-test at 4 degrees of freedom, and the 75% → 100% steps are within noise. It measures books and authors together, so it cannot say which matters more, and extrapolating past 100% assumes the trend continues.
+Each doubling adds roughly 0.02–0.04 AUC at every `alpha`, with no plateau — consistent with the train/test gap above: the model is limited by data, not (yet) by label noise. Treat it as suggestive, not conclusive: with five folds, the paired 50% → 100% gains (z = 1.7, 2.6, 2.7) need about 2.8 to clear a t-test at 4 degrees of freedom, and the 75% → 100% steps are within noise. It measures books and authors together, so it cannot say which matters more, and extrapolating past 100% assumes the trend continues.
 
 ## Roadmap
 

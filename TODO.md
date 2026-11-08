@@ -40,6 +40,8 @@ in a Gutenberg mirror
 
 # Done (not published)
 
+&#9989; Regenerate the learning curve after the v1.1 boilerplate repair (`data-raw/learning-curve.csv`, README table), 2026-11-07. The shipped CSV no longer reproduced the pipeline at 100% — max per-fold difference 0.0064 (fold 5, `alpha` 0.5) — which is exactly what the script's reproduction assertion exists to catch. Re-ran it: max difference 4.4e-16, so the curve and `baselines/` now come from the same corpus. The table moves by at most 0.001 and its shape is unchanged (100% row 0.745 / 0.707 / 0.696; 50% → 100% z = 1.7, 2.6, 2.7).
+
 &#9989; Download-snapshot series started (`R/downloadSnapshots.R`, `data-raw/snapshot-downloads.R`), 2026-11-07. One retrieval of Project Gutenberg's RDF dump produces an append-only `(gutenberg_id, snapshot_date, source, downloads)` table plus `date_added` and a provenance line (URL, UTC time, bytes, SHA-256, rows, total).
   * Trial snapshot: 79,762 books, 68,600,747 30-day downloads, median 564, payload sha256 `89a18c78…`; no missing counts and no duplicate ids.
   * Source is PG's own `rdf-files.tar.bz2` (121 MB, regenerated daily; 33 s unpack, 44 s parse), not Gutendex. The mirror agrees today, but a multi-year series should not depend on a third party's copy.
