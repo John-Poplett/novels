@@ -141,44 +141,66 @@ would put a predictor on the label axis and make the bibliographic baseline
 partly circular, which would hollow out the one comparison (H2) this project
 exists to make.
 
-**`children_or_ya_shelf` — audience attribute.** A boolean, true when the
-catalogue's bookshelf list carries `Category: Children & Young Adult Reading`.
-Project Gutenberg has no Young Adult-only shelf: the only related subject
-heading, "young adult", appears on 5 of 61,930 English texts, while this
-combined shelf appears on 6,346. The attribute is deliberately not called
-`is_ya`, because the name must say what is measured. Section 5.6 uses it for a
+**`children_or_ya` — audience attribute.** A boolean, true when the catalogue
+marks the book as young-reader material by **either** of the two signals it
+carries: the `Category: Children & Young Adult Reading` bookshelf, or a
+Library of Congress subject subdivision containing "juvenile" (for example
+`Animals -- Juvenile fiction`). These are different cataloguing practices over
+overlapping sets, not two names for one set: the shelf covers 6,346 of 61,930
+English texts, the subdivision 6,632, and 4,365 carry both. They are not
+interchangeable. The shelf alone misses 4 of 36 Tom Swift, 5 of 25 Motor Boys
+and 3 of 4 Moving Picture Boys, and in the 2013 corpus the subdivision finds 54
+books against the shelf's 48. The attribute is therefore their union, 8,613
+records.
+
+It is deliberately not called `is_ya`. Neither signal isolates young adult
+fiction, and the name must say what is measured. Section 5.6 uses it for a
 separate audience track; it is not one of the eight content genres.
 
-The form attribute is not part of eligibility (section 3), the label rule
-(section 5) or the primary endpoint (section 7).
+Neither attribute is part of eligibility (section 3), the label rule (section
+5) or the primary endpoint (section 7).
 
 ## 5.6 The Children and Young Adult track
 
 An audience category is worth measuring even though it cross-cuts content
-genre, so the wave adds one **secondary** track defined by the shelf in section
-5.5. It is pre-registered because the alternative — constructing it after
-seeing results — is the failure mode the rest of this document exists to
-prevent.
+genre, so the wave adds one **secondary** track defined in section 5.5. It is
+pre-registered because the alternative — constructing it after seeing results —
+is the failure mode the rest of this document exists to prevent.
 
-**Why a separate track and not a ninth genre.** The shelf is an audience
-marker, not a content marker: in the 2013 corpus its 48 books sit across seven
-of the eight genres (Adventure 19, Detective/Mystery 13, Short Stories 11,
-Fiction 2, one each in three others). Pooling it with the eight would count
-those books twice and break the 50/50 balance per genre. Analysed separately,
-the overlap is harmless, exactly as the 2013 corpus's existing multi-genre
-books are harmless in per-genre analyses.
+**Why the track is "children and young adult", not "young adult".** Young adult
+fiction is a legitimate standalone category, and current cataloguing practice
+treats it as one: LC guidance defines children's fiction as intended for
+readers through age 12 and young adult fiction as 13 to 18, and the book trade
+assigns YOUNG ADULT FICTION separately from JUVENILE FICTION. Project
+Gutenberg's records do not follow that split. Its "juvenile" subdivision is the
+LC umbrella for young readers up to about age 15 — children's books plus the
+younger end of YA — and exactly **one** of 61,930 English texts carries the
+heading "Young adult fiction" (id 67979, *The Blue Castle*, 1926, also tagged
+Romance fiction). No PG signal isolates the 13–18 band, so a YA-only track could
+be pre-registered only by inventing a definition after inspection. The track is
+the umbrella, named for what it is.
+
+**Why a separate track and not a ninth genre.** The audience marker cross-cuts
+content genre: in the 2013 corpus 71 books carry one of the two signals, and
+the 48 shelf books alone sit across seven of the eight genres (Adventure 19,
+Detective/Mystery 13, Short Stories 11, Fiction 2, one each in three others).
+Pooling would count those books twice and break the 50/50 balance per genre.
+Analysed separately, the overlap is harmless, exactly as the 2013 corpus's
+existing multi-genre books are harmless in per-genre analyses.
 
 **What Project Gutenberg actually holds.** Measured 2026-11-07 against the
-English `Text` catalogue:
+English `Text` catalogue (61,930 records):
 
 | signal | records |
 |---|---|
 | "Category: Children & Young Adult Reading" shelf | 6,346 |
-| LCSH "juvenile fiction" | 5,715 |
-| LCSH "young adult" | 5 |
+| "juvenile" subject subdivision | 6,632 |
+| both signals (union — the track pool) | 8,613 |
+| LCSH "young adult fiction" (exact) | 1 |
+| LCSH "young adult" anywhere in the subject string | 5 |
+| union books carrying one of the eight genre subjects | 1,550 |
 | added to the shelf 2014–2025 | 2,492 (144–300 a year) |
-| shelf books carrying one of the eight genre subjects | 982 |
-| shelf books in the 2013 corpus | 48 |
+| 2013 corpus: shelf / juvenile / either | 48 / 54 / 71 |
 
 Named holdings: Tom Swift 36, Rover Boys 31, Motor Boys 25, Radio Boys 21,
 Bobbsey Twins 19, Outdoor Girls 14, Moving Picture Boys 4. **Hardy Boys 0,
@@ -187,12 +209,14 @@ uploaded, and Salinger (1951) is not public domain in the United States. The
 pool is therefore historical juvenile series and children's classics, not
 contemporary YA. Any publication claim says so.
 
-**Definition.** Eligible books are those with the shelf, in the wave population
-(section 3, conditions 1, 2 and 4). The label uses the same window, the same
-20th/80th band trim, the same `4 * sqrt(c_lo)` separation rule and the same
-author cap as section 5, applied within the shelf pool. Folds are author-grouped
-as in section 6. A pool that cannot yield 50 per class is reported and the
-track is dropped for that wave.
+**Definition.** Eligible books are those with `children_or_ya` true, in the wave
+population of section 3. That population already requires assignment to one of
+the eight content genres, so children's non-fiction, which carries the same
+subdivision, does not enter. The label uses
+the same window, the same 20th/80th band trim, the same `4 * sqrt(c_lo)`
+separation rule and the same author cap as section 5, applied within this pool.
+Folds are author-grouped as in section 6. A pool that cannot yield 50 per class
+is reported and the track is dropped for that wave.
 
 **Status.** Secondary and exploratory: it is reported with its own AUC and CI
 but is not part of the primary endpoint, is not powered by the calculation in

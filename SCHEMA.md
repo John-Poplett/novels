@@ -50,22 +50,28 @@ measurements and the rule):
   AUC 0.632, so making it a genre would put a predictor on the label axis and
   partly circularise the non-text baseline. The 1,500 ceiling is the wider end
   of the 1,000–1,500 range used in published definitions.
-* **Children and Young Adult** — a boolean attribute
-  `children_or_ya_shelf` and, in the wave, a separate secondary track.
-  Project Gutenberg has no young-adult-only shelf: the subject heading "young
-  adult" appears on 5 of 61,930 English texts, while the combined
-  "Children & Young Adult Reading" shelf appears on 6,346, and 2,492 more were
-  added 2014–2025. In the 2013 corpus that shelf sits on 48 books across seven
-  of the eight genres (Adventure 19, Detective/Mystery 13, Short Stories 11,
-  Fiction 2, one each in three others), so it is analysed separately rather
-  than pooled as a ninth genre.
+* **Children and Young Adult** — a boolean attribute `children_or_ya` and, in
+  the wave, a separate secondary track. It is true when either signal fires:
+  the "Children & Young Adult Reading" shelf (6,346 English texts) or an LC
+  "juvenile" subject subdivision (6,632); their union is 8,613, and 4,365
+  records carry both. They are different cataloguing practices, so the union is
+  the honest marker — the shelf alone misses 4 of 36 Tom Swift, 5 of 25 Motor
+  Boys and 3 of 4 Moving Picture Boys. Young adult fiction is a legitimate
+  standalone category, and LC (13–18) and the book trade both separate it from
+  children's fiction; Project Gutenberg's records do not, and exactly 1 of
+  61,930 English texts carries the heading "Young adult fiction". No PG signal
+  isolates the 13–18 band, so the track is the umbrella and is named for it.
+  In the 2013 corpus 71 books carry a signal; the 48 shelf books alone sit
+  across seven of the eight genres (Adventure 19, Detective/Mystery 13, Short
+  Stories 11, Fiction 2, one each in three others), so the track is analysed
+  separately rather than pooled as a ninth genre.
 
 What PG actually holds is early juvenile series, not contemporary YA: Tom Swift
 36, Rover Boys 31, Motor Boys 25, Radio Boys 21, Bobbsey Twins 19, Outdoor
 Girls 14 — and **Hardy Boys 0, Nancy Drew 0, The Catcher in the Rye 0**. The
 first two have not been uploaded; Salinger is not public domain in the US. The
-track is therefore "Children and Young Adult" as the shelf defines it, and the
-publication must say so.
+track is therefore "Children and Young Adult" as the catalogue defines it, and
+the publication must say so.
 
 Goodreads cannot supply a reception measure: its API closed in December 2020
 and scraping would breach its terms. Open Library ratings reach only 4.4% of
