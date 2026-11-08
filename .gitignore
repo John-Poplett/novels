@@ -27,3 +27,7 @@ _targets/
 
 # testthat failure artifacts
 tests/testthat/_problems/
+
+# editor swap files
+*.swp
+*.swo
