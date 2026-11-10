@@ -34,3 +34,4 @@
 ^\.opencode$
 ^baselines$
 ^Makefile$
+^\.posit/assistant$
