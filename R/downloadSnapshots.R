@@ -19,6 +19,12 @@
 # the same numbers and is convenient, but a multi-year series should not
 # depend on a third party's copy of it.
 
+# The counter reports a trailing 30-day window, so this is both the window
+# length and the only interval that makes consecutive snapshots disjoint.
+# A calendar rule cannot express it: the same day of each month is 28 days in
+# February (two days counted twice) and 31 days elsewhere (a one-day hole).
+SNAPSHOT_INTERVAL_DAYS <- 30L
+
 #' Read Project Gutenberg RDF records
 #'
 #' Extracts the download count and the catalogue's `Issued` date from one or
@@ -96,6 +102,51 @@ readGutenbergRdf <- function(paths) {
   )
 }
 
+#' Date of the most recent snapshot in a series
+#'
+#' The series carries its own schedule: the previous snapshot's date is read from
+#' the directory names, so no anchor date or configuration has to be kept
+#' anywhere else.
+#'
+#' @param dir root of the snapshot series (default `"data-raw/snapshots"`)
+#' @returns a `Date`, or `NA` when the series is empty or absent
+#' @seealso snapshotDue, readDownloadSnapshots
+#' @export
+latestSnapshotDate <- function(dir = "data-raw/snapshots") {
+  if (!dir.exists(dir)) {
+    return(as.Date(NA))
+  }
+  names <- list.dirs(dir, recursive = FALSE, full.names = FALSE)
+  dates <- as.Date(names, format = "%Y-%m-%d")
+  dates <- dates[!is.na(dates)]
+  if (!length(dates)) as.Date(NA) else max(dates)
+}
+
+#' Is a download snapshot due?
+#'
+#' Answers the question a schedule would otherwise answer, so that cron or
+#' launchd only has to run the job often, not on a computed date. It is `TRUE`
+#' when the series is empty or the latest snapshot is at least
+#' `SNAPSHOT_INTERVAL_DAYS` days old, and it stays `TRUE` until a snapshot is
+#' written -- a machine that was asleep on the due date catches up on its next
+#' run instead of skipping a month.
+#'
+#' Callers should ask this before downloading the 121 MB RDF payload.
+#'
+#' @param dir root of the snapshot series (default `"data-raw/snapshots"`)
+#' @param today the date to test, `Date` or `"YYYY-MM-DD"` (default: the system
+#'   date)
+#' @returns `TRUE` or `FALSE`
+#' @seealso latestSnapshotDate, writeDownloadSnapshot
+#' @export
+snapshotDue <- function(dir = "data-raw/snapshots", today = Sys.Date()) {
+  today <- as.Date(today)
+  stopifnot("today must be a single date" = length(today) == 1 && !is.na(today))
+
+  latest <- latestSnapshotDate(dir)
+  is.na(latest) || as.numeric(today - latest) >= SNAPSHOT_INTERVAL_DAYS
+}
+
 #' Write one download snapshot
 #'
 #' Snapshots are append-only. A date that already has a snapshot is an error,
@@ -134,6 +185,26 @@ writeDownloadSnapshot <- function(books, snapshot_date, source,
     stop("A snapshot for ", format(snapshot_date), " already exists: ",
          downloads_path, ". Snapshots are append-only; use a new date.",
          call. = FALSE)
+  }
+
+  previous <- latestSnapshotDate(dir)
+  if (!is.na(previous)) {
+    interval <- as.numeric(snapshot_date - previous)
+    if (interval < SNAPSHOT_INTERVAL_DAYS) {
+      stop("The latest snapshot is ", format(previous), " and ",
+           format(snapshot_date), " is only ", interval, " days later. The ",
+           "counter reports a trailing ", SNAPSHOT_INTERVAL_DAYS, "-day window, ",
+           "so snapshots closer together count the overlapping days twice. ",
+           "Wait until ", format(previous + SNAPSHOT_INTERVAL_DAYS),
+           " or later.", call. = FALSE)
+    }
+    if (interval > SNAPSHOT_INTERVAL_DAYS) {
+      warning("Snapshot ", format(snapshot_date), " is ", interval, " days ",
+              "after ", format(previous), " rather than ",
+              SNAPSHOT_INTERVAL_DAYS, ": ", interval - SNAPSHOT_INTERVAL_DAYS,
+              " day(s) of counter coverage are missing. Recorded as a gap, ",
+              "never interpolated.", call. = FALSE)
+    }
   }
 
   dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)

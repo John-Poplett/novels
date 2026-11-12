@@ -12,12 +12,20 @@
 # 33 s to unpack and 44 s to parse on this laptop. The extracted tree is a
 # temporary; only the two CSV files and the provenance line are kept.
 #
-# Run from the package root, once a month, on the same day of the month:
+# Run from the package root, as often as you like, and let the script decide:
 #
 #   Rscript data-raw/snapshot-downloads.R
 #
-# The script refuses to write a second snapshot for the same date. Snapshots
-# are append-only -- a re-run cannot replace an observation.
+# The schedule is a fixed 30-day grid anchored at the first snapshot, not a
+# calendar rule, because the counter's window is 30 days: sampling on the same
+# day of each month gives a 28-day interval in February (two days counted
+# twice) and 31-day intervals elsewhere (a one-day hole). snapshotDue() answers
+# "is it time?" from the series itself, so a daily cron job is enough; a run on
+# a day that is not due exits quietly, before downloading anything.
+#
+# The script refuses a second snapshot for the same date, and refuses one that
+# would overlap the previous window. Snapshots are append-only -- a re-run
+# cannot replace an observation.
 #
 # What this does NOT record: the catalogue's Type and Language, which decide
 # wave eligibility. Those are frozen from pg_catalog.csv on 2026-12-31, as
@@ -28,6 +36,15 @@ suppressMessages({
   library(readr)
 })
 pkgload::load_all(quiet = TRUE)
+
+run_date <- as.Date(format(Sys.time(), "%Y-%m-%d", tz = "UTC"))
+latest <- latestSnapshotDate()
+if (!snapshotDue(today = run_date)) {
+  cat("No snapshot due: the latest is", format(latest), "and the next is",
+      format(latest + SNAPSHOT_INTERVAL_DAYS), "\n")
+  quit(save = "no", status = 0)
+}
+interval_days <- if (is.na(latest)) NA_integer_ else as.integer(run_date - latest)
 
 source_url <- "https://www.gutenberg.org/cache/epub/feeds/rdf-files.tar.bz2"
 min_records <- 70000L   # 79,762 on 2026-11-07; a collapse means a changed feed
@@ -76,7 +93,7 @@ if (total_downloads <= 0) {
        call. = FALSE)
 }
 
-snapshot_date <- format(Sys.time(), "%Y-%m-%d", tz = "UTC")
+snapshot_date <- run_date
 snapshot_path <- writeDownloadSnapshot(
   books,
   snapshot_date = snapshot_date,
@@ -90,7 +107,9 @@ provenance <- c(
   paste0("payload_sha256: ", payload_sha256),
   paste0("rdf_files: ", length(rdf_paths)),
   paste0("rows_written: ", nrow(books)),
-  paste0("total_downloads: ", total_downloads)
+  paste0("total_downloads: ", total_downloads),
+  paste0("interval_days: ",
+         if (is.na(interval_days)) "first snapshot" else interval_days)
 )
 writeLines(provenance, file.path(dirname(snapshot_path), "provenance.txt"))
 
