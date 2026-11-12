@@ -1,5 +1,8 @@
 # Phase 3 — Fix plan and progress
 
+> **Historical.** This records the 2026-11-06 architecture revision and is not
+> maintained. Current documentation starts at [README § Documents](../README.md#documents).
+
 **Date:** 2026-11-06
 **Input:** `architecture-workflow/phase-2-diagnosis.md`
 **Rule:** one finding per commit; each commit must leave the fast test loop green.

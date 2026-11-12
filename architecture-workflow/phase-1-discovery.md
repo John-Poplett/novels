@@ -1,5 +1,8 @@
 # Phase 1 — Discovery: `novels`
 
+> **Historical.** This records the 2026-11-06 architecture revision and is not
+> maintained. Current documentation starts at [README § Documents](../README.md#documents).
+
 **Date:** 2026-11-06
 **Scope:** whole repository, with emphasis on `README.md`, `TODO.md`, `_targets.R`
 **Method:** read every tracked source file, the pipeline definition, tests, vignettes, and the
