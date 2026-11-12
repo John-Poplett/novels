@@ -34,8 +34,19 @@ divided by Project Gutenberg's total downloads in the same months.
 - The window is **2027-01-01 to 2028-12-31**, 24 months, identical for every
   book in the wave.
 - Per-month counts are obtained from the trailing 30-day counter by taking one
-  snapshot every 30 days, so consecutive snapshots are disjoint windows and the
-  sum is the window total without deconvolution.
+  snapshot every 30 days on a fixed grid anchored at the first snapshot
+  (`2026-11-07`: `2026-12-07`, `2027-01-06`, `2027-02-05`, …), so consecutive
+  snapshots are disjoint windows and the sum is the window total without
+  deconvolution. A calendar rule cannot deliver this: the same day of each month
+  is 28 days in February, which counts two days twice, and 31 days elsewhere,
+  which leaves a one-day hole.
+- The window is measured by the snapshots dated inside it. On that grid there
+  are **25**, from `2027-01-06` to `2028-12-26`, whose windows cover 750 days
+  beginning `2026-12-07`. The effective period is therefore 750 days rather
+  than the 731 of the calendar window. It is identical for every book, and the
+  divisor is summed over the same 25 snapshots, so the difference cancels in
+  `share_per_million`; it is recorded here so that no later reader supposes
+  731 days were measured.
 - The site total is read from the same source on the same days. The divisor is
   per million downloads, so the outcome is "share of platform attention", not a
   raw count.
@@ -71,8 +82,15 @@ every eligible book, which keeps exposure equal without shrinking the pool.
 
 ## 4. Instrumentation
 
-- One snapshot per month of the **entire** catalogue, on the same day of the
-  month, at a fixed UTC hour.
+- One snapshot of the **entire** catalogue every 30 days, on the grid anchored
+  at `2026-11-07`, at a fixed hour of the UTC day. The interval is enforced in
+  code: a snapshot less than 30 days after the previous one is refused as an
+  overlap, and a later one is written with its actual interval recorded.
+- The schedule is executed by a **daily check**, not a calendar expression: the
+  job asks the series whether 30 days have elapsed and exits before downloading
+  if they have not. A machine asleep on the due date therefore catches up on its
+  next run instead of skipping a month, and no date has to be configured
+  anywhere but the data itself.
 - Stored append-only as `(gutenberg_id, snapshot_date, source, downloads)`.
   Nothing is ever overwritten.
 - Provenance per snapshot: source URL, retrieval timestamp, SHA-256 of the
@@ -89,7 +107,8 @@ every eligible book, which keeps exposure equal without shrinking the pool.
 
 Fixed order of operations. No step may be reordered after the window opens.
 
-1. Sum the 24 monthly counts per book in the window.
+1. Sum the counts of every snapshot dated inside the window — 25 of them on the
+   anchored grid (section 2) — per book.
 2. Divide by the site total for the same months; multiply by 1e6. This is
    `share_per_million`.
 3. Within each genre, compute the 20th and 80th percentiles of
@@ -292,6 +311,15 @@ not hypotheses and are not corrected.
 ## 11. Deviations
 
 - Amendments are dated, appended to this file, and published with the analysis.
+- **2026-11-11 — sampling rule corrected before the window opened.** Section 2
+  said "one snapshot every 30 days" and section 4 said "on the same day of the
+  month". Those are different schedules, and section 4's is wrong for this
+  counter: it gives a 28-day February interval (two days measured twice) and
+  31-day intervals elsewhere (a one-day hole). Both sections now state the
+  anchored 30-day grid, section 5 names the 25 snapshots that constitute the
+  window, and the interval is enforced in `writeDownloadSnapshot()`. No
+  observation is affected: the only snapshot taken so far sits on both grids,
+  and the window had not opened.
 - An amendment that changes the outcome definition, the percentile rule, the
   folds or the endpoint means the wave is reported **both** as registered and
   as amended.
@@ -344,8 +372,8 @@ the track is secondary and the attributes change no primary label.
 | 2029-03-31 | audit run; models fitted; results published with this document |
 
 The first snapshot was taken **2026-11-07** (trial), ahead of the date below and
-not part of any window; the series then runs monthly. It is stored as
-`data-raw/snapshots/2026-11-07/`.
+not part of any window; the series then runs every 30 days from that anchor. It
+is stored as `data-raw/snapshots/2026-11-07/`.
 
 The 12-month window (2027 only) is reported as a pre-declared sensitivity
 analysis alongside the primary 24-month result. It is not a fallback: the
