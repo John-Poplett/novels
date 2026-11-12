@@ -4,6 +4,18 @@ Reproducing and extending [*Success with Style: Using Writing Style to Predict t
 
 This project builds the same dataset from the original paper's source metadata, then trains and evaluates a TF-IDF / elastic-net classifier on it as a modern R reproduction. The upstream corpus has several real data-quality issues (see below); this pipeline fixes them, with each fix backed by an assert that catches the problem if it ever reoccurs. The Results table below is read back from the `targets` store — the AUC columns from `tar_read(cv_summary)`, the nonzero-coefficient column from `tar_read(cv_results)` — not copied by hand, and the source archive is pinned by SHA-256, so the numbers and the bytes they came from cannot drift apart silently.
 
+## Documents
+
+There is no single design document; each file below owns one question, and this README is the entry point.
+
+| Document | What it answers |
+|---|---|
+| [`README.md`](README.md) | What the package does — the pipeline targets, the corpus grain, the four known source defects, the results, and the roadmap |
+| [`SCHEMA.md`](SCHEMA.md) | What the data means — the eight genres, the 2026-11-07 calibration against the 2013 labels, and the download-snapshot tables |
+| [`PREREGISTRATION.md`](PREREGISTRATION.md) | How the 2027–28 label wave is measured — outcome, eligibility, folds, audit gates, and the dated amendments |
+| `ACQUISITION.md` | Where the corpus artefact came from and how to verify it byte for byte. Not yet on `dev`: it lands with the Zenodo deposit (`docs/zenodo-deposit`) |
+| [`architecture-workflow/`](architecture-workflow/phase-1-discovery.md) | **Historical, not maintained** — the 2026-11-06 architecture revision: discovery, diagnosis, 17 findings, and the resulting shape. Read it for how the current layout was decided, not for how it works now |
+
 ## Pipeline
 
 Built with [`targets`](https://books.ropensci.org/targets/). To run it end to end:

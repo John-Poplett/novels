@@ -1,5 +1,8 @@
 # Phase 2 — Diagnosis: `novels`
 
+> **Historical.** This records the 2026-11-06 architecture revision and is not
+> maintained. Current documentation starts at [README § Documents](../README.md#documents).
+
 **Date:** 2026-11-06
 **Inputs:** `architecture-workflow/phase-1-discovery.md`, direct measurement (test suite,
 `tar_manifest()`, `system.file()` in both execution contexts, package check).

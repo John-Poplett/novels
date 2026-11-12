@@ -1,5 +1,8 @@
 # Phase 4 — Final state: `novels`
 
+> **Historical.** This records the 2026-11-06 architecture revision and is not
+> maintained. Current documentation starts at [README § Documents](../README.md#documents).
+
 **Date:** 2026-11-06
 **Inputs:** `phase-1-discovery.md`, `phase-2-diagnosis.md`, `phase-3-plan.md`, the Phase 3
 commit history (`c12e7f0..HEAD`), and the package check run in this phase.
