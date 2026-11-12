@@ -118,3 +118,76 @@ test_that("writeDownloadSnapshot rejects missing or negative counts", {
     "non-missing"
   )
 })
+
+snapshot_fixture <- function(dir, ...) {
+  books <- data.frame(
+    gutenberg_id = 1L, downloads = 10L, date_added = as.Date("2000-01-01")
+  )
+  writeDownloadSnapshot(books, ..., source = "test-source", dir = dir)
+}
+
+test_that("snapshotDue is TRUE when the series is empty", {
+  dir <- tempfile("snapshots")
+  on.exit(unlink(dir, recursive = TRUE), add = TRUE)
+
+  expect_true(snapshotDue(dir, today = as.Date("2026-11-07")))
+})
+
+test_that("snapshotDue is FALSE one day before the 30-day window closes", {
+  dir <- tempfile("snapshots")
+  on.exit(unlink(dir, recursive = TRUE), add = TRUE)
+
+  snapshot_fixture(dir, "2026-11-07")
+  expect_false(snapshotDue(dir, today = as.Date("2026-12-06")))
+})
+
+test_that("snapshotDue is TRUE on the thirtieth day after the last snapshot", {
+  dir <- tempfile("snapshots")
+  on.exit(unlink(dir, recursive = TRUE), add = TRUE)
+
+  snapshot_fixture(dir, "2026-11-07")
+  expect_true(snapshotDue(dir, today = as.Date("2026-12-07")))
+})
+
+test_that("snapshotDue stays TRUE after a missed run, so a late job still fires", {
+  dir <- tempfile("snapshots")
+  on.exit(unlink(dir, recursive = TRUE), add = TRUE)
+
+  snapshot_fixture(dir, "2026-11-07")
+  expect_true(snapshotDue(dir, today = as.Date("2027-01-20")))
+})
+
+test_that("a snapshot 29 days after the last one would double count, so it is refused", {
+  dir <- tempfile("snapshots")
+  on.exit(unlink(dir, recursive = TRUE), add = TRUE)
+
+  snapshot_fixture(dir, "2026-11-07")
+  expect_error(
+    snapshot_fixture(dir, "2026-12-06"),
+    "overlap"
+  )
+})
+
+test_that("the overlap error names the previous snapshot so the fix is obvious", {
+  dir <- tempfile("snapshots")
+  on.exit(unlink(dir, recursive = TRUE), add = TRUE)
+
+  snapshot_fixture(dir, "2026-11-07")
+  expect_error(snapshot_fixture(dir, "2026-12-06"), "2026-11-07")
+})
+
+test_that("a snapshot exactly 30 days after the last one is written without complaint", {
+  dir <- tempfile("snapshots")
+  on.exit(unlink(dir, recursive = TRUE), add = TRUE)
+
+  snapshot_fixture(dir, "2026-11-07")
+  expect_silent(snapshot_fixture(dir, "2026-12-07"))
+})
+
+test_that("a late snapshot is written but warns, because it leaves a coverage gap", {
+  dir <- tempfile("snapshots")
+  on.exit(unlink(dir, recursive = TRUE), add = TRUE)
+
+  snapshot_fixture(dir, "2026-11-07")
+  expect_warning(snapshot_fixture(dir, "2027-01-20"), "day")
+})
