@@ -311,6 +311,14 @@ not hypotheses and are not corrected.
 ## 11. Deviations
 
 - Amendments are dated, appended to this file, and published with the analysis.
+- **2026-11-12 — the genre calibration is re-read as recall evidence only.**
+  Section 12.1 filed per-genre recall and precision against the 754-book corpus.
+  That corpus is a quota sample (100 books per genre, 50 per class, paper
+  section 2), so a book's absence from a genre directory can mean a full quota
+  rather than a judgement that it does not belong. Precision against it is
+  therefore not a measurable quantity and is dropped as a gate; recall stands.
+  No observation, endpoint or fold changes — the amendment corrects the reading
+  of evidence filed on 2026-11-07, before the window opened.
 - **2026-11-11 — sampling rule corrected before the window opened.** Section 2
   said "one snapshot every 30 days" and section 4 said "on the same day of the
   month". Those are different schedules, and section 4's is wrong for this
@@ -346,6 +354,14 @@ after the fact:
    books and is the only source of Fiction; only 25.3% of Romance books carry a
    Romance shelf. **Open decision due before 2026-12-31:** Fiction as residual
    rather than level, and Romance's place in the eight. See SCHEMA.md.
+   *Read the precision column with care (noted 2026-11-12).* The reference is a
+   quota sample: section 2 of the paper fixes 100 books per genre, 50 per class,
+   and the corpus tree matches file for file. A book can be absent from a genre
+   directory because its quota was full rather than because it does not belong,
+   so precision against this corpus is bounded by the quota and is not a quality
+   gate. Recall is measurable and is the only column the wave may rely on.
+   `SCHEMA.md` records the reasoning, including the 12 books labelled both
+   Science Fiction and Short Stories against 88 that could have been.
 2. **Publication year.** The catalogue carries the ebook date, not the original
    publication date. Without a second source (Wikidata or MARC), the baseline
    cannot separate publication era from upload era, and that limitation is
