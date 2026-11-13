@@ -81,8 +81,10 @@ the corpus with five or more ratings; see the calibration note below.
 
 `assignGenre()` plus `inst/extdata/genre_allowlist.csv` were scored on the 753
 corpus books that carry a bookshelf entry (19836 has an empty one). This is the
-mechanism proposed for books outside the 2013 corpus, so its error rates on
-books with a trusted label are the only evidence it will ever have.
+mechanism proposed for books outside the 2013 corpus, so its agreement with the
+only independently produced labels is the only evidence it will ever have. Read
+that evidence with the caveat below in hand: the reference is a quota sample, so
+of the two columns only recall carries meaning.
 
 Exact set agreement is 24.6% with every allow-list row and 41.7% after dropping
 the judgment calls. Exact matching is a poor headline because a book can carry
@@ -101,6 +103,40 @@ the result (`data-raw/genre-calibration.R`, output in
 | Fiction | 0.82 | 0.17 |
 | Romance | 0.25 | 0.39 |
 
+### What this reference can and cannot measure
+
+The corpus being scored against is a **quota sample, not a census**, and the
+paper says so in section 2 ("Dataset Construction"): per genre it sets download
+thresholds "to obtain at least 50 books for each class", then "for each genre,
+we construct a dataset of 100 novels (50 per class)", with no author
+contributing more than two books. The directory tree matches that exactly — 50
+success and 50 failure files in each of the eight genre directories, 800 files
+over 758 distinct ids (four of those files have no metadata row, so the shipped
+table holds 796 genre rows over 754 books). The mechanism of labelling is
+visible too: a book belongs to a genre when a copy of its text sits in that
+genre's directory, and the 41 books in more than one genre are the ones that won
+more than one quota.
+
+That bounds the two columns differently:
+
+* **Recall is measurable.** It asks whether the mechanism recovers the books the
+  authors selected, and it can be read as a rate.
+* **Precision is not.** A book absent from a genre directory may simply have lost
+  a slot — once 50 successes were chosen for Short Stories, no further
+  collection could enter it however obviously a collection it was. The negative
+  class therefore contains true members, and precision below 1.00 is partly
+  capacity rather than error. Fiction is the clearest case: 100 slots against a
+  shelf that sits on 63.3% of the corpus.
+* **Multi-genre books record a slot, not a judgement.** 12 books sit in both
+  Science Fiction and Short Stories, Vonnegut's two titles among them, while the
+  other 88 Science Fiction books are also short-story collections by their
+  catalogue subjects and were labelled Science Fiction alone. The paper describes
+  the Gutenberg catalogue as carrying a genre field (title, author, genre,
+  language, download count) but never says how a book with two genres was
+  resolved, so neither a dominance rule nor an oversight can be inferred from the
+  data. The safe reading is that the corpus records which slots were filled, and
+  that absence from a directory is weak evidence of non-membership.
+
 Both weak rows are limits of Project Gutenberg's metadata, not of the mapping:
 
 * **Fiction is a residual, not a category.** The site-level "Novels" shelf is
@@ -117,7 +153,9 @@ wave needs even though it scores worse on exact matching.
 Detective/Mystery and Historical Fiction may be taken from shelves. Fiction may
 not be treated as a level alongside them, and Romance needs a second source or
 must leave the eight. That decision is due before 2026-12-31
-(`PREREGISTRATION.md` §12.1).
+(`PREREGISTRATION.md` §12.1). For every genre, the calibration is evidence about
+**recall only** — precision against a quota sample must not be used as a quality
+bar, nor tuned against, or the mechanism will be fitted to a file count.
 
 Goodreads cannot serve as that second source: its API closed in December 2020
 and scraping would breach its terms. Open Library ratings are usable in
