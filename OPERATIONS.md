@@ -41,7 +41,7 @@ the collectors. Collectors never commit (AGENTS.md).
 
 | Step | What | Who | State |
 |---|---|---|---|
-| A1 | `collector:` line in `provenance.txt`; refuse a payload that is not a plausible bzip2 archive | Claude | in progress |
+| A1 | `collector:` line in `provenance.txt`; refuse a payload that is not a plausible bzip2 archive | Claude | done (`feat/snapshot-collector-and-payload-check`) |
 | A2 | `data-raw/collect-snapshot.sh`: pull, collect, copy, upload, log | Claude | planned |
 | A3 | keep the raw payload on snapshot dates (F4) | Claude | planned |
 | B4 | apt install on the Pi (needs sudo) | John | **open — blocks B5–B8** |

@@ -84,6 +84,70 @@ nextAllowedSnapshot <- function(previous, date, anchor = SNAPSHOT_ANCHOR) {
   if (date < next_grid) next_grid else previous + SNAPSHOT_INTERVAL_DAYS
 }
 
+# The smallest RDF payload accepted as complete. The feed was 121 MB on
+# 2026-11-07 and only grows; a file under half that is a truncated download.
+RDF_PAYLOAD_MIN_BYTES <- 60e6
+
+#' Refuse an RDF payload that is not a plausible bzip2 archive
+#'
+#' Checked before unpacking, so a truncated download or a page served in
+#' place of the archive stops with a message that names the cause, instead of
+#' failing inside `untar()`. (An outage is caught one step earlier: the feed
+#' answers `503` and `download.file()` stops.)
+#'
+#' @param path the downloaded file
+#' @param min_bytes smallest size accepted as a complete payload
+#' @returns the file size in bytes, invisibly
+#' @noRd
+checkRdfPayload <- function(path, min_bytes = RDF_PAYLOAD_MIN_BYTES) {
+  stopifnot(
+    "path must be a single string" = is.character(path) && length(path) == 1,
+    "min_bytes must be a single positive number" =
+      is.numeric(min_bytes) && length(min_bytes) == 1 && min_bytes > 0
+  )
+  if (!file.exists(path)) {
+    stop("The RDF payload ", path, " does not exist; the download did not ",
+         "produce a file. Re-run later; no snapshot was written.", call. = FALSE)
+  }
+  magic <- readBin(path, "raw", n = 3L)
+  if (!identical(magic, charToRaw("BZh"))) {
+    stop("The RDF payload ", path, " is not a bzip2 archive (it does not ",
+         "start with 'BZh'). Project Gutenberg probably served a page in its ",
+         "place. Refusing to unpack; no snapshot was written. Re-run later.",
+         call. = FALSE)
+  }
+  size <- file.info(path)$size
+  if (size < min_bytes) {
+    stop("The RDF payload ", path, " is ", format(size, big.mark = ","),
+         " bytes, below the ", format(min_bytes, big.mark = ",",
+                                       scientific = FALSE),
+         "-byte floor (the feed was 121 MB on 2026-11-07), so the download is ",
+         "probably truncated. No snapshot was written. Re-run later.",
+         call. = FALSE)
+  }
+  invisible(size)
+}
+
+#' The collecting machine's name, for provenance
+#'
+#' The short host name (domain suffix such as `.local` dropped), so each
+#' snapshot records which collector took it (OPERATIONS.md).
+#'
+#' @param nodename the full host name (default: this machine's)
+#' @returns a single non-empty string
+#' @noRd
+snapshotCollector <- function(nodename = Sys.info()[["nodename"]]) {
+  stopifnot("nodename must be a single string" =
+              is.character(nodename) && length(nodename) == 1)
+  name <- sub("[.].*$", "", nodename)
+  if (is.na(name) || !nzchar(name)) {
+    stop("This machine reports no host name, so the snapshot cannot record ",
+         "its collector. Set one (e.g. hostnamectl set-hostname) and re-run.",
+         call. = FALSE)
+  }
+  name
+}
+
 #' Read Project Gutenberg RDF records
 #'
 #' Extracts the download count and the catalogue's `Issued` date from one or

@@ -48,6 +48,7 @@ if (!snapshotDue(today = run_date)) {
   quit(save = "no", status = 0)
 }
 interval_days <- if (is.na(latest)) NA_integer_ else as.integer(run_date - latest)
+collector <- novels:::snapshotCollector()  # before downloading: fail fast
 
 source_url <- "https://www.gutenberg.org/cache/epub/feeds/rdf-files.tar.bz2"
 min_records <- 70000L   # 79,762 on 2026-11-07; a collapse means a changed feed
@@ -60,7 +61,7 @@ archive <- file.path(work_dir, "rdf-files.tar.bz2")
 message("downloading ", source_url)
 utils::download.file(source_url, archive, mode = "wb", quiet = TRUE)
 
-payload_bytes <- file.info(archive)$size
+payload_bytes <- novels:::checkRdfPayload(archive)
 payload_sha256 <- digest::digest(archive, algo = "sha256", file = TRUE)
 message(sprintf("  %s bytes, sha256 %s", format(payload_bytes, big.mark = ","),
                 payload_sha256))
@@ -105,6 +106,7 @@ snapshot_path <- writeDownloadSnapshot(
 
 provenance <- c(
   paste0("source_url: ", source_url),
+  paste0("collector: ", collector),
   paste0("retrieved_at_utc: ", format(Sys.time(), "%Y-%m-%dT%H:%M:%SZ", tz = "UTC")),
   paste0("payload_bytes: ", payload_bytes),
   paste0("payload_sha256: ", payload_sha256),
