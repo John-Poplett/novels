@@ -20,8 +20,11 @@
 # calendar rule, because the counter's window is 30 days: sampling on the same
 # day of each month gives a 28-day interval in February (two days counted
 # twice) and 31-day intervals elsewhere (a one-day hole). snapshotDue() answers
-# "is it time?" from the series itself, so a daily cron job is enough; a run on
-# a day that is not due exits quietly, before downloading anything.
+# "is it time?" from the series and the grid, so a daily cron job is enough; a
+# run on a day that is not due exits quietly, before downloading anything. A
+# run that is late (the machine was asleep on the grid date) still writes,
+# dated by the day it ran, and the next snapshot is due on the next grid date,
+# so one missed day never shifts the rest of the series.
 #
 # The script refuses a second snapshot for the same date, and refuses one that
 # would overlap the previous window. Snapshots are append-only -- a re-run
@@ -41,7 +44,7 @@ run_date <- as.Date(format(Sys.time(), "%Y-%m-%d", tz = "UTC"))
 latest <- latestSnapshotDate()
 if (!snapshotDue(today = run_date)) {
   cat("No snapshot due: the latest is", format(latest), "and the next is",
-      format(latest + SNAPSHOT_INTERVAL_DAYS), "\n")
+      format(nextAllowedSnapshot(latest, run_date)), "\n")
   quit(save = "no", status = 0)
 }
 interval_days <- if (is.na(latest)) NA_integer_ else as.integer(run_date - latest)
@@ -109,7 +112,10 @@ provenance <- c(
   paste0("rows_written: ", nrow(books)),
   paste0("total_downloads: ", total_downloads),
   paste0("interval_days: ",
-         if (is.na(interval_days)) "first snapshot" else interval_days)
+         if (is.na(interval_days)) "first snapshot" else interval_days),
+  paste0("on_grid: ", if (onSnapshotGrid(snapshot_date)) "yes" else
+           paste0("no (", format(SNAPSHOT_ANCHOR), " + 30k; next grid date ",
+                  format(nextSnapshotDate(snapshot_date)), ")"))
 )
 writeLines(provenance, file.path(dirname(snapshot_path), "provenance.txt"))
 

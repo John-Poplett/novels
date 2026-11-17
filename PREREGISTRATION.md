@@ -83,14 +83,22 @@ every eligible book, which keeps exposure equal without shrinking the pool.
 ## 4. Instrumentation
 
 - One snapshot of the **entire** catalogue every 30 days, on the grid anchored
-  at `2026-11-07`, at a fixed hour of the UTC day. The interval is enforced in
-  code: a snapshot less than 30 days after the previous one is refused as an
-  overlap, and a later one is written with its actual interval recorded.
+  at `2026-11-07`, at a fixed hour of the UTC day. The grid is enforced in
+  code (`nextSnapshotDate()`, `writeDownloadSnapshot()`):
+  - exactly 30 days after the previous snapshot: written;
+  - before the next grid date, or under 30 days and off the grid: refused as
+    an overlap;
+  - over 30 days (a late, catch-up snapshot): written under the date it was
+    taken, with its actual interval recorded as a gap;
+  - under 30 days but on the grid (the snapshot after a late one): written,
+    with the doubly counted days recorded. The series returns to the grid
+    rather than shifting every later date.
 - The schedule is executed by a **daily check**, not a calendar expression: the
-  job asks the series whether 30 days have elapsed and exits before downloading
-  if they have not. A machine asleep on the due date therefore catches up on its
-  next run instead of skipping a month, and no date has to be configured
-  anywhere but the data itself.
+  job asks whether today has reached the next grid date after the latest
+  snapshot, and exits before downloading if it has not. A machine asleep on the
+  due date therefore catches up on its next run instead of skipping a month, and
+  the run after that is due on the grid date again. The grid's anchor is the one
+  date configured in code (`SNAPSHOT_ANCHOR`).
 - Stored append-only as `(gutenberg_id, snapshot_date, source, downloads)`.
   Nothing is ever overwritten.
 - Provenance per snapshot: source URL, retrieval timestamp, SHA-256 of the
@@ -311,6 +319,19 @@ not hypotheses and are not corrected.
 ## 11. Deviations
 
 - Amendments are dated, appended to this file, and published with the analysis.
+- **2026-11-16 — late snapshots return to the grid instead of moving it.**
+  Section 4 said the job "asks the series whether 30 days have elapsed", and
+  the code measured those 30 days from the *latest* snapshot. One late run
+  (a machine asleep on the grid date) therefore shifted every later snapshot
+  off the dates listed in section 2, permanently, and each further miss added
+  another day of drift. The schedule is now computed from the anchor: a late
+  snapshot is written under the date it was taken, and the next is due on the
+  next grid date. That interval is shorter than 30 days, so the days by which
+  the late snapshot was delayed are counted twice. They are recorded with the
+  data and not adjusted, and the share's divisor uses the same snapshots. The
+  alternative, a missed date becoming a month-long gap, was rejected as too
+  costly under the gap rule. No observation is affected: the series holds
+  only the trial snapshot, and the window has not opened.
 - **2026-11-12 — the genre calibration is re-read as recall evidence only.**
   Section 12.1 filed per-genre recall and precision against the 754-book corpus.
   That corpus is a quota sample (100 books per genre, 50 per class, paper

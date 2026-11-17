@@ -191,3 +191,82 @@ test_that("a late snapshot is written but warns, because it leaves a coverage ga
   snapshot_fixture(dir, "2026-11-07")
   expect_warning(snapshot_fixture(dir, "2027-01-20"), "day")
 })
+
+# --- The fixed grid (regression: a late run used to shift every later date) --
+
+test_that("nextSnapshotDate steps on the grid anchored at 2026-11-07", {
+  expect_equal(nextSnapshotDate("2026-11-07"), as.Date("2026-12-07"))
+  expect_equal(nextSnapshotDate("2026-12-07"), as.Date("2027-01-06"))
+  expect_equal(nextSnapshotDate("2026-12-08"), as.Date("2027-01-06"))
+  expect_equal(nextSnapshotDate("2027-01-05"), as.Date("2027-01-06"))
+  expect_equal(nextSnapshotDate("2028-12-26"), as.Date("2029-01-25"))
+})
+
+test_that("nextSnapshotDate honours a different anchor and rejects a bad date", {
+  expect_equal(nextSnapshotDate("2026-01-01", anchor = "2026-01-01"),
+               as.Date("2026-01-31"))
+  expect_error(nextSnapshotDate(NA), "single date")
+  expect_error(nextSnapshotDate(c("2026-11-07", "2026-12-07")), "single date")
+})
+
+test_that("a missed grid day does not shift the next due date", {
+  dir <- tempfile("snapshots")
+  on.exit(unlink(dir, recursive = TRUE), add = TRUE)
+
+  snapshot_fixture(dir, "2026-11-07")
+  # the 2026-12-07 run was missed; the catch-up runs a day late
+  expect_true(snapshotDue(dir, today = as.Date("2026-12-08")))
+  expect_warning(snapshot_fixture(dir, "2026-12-08"), "missing")
+
+  # before the fix this was due on 2027-01-07, one day off the grid for good
+  expect_false(snapshotDue(dir, today = as.Date("2027-01-05")))
+  expect_true(snapshotDue(dir, today = as.Date("2027-01-06")))
+})
+
+test_that("the snapshot after a late one returns to the grid, with a warning", {
+  dir <- tempfile("snapshots")
+  on.exit(unlink(dir, recursive = TRUE), add = TRUE)
+
+  snapshot_fixture(dir, "2026-11-07")
+  suppressWarnings(snapshot_fixture(dir, "2026-12-08"))
+  expect_warning(snapshot_fixture(dir, "2027-01-06"), "counted twice")
+  expect_equal(latestSnapshotDate(dir), as.Date("2027-01-06"))
+  expect_equal(nextSnapshotDate(latestSnapshotDate(dir)), as.Date("2027-02-05"))
+})
+
+test_that("a short interval off the grid is still refused as an overlap", {
+  dir <- tempfile("snapshots")
+  on.exit(unlink(dir, recursive = TRUE), add = TRUE)
+
+  snapshot_fixture(dir, "2026-11-07")
+  suppressWarnings(snapshot_fixture(dir, "2026-12-10"))
+  # 2027-01-06 was missed too; 2027-01-07 is off the grid and 28 days on
+  expect_false(snapshotDue(dir, today = as.Date("2027-01-07")))
+  expect_error(snapshot_fixture(dir, "2027-01-07"), "2027-01-09")
+  # a full window later it is allowed again, as an ordinary late snapshot
+  expect_true(snapshotDue(dir, today = as.Date("2027-01-09")))
+  expect_silent(snapshot_fixture(dir, "2027-01-09"))
+})
+
+test_that("snapshotDue and writeDownloadSnapshot agree on every day after a late run", {
+  dir <- tempfile("snapshots")
+  on.exit(unlink(dir, recursive = TRUE), add = TRUE)
+
+  snapshot_fixture(dir, "2026-11-07")
+  suppressWarnings(snapshot_fixture(dir, "2026-12-09"))
+  days <- seq(as.Date("2026-12-10"), as.Date("2027-01-20"), by = "day")
+  due <- vapply(days, \(d) snapshotDue(dir, today = d), logical(1))
+  writable <- vapply(days, \(d) {
+    probe <- tempfile("probe")
+    dir.create(probe)
+    on.exit(unlink(probe, recursive = TRUE), add = TRUE)
+    file.copy(dir, probe, recursive = TRUE)
+    probe_dir <- file.path(probe, basename(dir))
+    tryCatch({
+      suppressWarnings(snapshot_fixture(probe_dir, d))
+      TRUE
+    }, error = function(e) FALSE)
+  }, logical(1))
+  expect_equal(due, writable)
+  expect_equal(days[which(due)[1]], as.Date("2027-01-06"))
+})
