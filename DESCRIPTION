@@ -30,7 +30,6 @@ Suggests:
     data.table,
     kableExtra,
     knitr,
-    plyr,
     rmarkdown,
     testthat (>= 2.1.0)
 Config/roxygen2/version: 8.1.1
