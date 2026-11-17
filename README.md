@@ -13,6 +13,7 @@ There is no single design document; each file below owns one question, and this 
 | [`README.md`](README.md) | What the package does — the pipeline targets, the corpus grain, the four known source defects, the results, and the roadmap |
 | [`SCHEMA.md`](SCHEMA.md) | What the data means — the eight genres, the 2026-11-07 calibration against the 2013 labels, and the download-snapshot tables |
 | [`PREREGISTRATION.md`](PREREGISTRATION.md) | How the 2027–28 label wave is measured — outcome, eligibility, folds, audit gates, and the dated amendments |
+| [`OPERATIONS.md`](OPERATIONS.md) | How the download series is collected and kept — the two collectors, the copies, the B2 off-site bucket, and who does which setup step |
 | `ACQUISITION.md` | Where the corpus artefact came from and how to verify it byte for byte. Not yet on `dev`: it lands with the Zenodo deposit (`docs/zenodo-deposit`) |
 | [`architecture-workflow/`](architecture-workflow/phase-1-discovery.md) | **Historical, not maintained** — the 2026-11-06 architecture revision: discovery, diagnosis, 17 findings, and the resulting shape. Read it for how the current layout was decided, not for how it works now |
 
