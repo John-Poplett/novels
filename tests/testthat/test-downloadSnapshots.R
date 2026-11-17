@@ -270,3 +270,46 @@ test_that("snapshotDue and writeDownloadSnapshot agree on every day after a late
   expect_equal(due, writable)
   expect_equal(days[which(due)[1]], as.Date("2027-01-06"))
 })
+
+test_that("checkRdfPayload accepts a bzip2 file above the size floor", {
+  path <- tempfile(fileext = ".tar.bz2")
+  on.exit(unlink(path))
+  writeBin(c(charToRaw("BZh9"), as.raw(rep(0L, 2000L))), path)
+  expect_identical(novels:::checkRdfPayload(path, min_bytes = 1000), 2004)
+})
+
+test_that("checkRdfPayload refuses a page served in place of the archive", {
+  path <- tempfile(fileext = ".tar.bz2")
+  on.exit(unlink(path))
+  writeLines("<!DOCTYPE html><title>Temporarily Down for Maintenance</title>", path)
+  expect_error(novels:::checkRdfPayload(path, min_bytes = 1), "not a bzip2 archive")
+})
+
+test_that("checkRdfPayload refuses a truncated archive", {
+  path <- tempfile(fileext = ".tar.bz2")
+  on.exit(unlink(path))
+  writeBin(c(charToRaw("BZh9"), as.raw(rep(0L, 100L))), path)
+  expect_error(novels:::checkRdfPayload(path), "truncated")
+})
+
+test_that("checkRdfPayload refuses a missing file", {
+  expect_error(novels:::checkRdfPayload(tempfile()), "does not exist")
+})
+
+test_that("snapshotCollector drops the domain suffix", {
+  expect_identical(novels:::snapshotCollector("Johns-MacBook-Pro.local"), "Johns-MacBook-Pro")
+  expect_identical(novels:::snapshotCollector("appliance"), "appliance")
+  expect_identical(novels:::snapshotCollector("gpu-box.taild554c4.ts.net"), "gpu-box")
+})
+
+test_that("snapshotCollector refuses an empty host name", {
+  expect_error(novels:::snapshotCollector(""), "no host name")
+  expect_error(novels:::snapshotCollector(".local"), "no host name")
+})
+
+test_that("snapshotCollector names this machine by default", {
+  name <- novels:::snapshotCollector()
+  expect_type(name, "character")
+  expect_length(name, 1L)
+  expect_true(nzchar(name))
+})
