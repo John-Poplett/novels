@@ -44,8 +44,8 @@ the collectors. Collectors never commit (AGENTS.md).
 | A1 | `collector:` line in `provenance.txt`; refuse a payload that is not a plausible bzip2 archive | Claude | done (`feat/snapshot-collector-and-payload-check`) |
 | A2 | `data-raw/collect-snapshot.sh`: pull, collect, copy, upload, log | Claude | planned |
 | A3 | keep the raw payload on snapshot dates (F4) | Claude | planned |
-| B4 | apt install on the Pi (needs sudo) | John | **open — blocks B5–B8** |
-| B5–B8 | CRAN packages, clone, smoke test, rehearsal on the Pi | Claude | blocked on B4 |
+| B4 | apt install on the Pi (needs sudo) | John | done 2026-11-17 |
+| B5–B8 | clone, packages from `renv.lock`, smoke test, rehearsal on the Pi | Claude | B4 done (R 4.6.2 installed); B5–B8 next |
 | C9 | Pi → gpu-box ssh key | Claude | planned |
 | C10 | Mac → Pi ssh key and config | John | open |
 | D11 | Mac: reset to `origin/dev`, new crontab line | John | after A2 |
@@ -84,17 +84,28 @@ and the extracted feed is 2.1 GB, so `TMPDIR` must point at the NVMe.
      r-cran-{pkgload,digest,readr,dplyr,glmnet,magrittr,proc,purrr,stringi,stringr,tibble,tidyr,tm,testthat,data.table,rcpp,matrix,r6}
    ```
 
-5. **[Claude]** The four packages Debian lacks, from CRAN source (expect tens
-   of minutes; `text2vec` is the slow one). `load_all()` needs every
-   package in `Imports`, not only the ones the snapshot uses.
+5. **[Claude]** Packages, at the versions in `renv.lock` (the ones gpu-box
+   last checked green), not whatever CRAN serves on the day. Only the
+   runtime set and the test runner: a collector needs neither the
+   vignette packages nor the toolchain, whose system libraries the Pi lacks.
+   `load_all()` needs every package in `Imports`. Expect tens of minutes on
+   ARM (everything builds from source; `text2vec` is the slow one).
 
    ```bash
    mkdir -p "$(Rscript -e 'cat(Sys.getenv("R_LIBS_USER"))')"
-   Rscript -e 'install.packages(c("archive","gutenbergr","targets","text2vec"),
-                                repos = "https://cloud.r-project.org", Ncpus = 4)'
+   Rscript -e 'install.packages("renv", repos = "https://cloud.r-project.org")'
+   cd ~/MachineLearning/novels
+   Rscript -e 'd <- read.dcf("DESCRIPTION")[1, "Imports"]
+     imports <- trimws(sub("[(].*$", "", strsplit(d, ",")[[1]]))
+     renv::restore(lockfile = "renv.lock", packages = c(imports, "pkgload", "testthat"),
+                   library = Sys.getenv("R_LIBS_USER"), prompt = FALSE)'
    ```
 
-6. **[Claude]** Clone (public repo; the Pi never pushes):
+   Re-run after every lockfile change that lands on `dev`, timed so
+   collectors upgrade just after a grid date, never just before.
+
+6. **[Claude]** Clone (public repo; the Pi never pushes). Do this before step 5,
+   which reads `renv.lock` from the checkout:
 
    ```bash
    git clone -b dev https://github.com/John-Poplett/novels ~/MachineLearning/novels

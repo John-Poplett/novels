@@ -7,7 +7,7 @@
 
 R := Rscript
 
-.PHONY: help test lint document check check-full data clean
+.PHONY: help test lint document check check-full lock data clean
 
 # data/novels.rda is git-ignored and built by the pipeline, but three things
 # need it before they can run: the tests load it, and roxygen loads the whole
@@ -27,6 +27,7 @@ help:
 	@echo "make document    regenerate man/ and NAMESPACE from roxygen comments"
 	@echo "make check       package check, vignettes built once (~7 min)"
 	@echo "make check-full  release gate, vignettes re-built; must be 0/0/0"
+	@echo "make lock        pin installed package versions in renv.lock (after a green check)"
 	@echo "make data        rebuild data/novels.rda from the pinned archive"
 	@echo "make clean       remove check artifacts and rendered docs"
 
@@ -41,7 +42,7 @@ test: data/novels.rda
 lint:
 	@bad=0; \
 	for f in $$(git ls-files '*.R' '*.Rmd' '*.md' '*.yaml' '*.yml' \
-	    '*.csv' 'Makefile' 'DESCRIPTION' 'NAMESPACE' '.Rbuildignore' 'LICENSE'); do \
+	    '*.csv' 'renv.lock' 'Makefile' 'DESCRIPTION' 'NAMESPACE' '.Rbuildignore' 'LICENSE'); do \
 	  hits=$$(grep -nE '[[:blank:]]+$$' "$$f"); \
 	  if [ -n "$$hits" ]; then \
 	    echo "trailing whitespace: $$f"; \
@@ -59,7 +60,7 @@ lint:
 	  exit 1; \
 	fi; \
 	echo "lint: clean ($$(git ls-files '*.R' '*.Rmd' '*.md' '*.yaml' '*.yml' \
-	    '*.csv' 'Makefile' 'DESCRIPTION' 'NAMESPACE' '.Rbuildignore' 'LICENSE' \
+	    '*.csv' 'renv.lock' 'Makefile' 'DESCRIPTION' 'NAMESPACE' '.Rbuildignore' 'LICENSE' \
 	    | wc -l | tr -d ' ') files)"
 
 document: data/novels.rda
@@ -70,6 +71,12 @@ check: document
 
 check-full: document
 	$(R) -e 'devtools::check(document = FALSE, args = c("--no-manual"))'
+
+# renv.lock pins the versions a green check ran with; DESCRIPTION still
+# declares the packages. Regenerate only after `make check` passes on the
+# library you are locking, so the lockfile never records an untested set.
+lock:
+	$(R) data-raw/lock-dependencies.R
 
 data:
 	$(R) -e 'targets::tar_make()'
