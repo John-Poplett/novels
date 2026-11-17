@@ -1,7 +1,3 @@
-context('Valid construction of novels dataset')
-library(novels)
-library(plyr)
-
 essential.columns = c("gutenberg_id", "genre", "response", "title",
                    "author", "fold", "language", "download_count",
                    "text")
