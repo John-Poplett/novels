@@ -25,6 +25,65 @@
 # February (two days counted twice) and 31 days elsewhere (a one-day hole).
 SNAPSHOT_INTERVAL_DAYS <- 30L
 
+# The grid's origin: the trial snapshot. Every scheduled snapshot falls on
+# SNAPSHOT_ANCHOR + 30k (PREREGISTRATION.md section 2 lists them). Scheduling
+# from the latest snapshot instead would let one late run shift every later
+# date off the published grid.
+SNAPSHOT_ANCHOR <- as.Date("2026-11-07")
+
+#' Next date on the snapshot grid
+#'
+#' The schedule is a fixed grid, `anchor + 30k`, not "30 days after the last
+#' snapshot". This returns the first grid date strictly after `after`, so a
+#' late snapshot (one taken off the grid) is followed by the next grid date,
+#' not by a date 30 days after the late one.
+#'
+#' @param after the date to step from, `Date` or `"YYYY-MM-DD"`, usually the
+#'   latest snapshot
+#' @param anchor the grid's origin (default `SNAPSHOT_ANCHOR`, 2026-11-07)
+#' @returns a `Date`
+#' @seealso snapshotDue, writeDownloadSnapshot
+#' @examples
+#' nextSnapshotDate("2026-11-07")  # 2026-12-07, on the grid
+#' nextSnapshotDate("2026-12-08")  # 2027-01-06: a late run returns to the grid
+#' @export
+nextSnapshotDate <- function(after, anchor = SNAPSHOT_ANCHOR) {
+  after <- as.Date(after)
+  anchor <- as.Date(anchor)
+  stopifnot(
+    "after must be a single date" = length(after) == 1 && !is.na(after),
+    "anchor must be a single date" = length(anchor) == 1 && !is.na(anchor)
+  )
+  steps <- floor(as.numeric(after - anchor) / SNAPSHOT_INTERVAL_DAYS) + 1
+  anchor + steps * SNAPSHOT_INTERVAL_DAYS
+}
+
+#' Is `date` on the snapshot grid?
+#' @noRd
+onSnapshotGrid <- function(date, anchor = SNAPSHOT_ANCHOR) {
+  as.numeric(as.Date(date) - as.Date(anchor)) %% SNAPSHOT_INTERVAL_DAYS == 0
+}
+
+#' May a snapshot dated `date` follow one dated `previous`?
+#'
+#' Not before the next grid date; and, after it, only if the interval is a
+#' full window or the date is on the grid (a return after a late snapshot).
+#' The one rule behind both snapshotDue() and writeDownloadSnapshot(), so the
+#' scheduler never downloads a payload the writer would refuse.
+#' @noRd
+snapshotAllowed <- function(previous, date, anchor = SNAPSHOT_ANCHOR) {
+  date >= nextSnapshotDate(previous, anchor) &&
+    (as.numeric(date - previous) >= SNAPSHOT_INTERVAL_DAYS ||
+       onSnapshotGrid(date, anchor))
+}
+
+#' The first date on or after `date` that snapshotAllowed() accepts
+#' @noRd
+nextAllowedSnapshot <- function(previous, date, anchor = SNAPSHOT_ANCHOR) {
+  next_grid <- nextSnapshotDate(previous, anchor)
+  if (date < next_grid) next_grid else previous + SNAPSHOT_INTERVAL_DAYS
+}
+
 #' Read Project Gutenberg RDF records
 #'
 #' Extracts the download count and the catalogue's `Issued` date from one or
@@ -104,9 +163,9 @@ readGutenbergRdf <- function(paths) {
 
 #' Date of the most recent snapshot in a series
 #'
-#' The series carries its own schedule: the previous snapshot's date is read from
-#' the directory names, so no anchor date or configuration has to be kept
-#' anywhere else.
+#' The previous snapshot's date is read from the directory names, so the series
+#' records its own state; together with the fixed grid ([nextSnapshotDate()])
+#' that is all the schedule needs.
 #'
 #' @param dir root of the snapshot series (default `"data-raw/snapshots"`)
 #' @returns a `Date`, or `NA` when the series is empty or absent
@@ -126,25 +185,31 @@ latestSnapshotDate <- function(dir = "data-raw/snapshots") {
 #'
 #' Answers the question a schedule would otherwise answer, so that cron or
 #' launchd only has to run the job often, not on a computed date. It is `TRUE`
-#' when the series is empty or the latest snapshot is at least
-#' `SNAPSHOT_INTERVAL_DAYS` days old, and it stays `TRUE` until a snapshot is
-#' written -- a machine that was asleep on the due date catches up on its next
-#' run instead of skipping a month.
+#' when the series is empty or `today` has reached the next grid date after the
+#' latest snapshot ([nextSnapshotDate()]), and it stays `TRUE` until a snapshot
+#' is written -- a machine that was asleep on the due date catches up on its
+#' next run instead of skipping a month.
+#'
+#' A catch-up snapshot is off the grid, and the one after it is due on the
+#' next grid date, not 30 days after the late one, so a single missed day
+#' cannot shift the rest of the series.
 #'
 #' Callers should ask this before downloading the 121 MB RDF payload.
 #'
 #' @param dir root of the snapshot series (default `"data-raw/snapshots"`)
 #' @param today the date to test, `Date` or `"YYYY-MM-DD"` (default: the system
 #'   date)
+#' @param anchor the grid's origin (default `SNAPSHOT_ANCHOR`, 2026-11-07)
 #' @returns `TRUE` or `FALSE`
-#' @seealso latestSnapshotDate, writeDownloadSnapshot
+#' @seealso nextSnapshotDate, latestSnapshotDate, writeDownloadSnapshot
 #' @export
-snapshotDue <- function(dir = "data-raw/snapshots", today = Sys.Date()) {
+snapshotDue <- function(dir = "data-raw/snapshots", today = Sys.Date(),
+                        anchor = SNAPSHOT_ANCHOR) {
   today <- as.Date(today)
   stopifnot("today must be a single date" = length(today) == 1 && !is.na(today))
 
   latest <- latestSnapshotDate(dir)
-  is.na(latest) || as.numeric(today - latest) >= SNAPSHOT_INTERVAL_DAYS
+  is.na(latest) || snapshotAllowed(latest, today, anchor)
 }
 
 #' Write one download snapshot
@@ -155,15 +220,30 @@ snapshotDue <- function(dir = "data-raw/snapshots", today = Sys.Date()) {
 #' (`downloads.csv.gz`) and the catalogue's release dates
 #' (`date_added.csv.gz`).
 #'
+#' The interval to the previous snapshot is checked against the grid
+#' ([nextSnapshotDate()]):
+#'
+#' * before the next grid date, or less than 30 days later and off the grid:
+#'   refused, because the overlapping days would be counted twice;
+#' * exactly 30 days: written silently;
+#' * more than 30 days (a late, catch-up snapshot): written with a warning,
+#'   because the missing days are a gap;
+#' * less than 30 days but on the grid (the snapshot after a late one): written
+#'   with a warning, because returning to the grid counts the late snapshot's
+#'   delay twice. This keeps the pre-registered dates instead of shifting
+#'   every later one.
+#'
 #' @param books a tibble as returned by [readGutenbergRdf()]
 #' @param snapshot_date the observation date, `Date` or `"YYYY-MM-DD"`
 #' @param source short label for the payload, recorded in every row
 #' @param dir root of the snapshot series (default `"data-raw/snapshots"`)
+#' @param anchor the grid's origin (default `SNAPSHOT_ANCHOR`, 2026-11-07)
 #' @returns the path to `downloads.csv.gz`, invisibly
-#' @seealso readGutenbergRdf, readDownloadSnapshots
+#' @seealso readGutenbergRdf, readDownloadSnapshots, nextSnapshotDate
 #' @export
 writeDownloadSnapshot <- function(books, snapshot_date, source,
-                                  dir = "data-raw/snapshots") {
+                                  dir = "data-raw/snapshots",
+                                  anchor = SNAPSHOT_ANCHOR) {
   stopifnot(
     "books must be a data frame with gutenberg_id, downloads and date_added" =
       is.data.frame(books) &&
@@ -190,13 +270,23 @@ writeDownloadSnapshot <- function(books, snapshot_date, source,
   previous <- latestSnapshotDate(dir)
   if (!is.na(previous)) {
     interval <- as.numeric(snapshot_date - previous)
-    if (interval < SNAPSHOT_INTERVAL_DAYS) {
+    if (!snapshotAllowed(previous, snapshot_date, anchor)) {
       stop("The latest snapshot is ", format(previous), " and ",
            format(snapshot_date), " is only ", interval, " days later. The ",
            "counter reports a trailing ", SNAPSHOT_INTERVAL_DAYS, "-day window, ",
-           "so snapshots closer together count the overlapping days twice. ",
-           "Wait until ", format(previous + SNAPSHOT_INTERVAL_DAYS),
-           " or later.", call. = FALSE)
+           "so snapshots closer together count the overlapping days twice; ",
+           "a shorter interval is accepted only when it returns the series ",
+           "to the grid. Wait until ",
+           format(nextAllowedSnapshot(previous, snapshot_date, anchor)),
+           " or later.",
+           call. = FALSE)
+    }
+    if (interval < SNAPSHOT_INTERVAL_DAYS) {
+      warning("Snapshot ", format(snapshot_date), " returns the series to the ",
+              "grid ", interval, " days after the off-grid snapshot ",
+              format(previous), ": ", SNAPSHOT_INTERVAL_DAYS - interval,
+              " day(s) of counter coverage are counted twice. Recorded, ",
+              "never adjusted.", call. = FALSE)
     }
     if (interval > SNAPSHOT_INTERVAL_DAYS) {
       warning("Snapshot ", format(snapshot_date), " is ", interval, " days ",
