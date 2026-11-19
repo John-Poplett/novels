@@ -44,13 +44,14 @@ the collectors. Collectors never commit (AGENTS.md).
 | A1 | `collector:` line in `provenance.txt`; refuse a payload that is not a plausible bzip2 archive | Claude | done 2026-11-17 |
 | A2 | `data-raw/collect-snapshot.sh`: pull, collect, copy, log (upload with F3) | Claude | done 2026-11-19; real run on the Pi green |
 | A3 | keep the raw payload on snapshot dates (F4) | Claude | planned |
+| A4 | refuse a feed that is down or more than 48 h old (`Last-Modified`) | Claude | done 2026-11-19 |
 | B4 | apt install on the Pi (needs sudo) | John | done 2026-11-18 |
 | B5–B8 | clone, packages from `renv.lock`, smoke test, rehearsal on the Pi | Claude | done 2026-11-19: 88 packages match `renv.lock`; smoke test green; rehearsal green (below) |
 | C9 | Pi → gpu-box ssh key, write-only via `rrsync` | Claude | done 2026-11-18 |
 | C10 | Mac → Pi ssh key and config | John | open |
 | D11 | Mac: reset to `origin/dev`, new crontab line | John | after A2 |
 | D12 | Pi crontab | Claude | live 2026-11-19 (01:00 CT); until D11, the Pi cannot see the Mac's snapshots and takes its own on grid dates too — gpu-box keeps the Mac's, which arrives first |
-| F1 | B2 bucket and bucket-scoped key | John | open |
+| F1 | B2 bucket and bucket-scoped key | John | bucket `gutenberg-download-counts`, Object Lock on; key `writeFiles,listFiles,readFiles` (no `deleteFiles`) -- first key was exposed in chat, being replaced |
 | F2–F3 | rclone on the Pi, upload wiring | Claude | after F1, A2 |
 
 Deadline: all of it in place, and failover tested, before **2026-12-07**,
@@ -62,13 +63,19 @@ Both collectors run the same code, so code lands first.
 
 1. `provenance.txt` gains `collector: <hostname>`, so a snapshot says which
    machine took it. The script checks the download is a bzip2 archive of
-   plausible size before unpacking. (An outage is already caught earlier:
-   the feed answers `503` and `download.file()` stops.)
+   plausible size before unpacking.
 2. `data-raw/collect-snapshot.sh` replaces the crontab one-liner. Hosts are
    arguments, so the Mac and the Pi share it. Every step that can fail
    writes a dated line to the log, and a failed `cd` stops the script
    instead of running the rest in the wrong directory.
 3. Raw payload (F4, below).
+4. Before downloading, a HEAD request reads the feed's `Last-Modified`.
+   The script refuses a feed that answers anything but `200`, sends no
+   usable `Last-Modified`, or was regenerated more than **48 hours** ago,
+   and records `feed_last_modified_utc:` in `provenance.txt`. A stale feed
+   would record an earlier 30-day window under today's date, a silently
+   wrong observation. A refused night is only a late one: the next nightly
+   run retries, and the snapshot keeps its own date.
 
 ## B. Install on the Pi
 
@@ -243,6 +250,13 @@ snapshots): about three cents a month on an account already past the free
   origin/dev`, never `git pull`. Rebase-merges rewrite SHAs, and `pull`
   refuses when copied-in snapshot directories sit where git later tracks
   them; `reset --hard` overwrites them with identical bytes.
+- **Feed down or stale** (the log shows `HTTP 503` or `hours ago (limit
+  48)`): nothing to do for a few nights; each night retries. If it lasts
+  past a grid date, the late snapshot is still valid, and its interval is
+  recorded. Do **not** point the script at a mirror (`gutenberg.pglaf.org`
+  served a copy frozen at 2026-11-15 throughout the November outage): a
+  different source is a pre-registration amendment, decided and written
+  down first.
 - **Kernel reboots on the Pi:** not between 00:30 and 02:00 Central on a
   grid date. A missed Pi night means the Mac covered it, or the next night
   takes a late snapshot.

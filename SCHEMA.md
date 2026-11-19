@@ -181,7 +181,7 @@ Layout under `data-raw/snapshots/`, append-only:
 | --- | --- |
 | `<date>/downloads.csv.gz` | `gutenberg_id`, `snapshot_date`, `source`, `downloads` |
 | `<date>/date_added.csv.gz` | `gutenberg_id`, `date_added` |
-| `<date>/provenance.txt` | source URL, collecting machine (`collector`, since 2026-11-17), retrieval time (UTC), payload bytes and SHA-256, record count, total downloads, interval to the previous snapshot and whether the date is on the grid |
+| `<date>/provenance.txt` | source URL, collecting machine (`collector`, since 2026-11-17), the feed's `Last-Modified` (`feed_last_modified_utc`, since 2026-11-19), retrieval time (UTC), payload bytes and SHA-256, record count, total downloads, interval to the previous snapshot and whether the date is on the grid |
 
 `date_added` is the catalogue's `Issued` date: when the ebook was released, not
 when the work was published. The RDF carries the original imprint for only

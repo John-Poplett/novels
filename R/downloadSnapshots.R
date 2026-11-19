@@ -92,8 +92,8 @@ RDF_PAYLOAD_MIN_BYTES <- 60e6
 #'
 #' Checked before unpacking, so a truncated download or a page served in
 #' place of the archive stops with a message that names the cause, instead of
-#' failing inside `untar()`. (An outage is caught one step earlier: the feed
-#' answers `503` and `download.file()` stops.)
+#' failing inside `untar()`. (An outage or a stale feed is caught before the
+#' download, by [feedLastModified()] and [checkFeedFreshness()].)
 #'
 #' @param path the downloaded file
 #' @param min_bytes smallest size accepted as a complete payload
@@ -153,6 +153,102 @@ downloadRdfPayload <- function(url, dest, timeout = 3600,
   on.exit(options(old), add = TRUE)
   download(url, dest, mode = "wb", quiet = TRUE)
   invisible(dest)
+}
+
+# The oldest feed accepted. Project Gutenberg regenerates the dump daily; a
+# feed older than two days is a stalled generator or a frozen mirror, and its
+# counts belong to an earlier window than the snapshot's date would claim.
+FEED_MAX_AGE_HOURS <- 48
+
+#' Parse an HTTP date (RFC 9110 IMF-fixdate) to UTC
+#'
+#' Locale-independent: `strptime()`'s `%a` and `%b` follow the session's
+#' locale, so month names are matched here instead.
+#'
+#' @param x a single string such as `"Sun, 15 Nov 2026 15:40:13 GMT"`
+#' @returns a POSIXct in UTC, or `NA` if `x` is not in that format
+#' @noRd
+parseHttpDate <- function(x) {
+  stopifnot("x must be a single string" = is.character(x) && length(x) == 1)
+  pattern <- paste0("^\\s*[A-Za-z]{3}, (\\d{2}) ([A-Za-z]{3}) (\\d{4}) ",
+                    "(\\d{2}:\\d{2}:\\d{2}) GMT\\s*$")
+  if (is.na(x) || !grepl(pattern, x, perl = TRUE)) {
+    return(as.POSIXct(NA, tz = "UTC"))
+  }
+  parts <- regmatches(x, regexec(pattern, x, perl = TRUE))[[1]]
+  month <- match(tolower(parts[3]), tolower(month.abb))
+  if (is.na(month)) return(as.POSIXct(NA, tz = "UTC"))
+  as.POSIXct(sprintf("%s-%02d-%s %s", parts[4], month, parts[2], parts[5]),
+             format = "%Y-%m-%d %H:%M:%S", tz = "UTC")
+}
+
+#' When the feed was last regenerated, from its `Last-Modified` header
+#'
+#' A HEAD request, made before the hour-long download, so an outage or a
+#' stale feed is refused at once. After redirects, only the final response's
+#' headers count.
+#'
+#' @param url the payload's URL
+#' @param headers the header fetcher (injected by tests); returns the header
+#'   lines with the final HTTP status as attribute `"status"`
+#' @returns a POSIXct in UTC, `NA` when the response has no usable header
+#' @noRd
+feedLastModified <- function(url, headers = curlGetHeaders) {
+  stopifnot("url must be a single string" = is.character(url) && length(url) == 1)
+  lines <- headers(url, redirect = TRUE, timeout = 120L)
+  status <- attr(lines, "status")
+  if (!identical(as.integer(status), 200L)) {
+    stop("The feed ", url, " answered HTTP ", status, " to a HEAD request, ",
+         "so it is unavailable. No snapshot was written; the next nightly ",
+         "run retries (a late snapshot keeps its own date).", call. = FALSE)
+  }
+  starts <- grep("^HTTP/", lines)
+  final <- if (length(starts)) lines[max(starts):length(lines)] else lines
+  field <- grep("^last-modified:", final, ignore.case = TRUE, value = TRUE)
+  if (length(field) == 0L) return(as.POSIXct(NA, tz = "UTC"))
+  parseHttpDate(sub("^[^:]*:", "", utils::tail(field, 1L)))
+}
+
+#' Refuse a feed that is not fresh
+#'
+#' The counter is a trailing 30-day flow, so a stale feed would record an
+#' earlier window under this snapshot's date -- a silently wrong observation,
+#' where a missed night is only a late one. A feed without a usable
+#' `Last-Modified` is refused for the same reason: its age cannot be shown.
+#'
+#' @param last_modified POSIXct, from [feedLastModified()]
+#' @param now the current time
+#' @param max_age_hours the oldest feed accepted
+#' @returns the feed's age in hours, invisibly
+#' @noRd
+checkFeedFreshness <- function(last_modified, now = Sys.time(),
+                               max_age_hours = FEED_MAX_AGE_HOURS) {
+  stopifnot(
+    "last_modified must be a single POSIXct" =
+      inherits(last_modified, "POSIXct") && length(last_modified) == 1,
+    "now must be a single non-missing POSIXct" =
+      inherits(now, "POSIXct") && length(now) == 1 && !is.na(now),
+    "max_age_hours must be a single positive number" =
+      is.numeric(max_age_hours) && length(max_age_hours) == 1 && max_age_hours > 0
+  )
+  if (is.na(last_modified)) {
+    stop("The feed sent no usable Last-Modified header, so its age cannot be ",
+         "shown and a stale feed cannot be ruled out. No snapshot was ",
+         "written. Check the feed by hand (curl -I) and see OPERATIONS.md.",
+         call. = FALSE)
+  }
+  age <- as.numeric(difftime(now, last_modified, units = "hours"))
+  if (age > max_age_hours) {
+    stop(sprintf(paste0(
+      "The feed was last regenerated %s UTC, %.0f hours ago (limit %g), so ",
+      "its counts cover an earlier window than today's. No snapshot was ",
+      "written; the next nightly run retries. If it stays stale, see ",
+      "OPERATIONS.md -- do not switch to a mirror without amending the ",
+      "pre-registration."),
+      format(last_modified, "%Y-%m-%d %H:%M:%S", tz = "UTC"), age,
+      max_age_hours), call. = FALSE)
+  }
+  invisible(age)
 }
 
 #' The collecting machine's name, for provenance
