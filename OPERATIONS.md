@@ -45,7 +45,7 @@ the collectors. Collectors never commit (AGENTS.md).
 | A2 | `data-raw/collect-snapshot.sh`: pull, collect, copy, log (upload with F3) | Claude | done 2026-11-19; real run on the Pi green |
 | A3 | keep the raw payload on snapshot dates (F4) | Claude | planned |
 | B4 | apt install on the Pi (needs sudo) | John | done 2026-11-18 |
-| B5–B8 | clone, packages from `renv.lock`, smoke test, rehearsal on the Pi | Claude | B5–B7 done 2026-11-19 (88 packages match `renv.lock`, smoke test green); B8 rehearsal waits for Project Gutenberg (503) |
+| B5–B8 | clone, packages from `renv.lock`, smoke test, rehearsal on the Pi | Claude | done 2026-11-19: 88 packages match `renv.lock`; smoke test green; rehearsal green (below) |
 | C9 | Pi → gpu-box ssh key, write-only via `rrsync` | Claude | done 2026-11-18 |
 | C10 | Mac → Pi ssh key and config | John | open |
 | D11 | Mac: reset to `origin/dev`, new crontab line | John | after A2 |
@@ -141,6 +141,14 @@ and the extracted feed is 2.1 GB, so `TMPDIR` must point at the NVMe.
    cd ~/rehearsal && TMPDIR=~/.cache/novels-tmp TZ=UTC /usr/bin/time -v Rscript data-raw/snapshot-downloads.R
    rm -rf ~/rehearsal
    ```
+
+**Rehearsal, 2026-11-19** (from `gutenberg.pglaf.org`: www.gutenberg.org
+was answering 503, and the PGLAF host serves a copy frozen at 2026-11-15):
+79,828 records, 29.5 min end to end — almost all of it the download at
+~95 KB/s — peak `TMPDIR` **2,602 MB** (it would have overflowed the 2 GB
+tmpfs `/tmp`), peak R RSS 419 MB, at least 1,721 MB of RAM left free. The
+first attempt failed after 60 s: R's default `download.file()` timeout
+covers the whole transfer. Fixed in `downloadRdfPayload()` (one hour).
 
 ## C. SSH keys
 
