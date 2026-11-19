@@ -59,7 +59,7 @@ on.exit(unlink(work_dir, recursive = TRUE), add = TRUE)
 
 archive <- file.path(work_dir, "rdf-files.tar.bz2")
 message("downloading ", source_url)
-utils::download.file(source_url, archive, mode = "wb", quiet = TRUE)
+novels:::downloadRdfPayload(source_url, archive)  # an hour, not R's 60 s
 
 payload_bytes <- novels:::checkRdfPayload(archive)
 payload_sha256 <- digest::digest(archive, algo = "sha256", file = TRUE)

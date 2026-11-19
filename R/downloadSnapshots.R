@@ -128,6 +128,33 @@ checkRdfPayload <- function(path, min_bytes = RDF_PAYLOAD_MIN_BYTES) {
   invisible(size)
 }
 
+#' Download the RDF payload with a timeout sized for it
+#'
+#' `download.file()` gives up after `getOption("timeout")` seconds, 60 by
+#' default, measured over the whole transfer -- under 2 MB/s that is less than
+#' the 121 MB payload, so a slow night would fail every night. This raises the
+#' limit for this one call and restores it afterwards.
+#'
+#' @param url the payload's URL
+#' @param dest where to write it
+#' @param timeout seconds allowed for the whole transfer
+#' @param download the downloader (injected by tests)
+#' @returns `dest`, invisibly
+#' @noRd
+downloadRdfPayload <- function(url, dest, timeout = 3600,
+                               download = utils::download.file) {
+  stopifnot(
+    "url must be a single string" = is.character(url) && length(url) == 1,
+    "dest must be a single string" = is.character(dest) && length(dest) == 1,
+    "timeout must be a single positive number of seconds" =
+      is.numeric(timeout) && length(timeout) == 1 && timeout > 0
+  )
+  old <- options(timeout = max(timeout, getOption("timeout")))
+  on.exit(options(old), add = TRUE)
+  download(url, dest, mode = "wb", quiet = TRUE)
+  invisible(dest)
+}
+
 #' The collecting machine's name, for provenance
 #'
 #' The short host name (domain suffix such as `.local` dropped), so each
