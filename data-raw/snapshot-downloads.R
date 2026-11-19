@@ -57,6 +57,13 @@ work_dir <- tempfile("pg-rdf-")
 dir.create(work_dir)
 on.exit(unlink(work_dir, recursive = TRUE), add = TRUE)
 
+# Before the hour-long download: refuse an unavailable or stale feed.
+feed_last_modified <- novels:::feedLastModified(source_url)
+feed_age_hours <- novels:::checkFeedFreshness(feed_last_modified)
+message(sprintf("feed regenerated %s UTC (%.1f hours ago)",
+                format(feed_last_modified, "%Y-%m-%dT%H:%M:%SZ", tz = "UTC"),
+                feed_age_hours))
+
 archive <- file.path(work_dir, "rdf-files.tar.bz2")
 message("downloading ", source_url)
 novels:::downloadRdfPayload(source_url, archive)  # an hour, not R's 60 s
@@ -107,6 +114,8 @@ snapshot_path <- writeDownloadSnapshot(
 provenance <- c(
   paste0("source_url: ", source_url),
   paste0("collector: ", collector),
+  paste0("feed_last_modified_utc: ",
+         format(feed_last_modified, "%Y-%m-%dT%H:%M:%SZ", tz = "UTC")),
   paste0("retrieved_at_utc: ", format(Sys.time(), "%Y-%m-%dT%H:%M:%SZ", tz = "UTC")),
   paste0("payload_bytes: ", payload_bytes),
   paste0("payload_sha256: ", payload_sha256),

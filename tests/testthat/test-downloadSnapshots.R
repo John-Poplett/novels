@@ -350,3 +350,68 @@ test_that("downloadRdfPayload writes a real file through the default downloader"
   novels:::downloadRdfPayload(paste0("file://", src), dest)
   expect_identical(readBin(dest, "raw", 100L), charToRaw("BZh9payload"))
 })
+
+# ---- feed freshness -------------------------------------------------------
+
+utc <- function(x) as.POSIXct(x, tz = "UTC")
+
+test_that("parseHttpDate reads an IMF-fixdate in UTC, whatever the locale", {
+  expect_equal(novels:::parseHttpDate("Sun, 15 Nov 2026 15:40:13 GMT"),
+               utc("2026-11-15 15:40:13"))
+  expect_equal(novels:::parseHttpDate(" Sun, 01 Feb 2026 00:00:00 GMT\r\n"),
+               utc("2026-02-01 00:00:00"))
+})
+
+test_that("parseHttpDate gives NA for anything else", {
+  for (x in c("", "yesterday", "2026-11-15T15:40:13Z",
+              "Sun, 15 Foo 2026 15:40:13 GMT", NA_character_)) {
+    expect_true(is.na(novels:::parseHttpDate(x)), info = x)
+  }
+})
+
+fake_headers <- function(lines, status = 200L) {
+  function(url, ...) structure(paste0(lines, "\r\n"), status = status)
+}
+
+test_that("feedLastModified reads the final response's header after a redirect", {
+  get <- fake_headers(c(
+    "HTTP/1.1 302 Found", "Last-Modified: Mon, 02 Nov 2026 00:00:00 GMT",
+    "Location: https://mirror/", "",
+    "HTTP/1.1 200 OK", "last-modified: Sun, 15 Nov 2026 15:40:13 GMT", ""))
+  expect_equal(novels:::feedLastModified("https://x/", headers = get),
+               utc("2026-11-15 15:40:13"))
+})
+
+test_that("feedLastModified gives NA when the final response has no header", {
+  get <- fake_headers(c(
+    "HTTP/1.1 302 Found", "Last-Modified: Mon, 02 Nov 2026 00:00:00 GMT", "",
+    "HTTP/1.1 200 OK", "Content-Length: 5", ""))
+  expect_true(is.na(novels:::feedLastModified("https://x/", headers = get)))
+})
+
+test_that("feedLastModified refuses an unavailable feed", {
+  get <- fake_headers(c("HTTP/2 503", ""), status = 503L)
+  expect_error(novels:::feedLastModified("https://x/", headers = get), "HTTP 503")
+})
+
+test_that("checkFeedFreshness accepts a feed up to the limit", {
+  now <- utc("2026-12-07 04:00:00")
+  expect_equal(novels:::checkFeedFreshness(utc("2026-12-06 04:00:00"), now), 24)
+  expect_equal(novels:::checkFeedFreshness(utc("2026-12-05 04:00:00"), now), 48)
+})
+
+test_that("checkFeedFreshness refuses a stale feed, such as a frozen mirror", {
+  expect_error(
+    novels:::checkFeedFreshness(utc("2026-11-15 15:40:13"),
+                                now = utc("2026-11-19 21:33:21")),
+    "102 hours ago")
+  expect_error(
+    novels:::checkFeedFreshness(utc("2026-12-05 03:59:59"),
+                                now = utc("2026-12-07 04:00:00")),
+    "limit 48")
+})
+
+test_that("checkFeedFreshness refuses a feed whose age cannot be shown", {
+  expect_error(novels:::checkFeedFreshness(utc(NA)), "no usable Last-Modified")
+  expect_error(novels:::checkFeedFreshness("2026-11-15"), "POSIXct")
+})
