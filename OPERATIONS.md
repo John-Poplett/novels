@@ -41,15 +41,15 @@ the collectors. Collectors never commit (AGENTS.md).
 
 | Step | What | Who | State |
 |---|---|---|---|
-| A1 | `collector:` line in `provenance.txt`; refuse a payload that is not a plausible bzip2 archive | Claude | done (`feat/snapshot-collector-and-payload-check`) |
-| A2 | `data-raw/collect-snapshot.sh`: pull, collect, copy, log (upload with F3) | Claude | done (`feat/collect-snapshot-script`) |
+| A1 | `collector:` line in `provenance.txt`; refuse a payload that is not a plausible bzip2 archive | Claude | done 2026-11-17 |
+| A2 | `data-raw/collect-snapshot.sh`: pull, collect, copy, log (upload with F3) | Claude | done 2026-11-19; real run on the Pi green |
 | A3 | keep the raw payload on snapshot dates (F4) | Claude | planned |
 | B4 | apt install on the Pi (needs sudo) | John | done 2026-11-18 |
 | B5–B8 | clone, packages from `renv.lock`, smoke test, rehearsal on the Pi | Claude | B5–B7 done 2026-11-19 (88 packages match `renv.lock`, smoke test green); B8 rehearsal waits for Project Gutenberg (503) |
 | C9 | Pi → gpu-box ssh key, write-only via `rrsync` | Claude | done 2026-11-18 |
 | C10 | Mac → Pi ssh key and config | John | open |
 | D11 | Mac: reset to `origin/dev`, new crontab line | John | after A2 |
-| D12 | Pi crontab | Claude | after A2, B8 |
+| D12 | Pi crontab | Claude | live 2026-11-19 (01:00 CT); until D11, the Pi cannot see the Mac's snapshots and takes its own on grid dates too — gpu-box keeps the Mac's, which arrives first |
 | F1 | B2 bucket and bucket-scoped key | John | open |
 | F2–F3 | rclone on the Pi, upload wiring | Claude | after F1, A2 |
 
