@@ -44,9 +44,9 @@ the collectors. Collectors never commit (AGENTS.md).
 | A1 | `collector:` line in `provenance.txt`; refuse a payload that is not a plausible bzip2 archive | Claude | done (`feat/snapshot-collector-and-payload-check`) |
 | A2 | `data-raw/collect-snapshot.sh`: pull, collect, copy, upload, log | Claude | planned |
 | A3 | keep the raw payload on snapshot dates (F4) | Claude | planned |
-| B4 | apt install on the Pi (needs sudo) | John | done 2026-11-17 |
-| B5–B8 | clone, packages from `renv.lock`, smoke test, rehearsal on the Pi | Claude | B4 done (R 4.6.2 installed); B5–B8 next |
-| C9 | Pi → gpu-box ssh key | Claude | planned |
+| B4 | apt install on the Pi (needs sudo) | John | done 2026-11-18 |
+| B5–B8 | clone, packages from `renv.lock`, smoke test, rehearsal on the Pi | Claude | B5–B7 done 2026-11-19 (88 packages match `renv.lock`, smoke test green); B8 rehearsal waits for Project Gutenberg (503) |
+| C9 | Pi → gpu-box ssh key, write-only via `rrsync` | Claude | done 2026-11-18 |
 | C10 | Mac → Pi ssh key and config | John | open |
 | D11 | Mac: reset to `origin/dev`, new crontab line | John | after A2 |
 | D12 | Pi crontab | Claude | after A2, B8 |
@@ -80,7 +80,7 @@ and the extracted feed is 2.1 GB, so `TMPDIR` must point at the NVMe.
 
    ```bash
    sudo apt install git rsync rclone r-base-core r-base-dev gfortran \
-     libarchive-dev libcurl4-openssl-dev libssl-dev libxml2-dev \
+     libarchive-dev libcurl4-openssl-dev libssl-dev libxml2-dev libuv1-dev cmake \
      r-cran-{pkgload,digest,readr,dplyr,glmnet,magrittr,proc,purrr,stringi,stringr,tibble,tidyr,tm,testthat,data.table,rcpp,matrix,r6}
    ```
 
@@ -88,10 +88,21 @@ and the extracted feed is 2.1 GB, so `TMPDIR` must point at the NVMe.
    last checked green), not whatever CRAN serves on the day. Only the
    runtime set and the test runner: a collector needs neither the
    vignette packages nor the toolchain, whose system libraries the Pi lacks.
-   `load_all()` needs every package in `Imports`. Expect tens of minutes on
+   `load_all()` needs every package in `Imports`. renv's up-front list of
+   missing system packages covers the whole lockfile; for this subset only
+   `libuv1-dev` and `cmake` (for `fs`) matter, and step 4 installs them. Expect tens of minutes on
    ARM (everything builds from source; `text2vec` is the slow one).
 
+   **Build serially.** On 2026-11-18 a parallel build (4 packages at once,
+   `make -j4` each, during RcppArmadillo/RcppEigen) rebooted the Pi: 4 GB
+   of RAM, 2 GB of zram, other services running. renv's install concurrency
+   is `RENV_CONFIG_INSTALL_JOBS`, not `Ncpus`. Run detached, so a dropped
+   ssh session does not stop it:
+
    ```bash
+   export RENV_CONFIG_INSTALL_JOBS=1 MAKEFLAGS=-j1   # one package, one compiler
+   export RENV_CONFIG_INSTALL_TRANSACTIONAL=FALSE    # keep what built if one fails
+   ulimit -v 2500000                                 # ~2.4 GB per process
    mkdir -p "$(Rscript -e 'cat(Sys.getenv("R_LIBS_USER"))')"
    Rscript -e 'install.packages("renv", repos = "https://cloud.r-project.org")'
    cd ~/MachineLearning/novels
@@ -137,8 +148,25 @@ Cron has no agent or keychain, so each key is passphrase-less and used for
 nothing else.
 
 9. **[Claude]** On the Pi: `ssh-keygen -t ed25519 -N '' -f ~/.ssh/snapshot_ed25519`,
-   public half into `gpu-box:~/.ssh/authorized_keys`, a `Host gpu-box`
-   block using it. Test: `ssh -o BatchMode=yes gpu-box true`.
+   public half into `gpu-box:~/.ssh/authorized_keys` **restricted to
+   write-only rsync into the snapshot directory**:
+
+   ```
+   restrict,command="/usr/bin/rrsync -wo /home/john/MachineLearning/novels/data-raw/snapshots" ssh-ed25519 AAAA… snapshot-collector@appliance
+   ```
+
+   so a passphrase-less key on an always-on box can add snapshots to
+   gpu-box and do nothing else: no shell, no reads, no other path. The
+   remote path is relative to that directory (`gpu-box:`). gpu-box's host
+   key is put in the Pi's `known_hosts` from `/etc/ssh/ssh_host_ed25519_key.pub`,
+   not accepted on first use. A `Host gpu-box` block (MagicDNS name,
+   `IdentitiesOnly yes`) uses the key. Test — a dry-run copy succeeds, a
+   shell is refused:
+
+   ```bash
+   rsync -a --ignore-existing --dry-run -v data-raw/snapshots/ gpu-box:
+   ssh -o BatchMode=yes gpu-box true   # "rrsync error: SSH_ORIGINAL_COMMAND does not run rsync"
+   ```
 10. **[John]** On the Mac: the existing cron key (the one used for gpu-box)
     into the Pi's `~/.ssh/authorized_keys`, and a `Host ts-appliance` block
     (Tailscale name `appliance`, or LAN `192.168.2.10`). Test:
