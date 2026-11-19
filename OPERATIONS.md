@@ -42,7 +42,7 @@ the collectors. Collectors never commit (AGENTS.md).
 | Step | What | Who | State |
 |---|---|---|---|
 | A1 | `collector:` line in `provenance.txt`; refuse a payload that is not a plausible bzip2 archive | Claude | done (`feat/snapshot-collector-and-payload-check`) |
-| A2 | `data-raw/collect-snapshot.sh`: pull, collect, copy, upload, log | Claude | planned |
+| A2 | `data-raw/collect-snapshot.sh`: pull, collect, copy, log (upload with F3) | Claude | done (`feat/collect-snapshot-script`) |
 | A3 | keep the raw payload on snapshot dates (F4) | Claude | planned |
 | B4 | apt install on the Pi (needs sudo) | John | done 2026-11-18 |
 | B5–B8 | clone, packages from `renv.lock`, smoke test, rehearsal on the Pi | Claude | B5–B7 done 2026-11-19 (88 packages match `renv.lock`, smoke test green); B8 rehearsal waits for Project Gutenberg (503) |
@@ -177,17 +177,23 @@ nothing else.
 11. **[John]** Mac: `git fetch --prune && git reset --hard origin/dev`, then
 
     ```
-    0 22 * * * /Users/john/MachineLearning/novels/data-raw/collect-snapshot.sh --pull-from ts-appliance --copy-to "gpu-box ts-appliance" >> /Users/john/Library/Logs/novels-snapshot.log 2>&1
+    0 22 * * * /Users/john/MachineLearning/novels/data-raw/collect-snapshot.sh --pull-from ts-appliance:MachineLearning/novels/data-raw/snapshots/ --copy-to gpu-box:MachineLearning/novels/data-raw/snapshots/ --copy-to ts-appliance:MachineLearning/novels/data-raw/snapshots/ >> /Users/john/Library/Logs/novels-snapshot.log 2>&1
     ```
 
 12. **[Claude]** Pi:
 
     ```
-    0 1 * * * TMPDIR=/home/john/.cache/novels-tmp /home/john/MachineLearning/novels/data-raw/collect-snapshot.sh --copy-to gpu-box --offsite b2:<bucket> >> /home/john/.local/state/novels-snapshot.log 2>&1
+    0 1 * * * TMPDIR=/home/john/.cache/novels-tmp /home/john/MachineLearning/novels/data-raw/collect-snapshot.sh --copy-to gpu-box: >> /home/john/.local/state/novels-snapshot.log 2>&1
     ```
 
-The script sets `TZ=UTC` for R, as the current crontab does. Exact flags
-are fixed when A2 lands; this section is updated with it.
+Each location is a complete rsync path, because the keys differ: the Pi's
+key for gpu-box is rrsync-restricted to the snapshot directory (`gpu-box:`),
+the Mac's is not. A pull source must end in `/` (or be `host:` for an
+rrsync key), or rsync nests a second `snapshots/`. The script sets
+`TZ=UTC` for R, appends `/usr/local/bin` and `/opt/homebrew/bin` to cron's
+`PATH`, runs every step even when an earlier one failed, and writes a dated
+`FAILED:` line for each failure. The off-site upload (`--offsite`) is added
+with F3.
 
 ## F. Off-site: Backblaze B2
 

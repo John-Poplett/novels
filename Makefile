@@ -42,7 +42,7 @@ test: data/novels.rda
 lint:
 	@bad=0; \
 	for f in $$(git ls-files '*.R' '*.Rmd' '*.md' '*.yaml' '*.yml' \
-	    '*.csv' 'renv.lock' 'Makefile' 'DESCRIPTION' 'NAMESPACE' '.Rbuildignore' 'LICENSE'); do \
+	    '*.csv' '*.sh' 'renv.lock' 'Makefile' 'DESCRIPTION' 'NAMESPACE' '.Rbuildignore' 'LICENSE'); do \
 	  hits=$$(grep -nE '[[:blank:]]+$$' "$$f"); \
 	  if [ -n "$$hits" ]; then \
 	    echo "trailing whitespace: $$f"; \
@@ -60,7 +60,7 @@ lint:
 	  exit 1; \
 	fi; \
 	echo "lint: clean ($$(git ls-files '*.R' '*.Rmd' '*.md' '*.yaml' '*.yml' \
-	    '*.csv' 'renv.lock' 'Makefile' 'DESCRIPTION' 'NAMESPACE' '.Rbuildignore' 'LICENSE' \
+	    '*.csv' '*.sh' 'renv.lock' 'Makefile' 'DESCRIPTION' 'NAMESPACE' '.Rbuildignore' 'LICENSE' \
 	    | wc -l | tr -d ' ') files)"
 
 document: data/novels.rda
