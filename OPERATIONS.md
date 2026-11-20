@@ -51,8 +51,9 @@ the collectors. Collectors never commit (AGENTS.md).
 | C10 | Mac → Pi ssh key and config | John | open |
 | D11 | Mac: reset to `origin/dev`, new crontab line | John | after A2 |
 | D12 | Pi crontab | Claude | live 2026-11-19 (01:00 CT); until D11, the Pi cannot see the Mac's snapshots and takes its own on grid dates too — gpu-box keeps the Mac's, which arrives first |
-| F1 | B2 bucket and bucket-scoped key | John | bucket `gutenberg-download-counts`, Object Lock on; key `writeFiles,listFiles,readFiles` (no `deleteFiles`) -- first key was exposed in chat, being replaced |
-| F2–F3 | rclone on the Pi, upload wiring | Claude | after F1, A2 |
+| F1 | B2 bucket and bucket-scoped key | John | done 2026-11-19: bucket `gutenberg-download-counts`, Object Lock on; key `writeFiles,listFiles,readFiles` (no `deleteFiles`); the first key was pasted in chat and replaced |
+| F2 | rclone on the Pi, probe, first upload | Claude | done 2026-11-19 (below) |
+| F3 | `--offsite` upload wiring | Claude | next |
 
 Deadline: all of it in place, and failover tested, before **2026-12-07**,
 the first real grid date.
@@ -222,9 +223,24 @@ against `provenance.txt` without any tool.
    2028-12-31 and the analysis follows), so no per-file setting is needed. Create an application key restricted to that bucket
    with `listBuckets`, `listFiles`, `readFiles`, `writeFiles` — **no
    `deleteFiles`**. Optionally set a spending cap under Caps & Alerts.
-   Hand the key ID and key to Claude out of band (not in the repo).
-2. **[Claude]** `rclone config` on the Pi with that key; a dry run, then one
-   real upload of `2026-11-07`, and hash comparison against gpu-box.
+   Then, on the Pi, `rclone config create b2snap b2 account <keyID> key
+   <applicationKey>` and `chmod 600 ~/.config/rclone/rclone.conf`. **The
+   key goes nowhere else** — not to Claude, not to chat, not to the repo.
+2. **[Claude]** On the Pi: a probe upload and a refused delete, a dry run,
+   then one real upload of `2026-11-07`, and hash comparison against
+   gpu-box.
+
+   Done 2026-11-19. Debian's `rclone` 1.60.1 cannot log in (B2 refuses its
+   v1 `authorize_account`: "not currently supported on API version number
+   1"), so the Pi runs the official **v1.76.0** binary at
+   `~/.local/bin/rclone`, checksum-verified against both rclone.org's and
+   GitHub's `SHA256SUMS`; call it by full path, since cron's `PATH` lacks
+   `~/.local/bin`. Probe `_probe/probe-2026-11-19.txt` uploaded, and
+   `deletefile --b2-hard-delete` was refused (`401 unauthorized`); it
+   stays. `snapshots/2026-11-07/` uploaded with `copy --immutable`:
+   `rclone check` 0 differences, and a downloaded copy's SHA-256s match
+   gpu-box's for all three files. Bucket layout: `snapshots/<date>/`,
+   later `raw/<date>/` for F4.
 3. **[Claude]** Wire `--offsite` into `collect-snapshot.sh`: `rclone copy
    --immutable`, a log line on failure.
 4. **[Claude]** Raw payload (A3): keep `rdf-files.tar.bz2` on snapshot dates
