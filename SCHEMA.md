@@ -77,6 +77,20 @@ Goodreads cannot supply a reception measure: its API closed in December 2020
 and scraping would breach its terms. Open Library ratings reach only 4.4% of
 the corpus with five or more ratings; see the calibration note below.
 
+## Subject headings supersede the shelves (2026-11-20)
+
+The catalogue's Library of Congress subject headings (`Subjects`), mapped
+through `inst/extdata/genre_subjects.csv` by `assignSubjectGenres()`, recover
+the 2013 genres with recall 0.96–1.00: Adventure 0.99, Detective/Mystery
+0.96, Historical Fiction 0.97, Romance 0.99, Science Fiction 1.00, Short
+Stories 0.98, Poetry 1.00 (`data-raw/genre-calibration-subjects.R`, against a
+pre-freeze catalogue regenerated 2026-11-08; re-run on the frozen one). The
+2013 "Fiction" scores 0.98 against the new Fiction stratum (all fiction) and
+0.72 against Novels (fiction over 50,000 words). Strata overlap by design and
+each is its own dataset; Novels is primary (PREREGISTRATION.md section 11,
+2026-11-20). The bookshelf calibration below is kept as the record of why the
+shelves were abandoned.
+
 ## Calibration against the 2013 labels (2026-11-07)
 
 `assignGenre()` plus `inst/extdata/genre_allowlist.csv` were scored on the 753
