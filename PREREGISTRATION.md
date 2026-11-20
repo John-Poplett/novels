@@ -66,9 +66,9 @@ A book is eligible for the wave if **all** of the following hold at
    `Language == "en"`.
 2. `date_added` (the catalogue's `Issued` date) is on or before 2026-12-31, so
    that at least one month of its life on the platform precedes the window.
-3. It is assigned to at least one of the eight content genres by the versioned
-   allow-list (`inst/extdata/genre_allowlist.csv`, or its successor, pinned by
-   hash at freeze).
+3. It is assigned to at least one genre stratum by the subject-heading map
+   (`inst/extdata/genre_subjects.csv`, the successor to the bookshelf
+   allow-list, pinned by hash at freeze; section 11, 2026-11-20).
 4. It has extractable text.
 
 Books added during the window do not join it. They join the next wave. This is
@@ -119,18 +119,17 @@ Fixed order of operations. No step may be reordered after the window opens.
    anchored grid (section 2) — per book.
 2. Divide by the site total for the same months; multiply by 1e6. This is
    `share_per_million`.
-3. Within each genre, compute the 20th and 80th percentiles of
-   `share_per_million` across eligible books.
+3. Within each stratum (section 11, 2026-11-20), compute the 20th and 80th
+   percentiles of `share_per_million` across eligible books.
 4. **Noise separation.** The band must satisfy
    `c_hi - c_lo >= 4 * sqrt(c_lo)` in downloads, where `c_lo` and `c_hi` are
    the cuts expressed as counts. If it does not, widen the band symmetrically
    (10th/90th, then 5th/95th) until it does, and report which percentile was
    used. This is a property of the counts, not of the outcome.
-5. **Class size.** Each genre must yield at least 50 books per class. If it
-   does not at the chosen percentile, merge it with its declared partner
-   (Adventure + Historical Fiction; Detective/Mystery + Fiction; Romance +
-   Poetry; Science Fiction + Short Stories) and report the merge. A genre that
-   still fails is dropped from the wave and reported.
+5. **Class size.** Each stratum must yield at least 50 books per class. If it
+   does not at the chosen percentile, it is reported and not analysed
+   separately; its books stay in Fiction and All (section 11, 2026-11-20,
+   which withdrew the merge partners).
 6. **Author cap.** At most 2 books per author per genre, selected with
    `set.seed(42)` over a sorted author list. This mirrors the 2013 corpus,
    where the cap was 2 per genre.
@@ -163,10 +162,11 @@ the boundary explicit. Measured on the 2013 corpus
 novel. Flash fiction is not a content genre because there is no pool: 13 of 754
 books, none under 500 words, 12 of the 13 Science Fiction, and the median
 corpus book is 56,972 words. More importantly, length is already a predictor —
-one length feature reaches AUC 0.632 on the 2013 label. Making form a genre
-would put a predictor on the label axis and make the bibliographic baseline
-partly circular, which would hollow out the one comparison (H2) this project
-exists to make.
+one length feature reaches AUC 0.632 on the 2013 label. *Superseded
+2026-11-20 (section 11):* this paragraph argued that making form a genre would
+make the bibliographic baseline circular. It does not, for the reasons given
+there, and Novels (fiction of `novel` form) is now a stratum, and the primary
+one.
 
 **`children_or_ya` — audience attribute.** A boolean, true when the catalogue
 marks the book as young-reader material by **either** of the two signals it
@@ -184,8 +184,9 @@ It is deliberately not called `is_ya`. Neither signal isolates young adult
 fiction, and the name must say what is measured. Section 5.6 uses it for a
 separate audience track; it is not one of the eight content genres.
 
-Neither attribute is part of eligibility (section 3), the label rule (section
-5) or the primary endpoint (section 7).
+`children_or_ya` is not part of eligibility (section 3), the label rule
+(section 5) or the primary endpoint (section 7). `form` defines the Novels
+stratum (section 11, 2026-11-20) and is otherwise an attribute.
 
 ## 5.6 The Children and Young Adult track
 
@@ -269,8 +270,9 @@ multiplicity rule in section 10 intact.
 
 ## 7. Primary analysis and power
 
-**Endpoint.** Paired difference in held-out AUC, text minus bibliographic,
-computed once per fold and averaged over the 5 folds. Positive means the text
+**Endpoint.** Within the Novels stratum (section 11, 2026-11-20), paired
+difference in held-out AUC, text minus bibliographic, computed once per fold
+and averaged over the 5 folds. Positive means the text
 model is better.
 
 **Inference.** A 95% bootstrap CI over books, resampling whole authors, not
@@ -319,6 +321,65 @@ not hypotheses and are not corrected.
 ## 11. Deviations
 
 - Amendments are dated, appended to this file, and published with the analysis.
+- **2026-11-20 — genres from subject headings; Novels is the primary stratum.**
+  1. *Mechanism (sections 3 and 12.1).* Genre strata come from the
+     catalogue's Library of Congress subject headings through
+     `inst/extdata/genre_subjects.csv`, the successor the registration allows,
+     pinned by hash at freeze. The bookshelf allow-list is superseded.
+     Calibrated against the 2013 labels (`data-raw/genre-calibration-subjects.R`),
+     the headings recover the 2013 genres with recall 0.96–1.00; the shelves
+     managed 0.25–0.98, Romance 0.25. The 2013 authors' "genre" field was
+     evidently the subject heading. Recall is the only measure (quota
+     sample). The calibration is re-run on the frozen catalogue.
+  2. *Strata.* Adventure, Detective/Mystery, Historical Fiction, Romance,
+     Science Fiction, Short Stories and Poetry, as in 2013; **Fiction**, all
+     fiction (any fiction heading; Poetry excluded); **Novels**, Fiction over
+     50,000 words (section 5.5's `novel` boundary), counted on the same
+     normalised text as the features; and **All**, every eligible book.
+     Strata overlap by design. Each is its own dataset with its own percentile
+     cuts (section 5, step 3), so one book may be labelled differently in
+     different strata. The 2013 "Fiction" was mostly novels (recall 0.98
+     against Fiction, 0.72 against Novels), and the paper's title predicts
+     novels. Children/YA remains the secondary track (section 5.6).
+  3. *Primary endpoint (sections 7, 8 and 10).* The primary endpoint, the one
+     AUC difference to which the decision rules of section 8 apply, is computed
+     within **Novels**: the label is the top and bottom 20% of download share
+     among Novels, and both models are trained and tested on Novels only.
+     Every other stratum is fitted and reported with its interval, but is
+     exploratory: it can neither confirm nor refute H2, and no significance is
+     claimed for it. Two reasons. *Multiplicity:* with ten strata each tested
+     at 5%, the chance that at least one shows a style effect by luck alone is
+     about 40% (1 − 0.95¹⁰). Correcting for it (Bonferroni, 0.5% each) raises
+     the five-fold critical value from about 2.1 to about 4.6 standard errors
+     and the minimum detectable effect from about 0.056 to about 0.10 AUC,
+     above the declared 0.05; this cost does not depend on stratum size.
+     *Size:* the uncertainty shrinks with the square root of the test books
+     per fold (0.068 at about 150 in 2013), so the smaller strata, labelling
+     about 40% of their books, could detect only about 0.15 (Historical
+     Fiction, 694 catalogue books) or 0.13 (Romance, 946) even uncorrected,
+     and less after the author cap. Novels is the large stratum, matches the
+     paper's title, and its narrow length range gives the baseline the least
+     help from length, so a style effect there is the hardest to explain
+     away. Its size is computed and filed once the texts are fetched, before
+     any label is built; if it is much smaller than expected, the registration
+     is revisited before any window data are used. Within Novels, the
+     baseline's `genre` term is one indicator per content stratum.
+  4. *Form as a stratum (section 5.5).* Section 5.5 said making form a genre
+     would make the baseline circular. It does not: within a stratum the label
+     is a percentile of downloads, so membership cannot predict it, and
+     `log10(text length)` stays in the baseline. Restricting to novels narrows
+     the length range, which leaves the baseline less help from length and the
+     text model more weight to carry: a stricter comparison, not a circular
+     one.
+  5. *Class size (section 5, step 5).* A stratum short of 50 books per class is
+     reported and not analysed separately; its books stay in Fiction and All.
+     The declared merge partners are withdrawn: the supersets take their
+     place.
+  6. *Wording of the earlier 2026-11-20 amendment.* There, "Type, Language and
+     Bookshelves" should now read "Type, Language and Subjects"; Novels also
+     reads the text, which is not a download count either.
+
+  Sections 3, 5, 5.5, 7 and 12.1 are edited to match and point here.
 - **2026-11-20 — if the 2026-12-31 catalogue cannot be retrieved.** Project
   Gutenberg has served a maintenance page since at least 2026-11-17.
   Eligibility is fixed from the first `pg_catalog.csv` that Project
@@ -384,8 +445,9 @@ after the fact:
    Detective/Mystery 0.72/0.79, Adventure 0.75/0.49, Short Stories 0.57/0.51,
    Fiction 0.82/0.17, Romance 0.25/0.39. The "Novels" shelf sits on 63.3% of
    books and is the only source of Fiction; only 25.3% of Romance books carry a
-   Romance shelf. **Open decision due before 2026-12-31:** Fiction as residual
-   rather than level, and Romance's place in the eight. See SCHEMA.md.
+   Romance shelf. *Decided 2026-11-20 (section 11):* the shelves are superseded by
+   subject headings, which recover the 2013 genres with recall 0.96–1.00
+   (`data-raw/genre-calibration-subjects.R`). See SCHEMA.md.
    *Read the precision column with care (noted 2026-11-12).* The reference is a
    quota sample: section 2 of the paper fixes 100 books per genre, 50 per class,
    and the corpus tree matches file for file. A book can be absent from a genre
