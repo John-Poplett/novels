@@ -275,6 +275,15 @@ snapshots): about three cents a month on an account already past the free
   served a copy frozen at 2026-11-15 throughout the November outage): a
   different source is a pre-registration amendment, decided and written
   down first.
+- **gpu-box switched off** (it draws the most power, so this is allowed
+  at any time, grid dates included): nothing depends on it at collection
+  time. Each collector logs `FAILED: copy to gpu-box:…` after a 30 s
+  connect timeout (rsync also gives up on a transfer stalled for 5 min) and
+  carries on, so the Pi's B2 upload still runs. That line is expected on
+  off nights, not an alarm. The first night gpu-box is back, the
+  `--ignore-existing` copy of the whole directory delivers everything it
+  missed. Committing a new snapshot to git can be done from the Mac's
+  checkout instead.
 - **Kernel reboots on the Pi:** not between 00:30 and 02:00 Central on a
   grid date. A missed Pi night means the Mac covered it, or the next night
   takes a late snapshot.

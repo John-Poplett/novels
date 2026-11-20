@@ -33,6 +33,17 @@
 PATH=$PATH:/usr/local/bin:/opt/homebrew/bin
 export PATH
 
+# A peer may be switched off (gpu-box often is, to save power): give up on
+# connecting after 30 s, on a stalled transfer after 5 min, and never wait for
+# a password, so one absent host cannot hang the night or block later steps.
+# The nightly --ignore-existing copy of the whole directory catches it up
+# when it is back.
+copy() {
+  rsync -a --ignore-existing --timeout=300 \
+    -e "ssh -o BatchMode=yes -o ConnectTimeout=30 -o ServerAliveInterval=30 -o ServerAliveCountMax=4" \
+    "$@"
+}
+
 stamp() { date -u +%Y-%m-%dT%H:%M:%SZ; }
 log() { echo "$(stamp) collect-snapshot: $*"; }
 
@@ -74,7 +85,7 @@ old_ifs=$IFS
 IFS='
 '
 for src in $pulls; do
-  if rsync -a --ignore-existing "$src" "$snapshots"; then
+  if copy "$src" "$snapshots"; then
     log "pulled from $src"
   else
     log "FAILED: pull from $src"; status=1
@@ -91,7 +102,7 @@ fi
 IFS='
 '
 for dest in $copies; do
-  if rsync -a --ignore-existing "$snapshots" "$dest"; then
+  if copy "$snapshots" "$dest"; then
     log "copied to $dest"
   else
     log "FAILED: copy to $dest"; status=1
