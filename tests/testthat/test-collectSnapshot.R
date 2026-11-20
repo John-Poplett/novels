@@ -9,7 +9,8 @@ collector_script <- function() {
 
 # A throwaway checkout holding the script, plus stand-ins for rsync and
 # Rscript that record each call and fail when told to.
-collector_sandbox <- function(rscript_status = 0L, fail_rsync = "") {
+collector_sandbox <- function(rscript_status = 0L, fail_rsync = "",
+                              fail_rclone = "") {
   root <- tempfile("collector-")
   dir.create(file.path(root, "data-raw"), recursive = TRUE)
   file.copy(collector_script(), file.path(root, "data-raw", "collect-snapshot.sh"))
@@ -26,19 +27,26 @@ collector_sandbox <- function(rscript_status = 0L, fail_rsync = "") {
   ), file.path(bin, "rsync"))
   writeLines(c(
     "#!/bin/sh",
+    sprintf('echo "rclone $*" >> "%s"', calls),
+    sprintf('case "$*" in *"%s"*) [ -n "%s" ] && exit 1 ;; esac', fail_rclone, fail_rclone),
+    "exit 0"
+  ), file.path(bin, "rclone"))
+  writeLines(c(
+    "#!/bin/sh",
     sprintf('echo "Rscript $* TZ=$TZ" >> "%s"', calls),
     sprintf("exit %d", rscript_status)
   ), file.path(bin, "Rscript"))
-  Sys.chmod(file.path(bin, c("rsync", "Rscript")), "0755")
+  Sys.chmod(file.path(bin, c("rsync", "rclone", "Rscript")), "0755")
 
   list(root = root, bin = bin, calls = calls)
 }
 
-run_collector <- function(box, args = character()) {
+run_collector <- function(box, args = character(), env = character()) {
   out <- suppressWarnings(system2(
     "sh", c(shQuote(file.path(box$root, "data-raw", "collect-snapshot.sh")),
             shQuote(args)),
-    env = paste0("PATH=", shQuote(paste(box$bin, Sys.getenv("PATH"), sep = ":"))),
+    env = c(paste0("PATH=", shQuote(paste(box$bin, Sys.getenv("PATH"), sep = ":"))),
+            env),
     stdout = TRUE, stderr = TRUE
   ))
   list(
@@ -121,5 +129,49 @@ test_that("a script outside a checkout runs nothing", {
   res <- run_collector(box)
   expect_identical(res$status, 1L)
   expect_true(any(grepl("cannot find the checkout", res$log, fixed = TRUE)))
+  expect_false(file.exists(box$calls))
+})
+
+test_that("uploads come last, one per remote, and can only add files", {
+  skip_unless_collector()
+  box <- collector_sandbox()
+  res <- run_collector(box, c("--copy-to", "gpu-box:",
+                              "--offsite", "b2:bucket/snapshots/",
+                              "--offsite", "b2:other/"))
+  expect_identical(res$status, 0L)
+  expect_identical(res$calls[3:4], c(
+    "rclone copy --immutable data-raw/snapshots/ b2:bucket/snapshots/",
+    "rclone copy --immutable data-raw/snapshots/ b2:other/"
+  ))
+  rclones <- grep("^rclone ", res$calls, value = TRUE)
+  expect_true(all(startsWith(rclones, "rclone copy --immutable ")))
+  expect_false(any(grepl("--delete|--backup-dir", rclones)))
+})
+
+test_that("a failed collection or copy does not stop the upload, and a failed upload is logged", {
+  skip_unless_collector()
+  box <- collector_sandbox(rscript_status = 1L, fail_rsync = "gpu-box:",
+                           fail_rclone = "b2:bad/")
+  res <- run_collector(box, c("--copy-to", "gpu-box:",
+                              "--offsite", "b2:bad/", "--offsite", "b2:good/"))
+  expect_identical(res$status, 1L)
+  expect_true(any(grepl("FAILED: upload to b2:bad/", res$log, fixed = TRUE)))
+  expect_true(any(grepl("uploaded to b2:good/", res$log, fixed = TRUE)))
+})
+
+test_that("RCLONE names the rclone binary", {
+  skip_unless_collector()
+  box <- collector_sandbox()
+  alt <- file.path(box$bin, "rclone-new")
+  writeLines(c("#!/bin/sh", sprintf('echo "rclone-new $*" >> "%s"', box$calls)), alt)
+  Sys.chmod(alt, "0755")
+  res <- run_collector(box, c("--offsite", "b2:x/"), env = paste0("RCLONE=", shQuote(alt)))
+  expect_identical(res$calls[2], "rclone-new copy --immutable data-raw/snapshots/ b2:x/")
+})
+
+test_that("--offsite without a remote runs nothing", {
+  skip_unless_collector()
+  box <- collector_sandbox()
+  expect_identical(run_collector(box, "--offsite")$status, 2L)
   expect_false(file.exists(box$calls))
 })

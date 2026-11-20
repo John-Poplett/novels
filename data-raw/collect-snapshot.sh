@@ -1,13 +1,17 @@
 #!/bin/sh
 # Nightly collector for the download-snapshot series (OPERATIONS.md).
 #
-#   collect-snapshot.sh [--pull-from SRC]... [--copy-to DEST]...
+#   collect-snapshot.sh [--pull-from SRC]... [--copy-to DEST]... [--offsite REMOTE]...
 #
 # 1. pull: copy snapshots another collector took into this checkout
 #    (so this machine's snapshotDue() sees them);
 # 2. collect: run data-raw/snapshot-downloads.R, which exits before
 #    downloading anything unless a snapshot is due;
-# 3. copy: send this checkout's snapshots to each destination.
+# 3. copy: send this checkout's snapshots to each destination;
+# 4. offsite: upload them to each rclone REMOTE (e.g.
+#    "b2snap:gutenberg-download-counts/snapshots/") with --immutable, so an
+#    upload can add files but never replace one. The rclone binary is $RCLONE
+#    (default: rclone on PATH) -- the Pi's Debian rclone is too old for B2.
 #
 # SRC and DEST are complete rsync locations, because each peer's key differs:
 # the Pi's key for gpu-box is rrsync-restricted to the snapshot directory
@@ -16,7 +20,7 @@
 # directory's contents -- a trailing "/", or "host:" for an rrsync-restricted
 # key -- or rsync nests a second snapshots/ inside this one.
 #
-# Every copy is append-only: --ignore-existing, never --delete. Every step
+# Every copy is append-only: --ignore-existing or --immutable, never --delete. Every step
 # runs even when an earlier one failed -- a failed pull must not stop the
 # collection, and a failed collection must not stop the copies -- and every
 # failure writes one dated line, so the log (one line a night minimum) is the
@@ -33,17 +37,20 @@ stamp() { date -u +%Y-%m-%dT%H:%M:%SZ; }
 log() { echo "$(stamp) collect-snapshot: $*"; }
 
 usage() {
-  echo "usage: collect-snapshot.sh [--pull-from SRC]... [--copy-to DEST]..." >&2
+  echo "usage: collect-snapshot.sh [--pull-from SRC]... [--copy-to DEST]... [--offsite REMOTE]..." >&2
   exit 2
 }
 
 pulls=""
 copies=""
+offsites=""
 while [ $# -gt 0 ]; do
   case "$1" in
     --pull-from) [ $# -ge 2 ] && [ -n "$2" ] || usage; pulls="$pulls
 $2"; shift 2 ;;
     --copy-to) [ $# -ge 2 ] && [ -n "$2" ] || usage; copies="$copies
+$2"; shift 2 ;;
+    --offsite) [ $# -ge 2 ] && [ -n "$2" ] || usage; offsites="$offsites
 $2"; shift 2 ;;
     *) log "unknown argument '$1'"; usage ;;
   esac
@@ -88,6 +95,13 @@ for dest in $copies; do
     log "copied to $dest"
   else
     log "FAILED: copy to $dest"; status=1
+  fi
+done
+for remote in $offsites; do
+  if "${RCLONE:-rclone}" copy --immutable "$snapshots" "$remote"; then
+    log "uploaded to $remote"
+  else
+    log "FAILED: upload to $remote"; status=1
   fi
 done
 IFS=$old_ifs
