@@ -262,7 +262,8 @@ Deliberately, on a `chore/` branch, one batch at a time:
    or named packages (`install.packages(c(...))`).
 3. **Prove nothing changed that should not.** `make test`, then
    `make check-full` ending `0 errors | 0 warnings | 0 notes`, then the full
-   pipeline (`targets::tar_make()`, hours: the modelling targets) and
+   pipeline (`targets::tar_make()`; its 216 targets build in about 8 minutes
+   on gpu-box, 459 s measured 2026-11-20) and
    `targets::tar_read(cv_baseline_check)`: no `alpha` may sit `beyond` two
    standard errors of `baselines/cv_summary.csv`. A result that moves is a
    finding, not noise: record it in CHANGELOG.md, do not lock it in silently.
