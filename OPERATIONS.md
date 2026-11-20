@@ -53,7 +53,7 @@ the collectors. Collectors never commit (AGENTS.md).
 | D12 | Pi crontab | Claude | live 2026-11-19 (01:00 CT); until D11, the Pi cannot see the Mac's snapshots and takes its own on grid dates too — gpu-box keeps the Mac's, which arrives first |
 | F1 | B2 bucket and bucket-scoped key | John | done 2026-11-19: bucket `gutenberg-download-counts`, Object Lock on; key `writeFiles,listFiles,readFiles` (no `deleteFiles`); the first key was pasted in chat and replaced |
 | F2 | rclone on the Pi, probe, first upload | Claude | done 2026-11-19 (below) |
-| F3 | `--offsite` upload wiring | Claude | next |
+| F3 | `--offsite` upload wiring | Claude | done 2026-11-19; Pi crontab uploads nightly |
 
 Deadline: all of it in place, and failover tested, before **2026-12-07**,
 the first real grid date.
@@ -199,7 +199,7 @@ nothing else.
 12. **[Claude]** Pi:
 
     ```
-    0 1 * * * TMPDIR=/home/john/.cache/novels-tmp /home/john/MachineLearning/novels/data-raw/collect-snapshot.sh --copy-to gpu-box: >> /home/john/.local/state/novels-snapshot.log 2>&1
+    0 1 * * * TMPDIR=/home/john/.cache/novels-tmp RCLONE=/home/john/.local/bin/rclone /home/john/MachineLearning/novels/data-raw/collect-snapshot.sh --copy-to gpu-box: --offsite b2snap:gutenberg-download-counts/snapshots/ >> /home/john/.local/state/novels-snapshot.log 2>&1
     ```
 
 Each location is a complete rsync path, because the keys differ: the Pi's
@@ -208,8 +208,10 @@ the Mac's is not. A pull source must end in `/` (or be `host:` for an
 rrsync key), or rsync nests a second `snapshots/`. The script sets
 `TZ=UTC` for R, appends `/usr/local/bin` and `/opt/homebrew/bin` to cron's
 `PATH`, runs every step even when an earlier one failed, and writes a dated
-`FAILED:` line for each failure. The off-site upload (`--offsite`) is added
-with F3.
+`FAILED:` line for each failure. Only the Pi uploads off-site
+(`--offsite`, last, `rclone copy --immutable`): it holds the B2 key, and it
+has every snapshot, the Mac's included, by 01:00. `RCLONE` names the
+v1.76.0 binary, since Debian's is too old for B2 (F2).
 
 ## F. Off-site: Backblaze B2
 
@@ -242,7 +244,7 @@ against `provenance.txt` without any tool.
    gpu-box's for all three files. Bucket layout: `snapshots/<date>/`,
    later `raw/<date>/` for F4.
 3. **[Claude]** Wire `--offsite` into `collect-snapshot.sh`: `rclone copy
-   --immutable`, a log line on failure.
+   --immutable`, a log line on failure. Done 2026-11-19 (crontab in D12).
 4. **[Claude]** Raw payload (A3): keep `rdf-files.tar.bz2` on snapshot dates
    only — ~12 a year, never nightly, so Project Gutenberg serves nothing
    extra. The collector stores it beside the snapshot, checks its SHA-256
