@@ -17,6 +17,12 @@
 # Vignettes are not built, which necessarily yields the two `inst/doc`
 # WARNINGs documented in AGENTS.md. The job therefore fails on errors only,
 # matching the level-2 check rather than the release gate.
+#
+# Packages come from renv.lock, version for version (binaries from Posit
+# Package Manager; the lockfile's repository is overridden for speed, not for
+# versions), so a red `check` means the commit broke something, never that
+# CRAN moved. CRAN's moving is watched separately by latest.yaml, weekly.
+# The job keeps its name: branch protection on master requires `check`.
 
 name: R-CMD-check
 
@@ -41,20 +47,30 @@ jobs:
 
       - uses: r-lib/actions/setup-r@v2
         with:
-          use-public-rspm: true
+          r-version: renv   # the R version recorded in renv.lock
 
-      - uses: r-lib/actions/setup-r-dependencies@v2
+      # The binaries below link against these at run time (the same list the
+      # Pi needed, OPERATIONS.md section B).
+      - name: System libraries
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq libarchive-dev libcurl4-openssl-dev \
+            libssl-dev libxml2-dev libuv1-dev cmake libfontconfig1-dev \
+            libharfbuzz-dev libfribidi-dev libfreetype6-dev libpng-dev \
+            libtiff5-dev libjpeg-dev
+
+      - uses: actions/cache@v4
         with:
-          # rcmdcheck drives the final check-r-package step and is not a
-          # DESCRIPTION dependency, so it must be named here or the step dies
-          # with "there is no package called 'rcmdcheck'" after every real
-          # check has already passed.
-          extra-packages: |
-            any::pkgload
-            any::rcmdcheck
-            any::roxygen2
-            any::tarchetypes
-          needs: check
+          path: ~/.cache/R/renv
+          key: renv-${{ runner.os }}-${{ hashFiles('renv.lock') }}
+          restore-keys: renv-${{ runner.os }}-
+
+      - name: Packages from renv.lock
+        env:
+          RENV_CONFIG_REPOS_OVERRIDE: https://packagemanager.posit.co/cran/__linux__/noble/latest
+        run: |
+          Rscript -e 'install.packages("renv", repos = Sys.getenv("RENV_CONFIG_REPOS_OVERRIDE"))'
+          Rscript -e 'renv::restore(lockfile = "renv.lock", library = .libPaths()[1], prompt = FALSE)'
 
       # Must precede the Rd step: roxygen loads the package and needs the
       # dataset present (see the header note).
@@ -67,8 +83,11 @@ jobs:
       - name: Fast test loop
         run: Rscript -e 'pkgload::load_all(quiet = TRUE); testthat::test_dir("tests/testthat")'
 
-      - uses: r-lib/actions/check-r-package@v2
-        with:
-          build_args: 'c("--no-manual", "--no-build-vignettes")'
-          args: 'c("--no-manual", "--no-build-vignettes")'
-          error-on: '"error"'
+      # rcmdcheck is locked (it comes with devtools), so this is the same
+      # call check-r-package would make, without installing anything else.
+      - name: R CMD check
+        run: |
+          Rscript -e 'rcmdcheck::rcmdcheck(
+            build_args = c("--no-manual", "--no-build-vignettes"),
+            args = c("--no-manual", "--no-build-vignettes"),
+            error_on = "error", check_dir = "check")'
