@@ -32,7 +32,11 @@ on:
 
 jobs:
   check:
-    runs-on: ubuntu-latest
+    # Pinned, not ubuntu-latest: the binaries are built for 24.04 ("noble")
+    # and link its system libraries. ubuntu-latest became 26.04 in 2026, and
+    # stringi then failed to load (libicui18n.so.74 missing). When GitHub
+    # retires 24.04, move this and the URL below together.
+    runs-on: ubuntu-24.04
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       # Pinned in code by SHA-256 in _targets.R, so a moved archive aborts
@@ -57,7 +61,7 @@ jobs:
           sudo apt-get install -y -qq libarchive-dev libcurl4-openssl-dev \
             libssl-dev libxml2-dev libuv1-dev cmake libfontconfig1-dev \
             libharfbuzz-dev libfribidi-dev libfreetype6-dev libpng-dev \
-            libtiff5-dev libjpeg-dev
+            libtiff5-dev libjpeg-dev libglpk-dev libx11-dev pandoc
 
       - uses: actions/cache@v4
         with:
