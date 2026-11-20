@@ -41,6 +41,13 @@ collector_sandbox <- function(rscript_status = 0L, fail_rsync = "",
   list(root = root, bin = bin, calls = calls)
 }
 
+# Every rsync the collector makes: append-only, and bounded in time so a
+# switched-off peer cannot hang the night.
+rsync_call <- paste(
+  "rsync -a --ignore-existing --timeout=300 -e ssh -o BatchMode=yes",
+  "-o ConnectTimeout=30 -o ServerAliveInterval=30 -o ServerAliveCountMax=4"
+)
+
 run_collector <- function(box, args = character(), env = character()) {
   out <- suppressWarnings(system2(
     "sh", c(shQuote(file.path(box$root, "data-raw", "collect-snapshot.sh")),
@@ -69,10 +76,10 @@ test_that("the collector pulls, then collects in UTC, then copies, in that order
                               "--copy-to", "gpu-box:", "--copy-to", "pi:snaps/"))
   expect_identical(res$status, 0L)
   expect_identical(res$calls, c(
-    "rsync -a --ignore-existing pi:snaps/ data-raw/snapshots/",
+    paste(rsync_call, "pi:snaps/ data-raw/snapshots/"),
     "Rscript data-raw/snapshot-downloads.R TZ=UTC",
-    "rsync -a --ignore-existing data-raw/snapshots/ gpu-box:",
-    "rsync -a --ignore-existing data-raw/snapshots/ pi:snaps/"
+    paste(rsync_call, "data-raw/snapshots/ gpu-box:"),
+    paste(rsync_call, "data-raw/snapshots/ pi:snaps/")
   ))
   expect_true(any(grepl("done, status 0$", res$log)))
 })
@@ -102,7 +109,7 @@ test_that("a failed collection is logged, and the copies still run", {
   res <- run_collector(box, c("--copy-to", "gpu-box:"))
   expect_identical(res$status, 1L)
   expect_true(any(grepl("FAILED: data-raw/snapshot-downloads.R exited 1", res$log, fixed = TRUE)))
-  expect_identical(res$calls[2], "rsync -a --ignore-existing data-raw/snapshots/ gpu-box:")
+  expect_identical(res$calls[2], paste(rsync_call, "data-raw/snapshots/ gpu-box:"))
 })
 
 test_that("one failed copy does not stop the next", {
@@ -174,4 +181,15 @@ test_that("--offsite without a remote runs nothing", {
   box <- collector_sandbox()
   expect_identical(run_collector(box, "--offsite")$status, 2L)
   expect_false(file.exists(box$calls))
+})
+
+test_that("every rsync gives up on an absent peer instead of hanging", {
+  skip_unless_collector()
+  box <- collector_sandbox()
+  res <- run_collector(box, c("--pull-from", "a:/", "--copy-to", "b:"))
+  rsyncs <- grep("^rsync ", res$calls, value = TRUE)
+  expect_length(rsyncs, 2L)
+  for (flag in c("--timeout=300", "ConnectTimeout=30", "BatchMode=yes")) {
+    expect_true(all(grepl(flag, rsyncs, fixed = TRUE)), info = flag)
+  }
 })
