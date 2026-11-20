@@ -183,6 +183,14 @@ Layout under `data-raw/snapshots/`, append-only:
 | `<date>/date_added.csv.gz` | `gutenberg_id`, `date_added` |
 | `<date>/provenance.txt` | source URL, collecting machine (`collector`, since 2026-11-17), the feed's `Last-Modified` (`feed_last_modified_utc`, since 2026-11-19), retrieval time (UTC), payload bytes and SHA-256, record count, total downloads, interval to the previous snapshot and whether the date is on the grid |
 
+The eligibility catalogue is frozen once, under `data-raw/catalogue-freeze/`
+(`data-raw/freeze-catalogue.R`, PREREGISTRATION.md sections 3 and 11):
+
+| file | contents |
+| --- | --- |
+| `pg_catalog.csv.gz` | Project Gutenberg's catalogue exactly as downloaded: `Text#`, `Type`, `Issued`, `Title`, `Language`, `Authors`, `Subjects`, `LoCC`, `Bookshelves` |
+| `provenance.txt` | source URL, collector, the catalogue's `Last-Modified`, retrieval time (UTC), bytes and SHA-256, columns, row counts (`rows`, `text_en`, `text_en_issued_by_freeze`, `unparsed_issued`) |
+
 `date_added` is the catalogue's `Issued` date: when the ebook was released, not
 when the work was published. The RDF carries the original imprint for only
 about 17% of records (`pgterms:marc260` 13,381, `pgterms:marc906` 12,980 of

@@ -1,6 +1,6 @@
 # TODO
 * [ ] Reconcile this list with the roadmap section in README.md
-* [ ] Before 2026-12-31: freeze wave eligibility from that date's `pg_catalog.csv` (Type, Language, genre subjects), and settle the two questions the genre calibration left open — whether Fiction becomes the residual level rather than a genre, and whether Romance stays in the eight (`PREREGISTRATION.md` §12.1; the calibration numbers are in Done below).
+* [ ] On 2026-12-31 (or, if Project Gutenberg is down, by 2027-01-31 under the 2026-11-20 amendment): freeze wave eligibility with `data-raw/freeze-catalogue.R` (OPERATIONS.md section G), and settle the two questions the genre calibration left open — whether Fiction becomes the residual level rather than a genre, and whether Romance stays in the eight (`PREREGISTRATION.md` §12.1; the calibration numbers are in Done below).
 * [ ] **Expand dataset**
   * [ ] Propose two to three mechanisms for deducing a Gutenberg texts genre(s). Give the pros and cons. Write the proposal up in a document "deducing-genres.md". Consider:
     * Training a multinomial genre classifier (titles can belong to more than one genre) based on the existing dataset

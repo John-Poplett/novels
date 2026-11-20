@@ -252,16 +252,24 @@ parseHttpDate <- function(x) {
 #' @param url the payload's URL
 #' @param headers the header fetcher (injected by tests); returns the header
 #'   lines with the final HTTP status as attribute `"status"`
+#' @param consequence what an unavailable feed means for the caller, appended
+#'   to the error
 #' @returns a POSIXct in UTC, `NA` when the response has no usable header
 #' @noRd
-feedLastModified <- function(url, headers = curlGetHeaders) {
-  stopifnot("url must be a single string" = is.character(url) && length(url) == 1)
+feedLastModified <- function(url, headers = curlGetHeaders,
+                             consequence = paste(
+                               "No snapshot was written; the next nightly run",
+                               "retries (a late snapshot keeps its own date).")) {
+  stopifnot(
+    "url must be a single string" = is.character(url) && length(url) == 1,
+    "consequence must be a single string" =
+      is.character(consequence) && length(consequence) == 1
+  )
   lines <- headers(url, redirect = TRUE, timeout = 120L)
   status <- attr(lines, "status")
   if (!identical(as.integer(status), 200L)) {
     stop("The feed ", url, " answered HTTP ", status, " to a HEAD request, ",
-         "so it is unavailable. No snapshot was written; the next nightly ",
-         "run retries (a late snapshot keeps its own date).", call. = FALSE)
+         "so it is unavailable. ", consequence, call. = FALSE)
   }
   starts <- grep("^HTTP/", lines)
   final <- if (length(starts)) lines[max(starts):length(lines)] else lines
