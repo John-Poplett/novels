@@ -319,6 +319,17 @@ not hypotheses and are not corrected.
 ## 11. Deviations
 
 - Amendments are dated, appended to this file, and published with the analysis.
+- **2026-11-20 — if the 2026-12-31 catalogue cannot be retrieved.** Project
+  Gutenberg has served a maintenance page since at least 2026-11-17.
+  Eligibility is fixed from the first `pg_catalog.csv` that Project
+  Gutenberg regenerated on or after 2026-12-31 (by its `Last-Modified`) and
+  that is retrieved by 2027-01-31. The cut-off stays `Issued` ≤ 2026-12-31, so
+  the population does not change. Only the Type, Language and Bookshelves are
+  read up to a month later, and those fields are not downloads, so they reveal
+  nothing about the outcome. Mirrors are not used: on 2026-11-20 they served
+  copies frozen weeks earlier. If no qualifying catalogue is retrieved by
+  2027-01-31, the wave's start is revisited and amended before any window data
+  are used.
 - **2026-11-16 — late snapshots return to the grid instead of moving it.**
   Section 4 said the job "asks the series whether 30 days have elapsed", and
   the code measured those 30 days from the *latest* snapshot. One late run
