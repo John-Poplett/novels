@@ -274,3 +274,14 @@ test_that("each payload option may be given once, and needs a value", {
   expect_identical(run_collector(box, "--offsite-payloads")$status, 2L)
   expect_false(file.exists(box$calls))
 })
+
+test_that("RSYNC names the rsync binary", {
+  skip_unless_collector()
+  box <- collector_sandbox()
+  alt <- file.path(box$bin, "rsync-new")
+  writeLines(c("#!/bin/sh", sprintf('echo "rsync-new $*" >> "%s"', box$calls)), alt)
+  Sys.chmod(alt, "0755")
+  res <- run_collector(box, c("--copy-to", "b:"), env = paste0("RSYNC=", shQuote(alt)))
+  expect_identical(res$calls[2], sub("^rsync", "rsync-new",
+                                     paste(rsync_call, "data-raw/snapshots/ b:")))
+})

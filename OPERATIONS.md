@@ -193,7 +193,7 @@ nothing else.
 11. **[John]** Mac: `git fetch --prune && git reset --hard origin/dev`, then
 
     ```
-    0 22 * * * /Users/john/MachineLearning/novels/data-raw/collect-snapshot.sh --pull-from ts-appliance:MachineLearning/novels/data-raw/snapshots/ --copy-to gpu-box:MachineLearning/novels/data-raw/snapshots/ --copy-to ts-appliance:MachineLearning/novels/data-raw/snapshots/ --move-payloads-to ts-appliance:MachineLearning/novels/data-raw/payloads/ >> /Users/john/Library/Logs/novels-snapshot.log 2>&1
+    0 22 * * * RSYNC=/opt/homebrew/bin/rsync /Users/john/MachineLearning/novels/data-raw/collect-snapshot.sh --pull-from ts-appliance:MachineLearning/novels/data-raw/snapshots/ --copy-to gpu-box:MachineLearning/novels/data-raw/snapshots/ --copy-to ts-appliance:MachineLearning/novels/data-raw/snapshots/ --move-payloads-to ts-appliance:MachineLearning/novels/data-raw/payloads/ >> /Users/john/Library/Logs/novels-snapshot.log 2>&1
     ```
 
 12. **[Claude]** Pi:
@@ -207,7 +207,10 @@ key for gpu-box is rrsync-restricted to the snapshot directory (`gpu-box:`),
 the Mac's is not. A pull source must end in `/` (or be `host:` for an
 rrsync key), or rsync nests a second `snapshots/`. The script sets
 `TZ=UTC` for R, appends `/usr/local/bin` and `/opt/homebrew/bin` to cron's
-`PATH`, runs every step even when an earlier one failed, and writes a dated
+`PATH` (appended, so on the Mac cron would still find Apple's
+`/usr/bin/rsync` first: hence `RSYNC=` naming Homebrew's 3.5.2, tested
+2026-11-19 for `--remove-source-files` and `--timeout`), runs every step
+even when an earlier one failed, and writes a dated
 `FAILED:` line for each failure. Only the Pi uploads off-site
 (`--offsite`, last, `rclone copy --immutable`): it holds the B2 key, and it
 has every snapshot, the Mac's included, by 01:00. `RCLONE` names the
