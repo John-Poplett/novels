@@ -48,8 +48,8 @@ the collectors. Collectors never commit (AGENTS.md).
 | B4 | apt install on the Pi (needs sudo) | John | done 2026-11-18 |
 | B5–B8 | clone, packages from `renv.lock`, smoke test, rehearsal on the Pi | Claude | done 2026-11-19: 88 packages match `renv.lock`; smoke test green; rehearsal green (below) |
 | C9 | Pi → gpu-box ssh key, write-only via `rrsync` | Claude | done 2026-11-18 |
-| C10 | Mac → Pi ssh key and config | John | open |
-| D11 | Mac: reset to `origin/dev`, new crontab line | John | after A2 |
+| C10 | Mac → Pi ssh key and config | John | interactive login works; unattended (`BatchMode`, no agent) not yet confirmed -- tonight's 22:00 log settles it |
+| D11 | Mac: reset to `origin/dev`, new crontab line | John | done 2026-11-19 (Mac at `4204533`) |
 | D12 | Pi crontab | Claude | live 2026-11-19 (01:00 CT); until D11, the Pi cannot see the Mac's snapshots and takes its own on grid dates too — gpu-box keeps the Mac's, which arrives first |
 | F1 | B2 bucket and bucket-scoped key | John | done 2026-11-19: bucket `gutenberg-download-counts`, Object Lock on; key `writeFiles,listFiles,readFiles` (no `deleteFiles`); the first key was pasted in chat and replaced |
 | F2 | rclone on the Pi, probe, first upload | Claude | done 2026-11-19 (below) |
