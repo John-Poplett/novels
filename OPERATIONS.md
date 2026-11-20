@@ -43,7 +43,7 @@ the collectors. Collectors never commit (AGENTS.md).
 |---|---|---|---|
 | A1 | `collector:` line in `provenance.txt`; refuse a payload that is not a plausible bzip2 archive | Claude | done 2026-11-17 |
 | A2 | `data-raw/collect-snapshot.sh`: pull, collect, copy, log (upload with F3) | Claude | done 2026-11-19; real run on the Pi green |
-| A3 | keep the raw payload on snapshot dates (F4) | Claude | planned |
+| A3 | keep the raw payload on snapshot dates (F4) | Claude | done 2026-11-19; both crontabs need the new options (D11, D12) |
 | A4 | refuse a feed that is down or more than 48 h old (`Last-Modified`) | Claude | done 2026-11-19 |
 | B4 | apt install on the Pi (needs sudo) | John | done 2026-11-18 |
 | B5–B8 | clone, packages from `renv.lock`, smoke test, rehearsal on the Pi | Claude | done 2026-11-19: 88 packages match `renv.lock`; smoke test green; rehearsal green (below) |
@@ -193,13 +193,13 @@ nothing else.
 11. **[John]** Mac: `git fetch --prune && git reset --hard origin/dev`, then
 
     ```
-    0 22 * * * /Users/john/MachineLearning/novels/data-raw/collect-snapshot.sh --pull-from ts-appliance:MachineLearning/novels/data-raw/snapshots/ --copy-to gpu-box:MachineLearning/novels/data-raw/snapshots/ --copy-to ts-appliance:MachineLearning/novels/data-raw/snapshots/ >> /Users/john/Library/Logs/novels-snapshot.log 2>&1
+    0 22 * * * /Users/john/MachineLearning/novels/data-raw/collect-snapshot.sh --pull-from ts-appliance:MachineLearning/novels/data-raw/snapshots/ --copy-to gpu-box:MachineLearning/novels/data-raw/snapshots/ --copy-to ts-appliance:MachineLearning/novels/data-raw/snapshots/ --move-payloads-to ts-appliance:MachineLearning/novels/data-raw/payloads/ >> /Users/john/Library/Logs/novels-snapshot.log 2>&1
     ```
 
 12. **[Claude]** Pi:
 
     ```
-    0 1 * * * TMPDIR=/home/john/.cache/novels-tmp RCLONE=/home/john/.local/bin/rclone /home/john/MachineLearning/novels/data-raw/collect-snapshot.sh --copy-to gpu-box: --offsite b2snap:gutenberg-download-counts/snapshots/ >> /home/john/.local/state/novels-snapshot.log 2>&1
+    0 1 * * * TMPDIR=/home/john/.cache/novels-tmp RCLONE=/home/john/.local/bin/rclone /home/john/MachineLearning/novels/data-raw/collect-snapshot.sh --copy-to gpu-box: --offsite b2snap:gutenberg-download-counts/snapshots/ --offsite-payloads b2snap:gutenberg-download-counts/raw/ >> /home/john/.local/state/novels-snapshot.log 2>&1
     ```
 
 Each location is a complete rsync path, because the keys differ: the Pi's
@@ -247,14 +247,24 @@ against `provenance.txt` without any tool.
    --immutable`, a log line on failure. Done 2026-11-19 (crontab in D12).
 4. **[Claude]** Raw payload (A3): keep `rdf-files.tar.bz2` on snapshot dates
    only — ~12 a year, never nightly, so Project Gutenberg serves nothing
-   extra. The collector stores it beside the snapshot, checks its SHA-256
-   against `provenance.txt`, and the payload travels like the snapshot:
+   extra. The collector stores it in `data-raw/payloads/<date>/` (git-ignored,
+   and not copied to gpu-box: 127 MB a date has no business in either),
+   checks its SHA-256 against `provenance.txt`, and the payload travels:
    Mac → Pi with `rsync --remove-source-files` (the Mac's copy goes once the
-   Pi has it), Pi → B2 with `rclone copy --immutable` (B2 verifies the
-   upload's SHA-1), then the Pi deletes its local copy. The payload is
-   catalogue metadata only — about 80,000 RDF records, no book texts — and
-   lets every count be re-derived after a parser bug, and catalogue drift
-   (re-shelved or re-typed books) be dated.
+   Pi has it; `--move-payloads-to`), and Pi → B2 `raw/<date>/` with
+   `rclone moveto --immutable` after the Pi re-checks the SHA-256 against
+   `provenance.txt` (`--offsite-payloads`; rclone verifies the upload's
+   SHA-1 and deletes the local copy only then). A payload that fails a
+   check stays where it is, with a `FAILED:` line, and is retried nightly.
+   B2 is the payload's one long-term copy, under Object Lock. The payload
+   is catalogue metadata only — about 80,000 RDF records, no book texts —
+   and lets every count be re-derived after a parser bug, and catalogue
+   drift (re-shelved or re-typed books) be dated.
+
+   Done 2026-11-19. End to end on the Pi with the real rsync and rclone (a
+   3 MB stand-in, dated 2099-01-01, to `_probe/raw/`): the rsync source was
+   removed, the hash check passed, the B2 copy's SHA-256 matched, and no
+   local copy remained. The first real payload will be 2026-12-07's.
 
 Cost, checked 2026-11-17: B2 storage is about $6.95/TB-month, uploads and
 API calls are free at this scale, downloads free up to 3× storage. The
