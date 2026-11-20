@@ -36,6 +36,11 @@
 # failure writes one dated line, so the log (one line a night minimum) is the
 # heartbeat. The exit status is 0 only when every step succeeded.
 #
+# RSYNC names the rsync binary (default: rsync on PATH). On the Mac, cron
+# would find Apple's /usr/bin/rsync before Homebrew's, so the Mac's crontab
+# sets RSYNC=/opt/homebrew/bin/rsync, the one tested for --remove-source-files
+# and --timeout.
+#
 # Cron has PATH=/usr/bin:/bin, so the locations Rscript lives in on the Mac
 # (/usr/local/bin, /opt/homebrew/bin) are appended -- appended, so a caller's
 # PATH still wins (the tests put stand-ins for rsync and Rscript first).
@@ -49,7 +54,7 @@ export PATH
 # The nightly --ignore-existing copy of the whole directory catches it up
 # when it is back.
 copy() {
-  rsync -a --ignore-existing --timeout=300 \
+  "${RSYNC:-rsync}" -a --ignore-existing --timeout=300 \
     -e "ssh -o BatchMode=yes -o ConnectTimeout=30 -o ServerAliveInterval=30 -o ServerAliveCountMax=4" \
     "$@"
 }
