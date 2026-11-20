@@ -193,3 +193,84 @@ test_that("every rsync gives up on an absent peer instead of hanging", {
     expect_true(all(grepl(flag, rsyncs, fixed = TRUE)), info = flag)
   }
 })
+
+# A payload in the sandbox, with the provenance line that vouches for it.
+add_payload <- function(box, date, content = "BZh9 payload", recorded = NULL) {
+  dir <- file.path(box$root, "data-raw", "payloads", date)
+  dir.create(dir, recursive = TRUE)
+  file <- file.path(dir, "rdf-files.tar.bz2")
+  writeBin(charToRaw(content), file)
+  sha <- digest::digest(file, algo = "sha256", file = TRUE)
+  snap <- file.path(box$root, "data-raw", "snapshots", date)
+  dir.create(snap, recursive = TRUE)
+  writeLines(c("source_url: x", paste0("payload_sha256: ",
+                                       if (is.null(recorded)) sha else recorded)),
+             file.path(snap, "provenance.txt"))
+  file
+}
+
+test_that("payloads move by rsync, with the source removed once sent", {
+  skip_unless_collector()
+  box <- collector_sandbox()
+  res <- run_collector(box, c("--move-payloads-to", "pi:payloads/"))
+  expect_identical(res$status, 0L)
+  expect_identical(res$calls[2], paste(
+    rsync_call, "--remove-source-files --exclude *.partial data-raw/payloads/ pi:payloads/"))
+  expect_true(any(grepl("payloads moved to pi:payloads/", res$log, fixed = TRUE)))
+})
+
+test_that("a failed payload move is logged and leaves the payload", {
+  skip_unless_collector()
+  box <- collector_sandbox(fail_rsync = "pi:payloads/")
+  file <- add_payload(box, "2026-12-07")
+  res <- run_collector(box, c("--move-payloads-to", "pi:payloads/"))
+  expect_identical(res$status, 1L)
+  expect_true(any(grepl("FAILED: payload move", res$log, fixed = TRUE)))
+  expect_true(file.exists(file))
+})
+
+test_that("a payload whose hash matches provenance goes off-site with moveto --immutable", {
+  skip_unless_collector()
+  box <- collector_sandbox()
+  add_payload(box, "2026-12-07")
+  res <- run_collector(box, c("--offsite-payloads", "b2:bucket/raw/"))
+  expect_identical(res$status, 0L)
+  expect_identical(res$calls[2], paste(
+    "rclone moveto --immutable data-raw/payloads/2026-12-07/rdf-files.tar.bz2",
+    "b2:bucket/raw/2026-12-07/rdf-files.tar.bz2"))
+  expect_true(any(grepl("payload 2026-12-07 moved to b2:bucket/raw/2026-12-07/",
+                        res$log, fixed = TRUE)))
+})
+
+test_that("a payload that does not match provenance, or has none, is kept and not uploaded", {
+  skip_unless_collector()
+  box <- collector_sandbox()
+  bad <- add_payload(box, "2026-12-07", recorded = strrep("0", 64))
+  orphan <- add_payload(box, "2027-01-06")
+  unlink(file.path(box$root, "data-raw", "snapshots", "2027-01-06", "provenance.txt"))
+  res <- run_collector(box, c("--offsite-payloads", "b2:bucket/raw/"))
+  expect_identical(res$status, 1L)
+  expect_false(any(grepl("^rclone", res$calls)))
+  expect_true(any(grepl("payload 2026-12-07 hashes to", res$log, fixed = TRUE)))
+  expect_true(any(grepl("payload 2027-01-06 has no payload_sha256", res$log, fixed = TRUE)))
+  expect_true(all(file.exists(c(bad, orphan))))
+})
+
+test_that("a failed payload upload is logged and keeps the payload", {
+  skip_unless_collector()
+  box <- collector_sandbox(fail_rclone = "b2:bucket/raw/")
+  file <- add_payload(box, "2026-12-07")
+  res <- run_collector(box, c("--offsite-payloads", "b2:bucket/raw/"))
+  expect_identical(res$status, 1L)
+  expect_true(any(grepl("FAILED: payload 2026-12-07 upload", res$log, fixed = TRUE)))
+  expect_true(file.exists(file))
+})
+
+test_that("each payload option may be given once, and needs a value", {
+  skip_unless_collector()
+  box <- collector_sandbox()
+  expect_identical(run_collector(box, c("--move-payloads-to", "a:", "--move-payloads-to", "b:"))$status, 2L)
+  expect_identical(run_collector(box, c("--offsite-payloads", "a:", "--offsite-payloads", "b:"))$status, 2L)
+  expect_identical(run_collector(box, "--offsite-payloads")$status, 2L)
+  expect_false(file.exists(box$calls))
+})

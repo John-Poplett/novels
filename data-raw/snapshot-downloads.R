@@ -130,6 +130,11 @@ provenance <- c(
 )
 writeLines(provenance, file.path(dirname(snapshot_path), "provenance.txt"))
 
+# The raw payload, kept on snapshot dates only (OPERATIONS.md, F4); the
+# collector moves it off-site and deletes the local copy.
+payload_kept <- novels:::keepRdfPayload(archive, snapshot_date, payload_sha256)
+message("payload kept: ", payload_kept)
+
 cat("\nsnapshot written:", snapshot_path, "\n")
 cat("  books:", format(nrow(books), big.mark = ","), "\n")
 cat("  total 30-day downloads:", format(total_downloads, big.mark = ","), "\n")

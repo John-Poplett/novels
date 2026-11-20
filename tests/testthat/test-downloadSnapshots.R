@@ -415,3 +415,51 @@ test_that("checkFeedFreshness refuses a feed whose age cannot be shown", {
   expect_error(novels:::checkFeedFreshness(utc(NA)), "no usable Last-Modified")
   expect_error(novels:::checkFeedFreshness("2026-11-15"), "POSIXct")
 })
+
+# ---- keeping the raw payload ----------------------------------------------
+
+payload_fixture <- function() {
+  archive <- tempfile(fileext = ".tar.bz2")
+  writeBin(c(charToRaw("BZh9"), as.raw(1:200)), archive)
+  list(archive = archive, dir = tempfile("payloads-"),
+       sha = digest::digest(archive, algo = "sha256", file = TRUE),
+       date = as.Date("2026-12-07"))
+}
+
+test_that("keepRdfPayload keeps a verified copy at <dir>/<date>/", {
+  f <- payload_fixture()
+  kept <- novels:::keepRdfPayload(f$archive, f$date, f$sha, dir = f$dir)
+  expect_identical(kept, file.path(f$dir, "2026-12-07", "rdf-files.tar.bz2"))
+  expect_identical(digest::digest(kept, algo = "sha256", file = TRUE), f$sha)
+  expect_identical(list.files(dirname(kept), all.files = TRUE, no.. = TRUE),
+                   "rdf-files.tar.bz2")
+  expect_true(file.exists(f$archive))
+})
+
+test_that("keepRdfPayload never replaces a kept payload", {
+  f <- payload_fixture()
+  kept <- novels:::keepRdfPayload(f$archive, f$date, f$sha, dir = f$dir)
+  writeBin(charToRaw("BZh9 other"), f$archive)
+  other <- digest::digest(f$archive, algo = "sha256", file = TRUE)
+  expect_error(novels:::keepRdfPayload(f$archive, f$date, other, dir = f$dir),
+               "append-only")
+  expect_identical(digest::digest(kept, algo = "sha256", file = TRUE), f$sha)
+})
+
+test_that("keepRdfPayload discards a copy that does not match provenance", {
+  f <- payload_fixture()
+  expect_error(novels:::keepRdfPayload(f$archive, f$date, strrep("0", 64),
+                                       dir = f$dir), "discarded")
+  expect_length(list.files(file.path(f$dir, "2026-12-07"), all.files = TRUE,
+                           no.. = TRUE), 0L)
+})
+
+test_that("keepRdfPayload validates its inputs", {
+  f <- payload_fixture()
+  expect_error(novels:::keepRdfPayload(tempfile(), f$date, f$sha, dir = f$dir),
+               "existing file")
+  expect_error(novels:::keepRdfPayload(f$archive, "2026-12-07", f$sha, dir = f$dir),
+               "Date")
+  expect_error(novels:::keepRdfPayload(f$archive, f$date, toupper(f$sha), dir = f$dir),
+               "64 hex")
+})

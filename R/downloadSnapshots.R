@@ -155,6 +155,65 @@ downloadRdfPayload <- function(url, dest, timeout = 3600,
   invisible(dest)
 }
 
+#' Keep the raw RDF payload of a snapshot date
+#'
+#' The payload lets every count be re-derived after a parser bug, and lets
+#' catalogue drift be dated (OPERATIONS.md, F4). It is kept on snapshot dates
+#' only, outside the git-tracked snapshot directory, at
+#' `<dir>/<date>/rdf-files.tar.bz2`. The copy is written under a `.partial`
+#' name, checked against the SHA-256 recorded in `provenance.txt`, and only
+#' then renamed, so a file at the final name is always complete. An existing
+#' payload is never replaced.
+#'
+#' @param archive the downloaded payload
+#' @param snapshot_date the snapshot's date
+#' @param sha256 the payload's SHA-256, as recorded in `provenance.txt`
+#' @param dir the payload directory
+#' @returns the kept file's path, invisibly
+#' @noRd
+keepRdfPayload <- function(archive, snapshot_date, sha256,
+                           dir = "data-raw/payloads") {
+  stopifnot(
+    "archive must be an existing file" =
+      is.character(archive) && length(archive) == 1 && file.exists(archive),
+    "snapshot_date must be a single Date" =
+      inherits(snapshot_date, "Date") && length(snapshot_date) == 1 &&
+      !is.na(snapshot_date),
+    "sha256 must be 64 hex digits" =
+      is.character(sha256) && length(sha256) == 1 &&
+      grepl("^[0-9a-f]{64}$", sha256),
+    "dir must be a single string" = is.character(dir) && length(dir) == 1
+  )
+  dest_dir <- file.path(dir, format(snapshot_date))
+  dest <- file.path(dest_dir, "rdf-files.tar.bz2")
+  if (file.exists(dest)) {
+    stop("A payload for ", format(snapshot_date), " is already kept at ",
+         dest, "; payloads are append-only, so it was not replaced. The ",
+         "snapshot itself was written.", call. = FALSE)
+  }
+  dir.create(dest_dir, recursive = TRUE, showWarnings = FALSE)
+  partial <- paste0(dest, ".partial")
+  if (!file.copy(archive, partial, overwrite = TRUE)) {
+    unlink(partial)
+    stop("Could not copy the payload to ", partial, " (disk full or not ",
+         "writable?). The snapshot itself was written; only the raw payload ",
+         "is missing for ", format(snapshot_date), ".", call. = FALSE)
+  }
+  copied <- digest::digest(partial, algo = "sha256", file = TRUE)
+  if (!identical(copied, sha256)) {
+    unlink(partial)
+    stop("The kept copy of the payload hashes to ", copied, ", not the ",
+         sha256, " recorded in provenance.txt, so it was discarded. The ",
+         "snapshot itself was written; check the disk.", call. = FALSE)
+  }
+  if (!file.rename(partial, dest)) {
+    unlink(partial)
+    stop("Could not rename ", partial, " to ", dest, ". The snapshot itself ",
+         "was written.", call. = FALSE)
+  }
+  invisible(dest)
+}
+
 # The oldest feed accepted. Project Gutenberg regenerates the dump daily; a
 # feed older than two days is a stalled generator or a frozen mirror, and its
 # counts belong to an earlier window than the snapshot's date would claim.
