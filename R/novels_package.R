@@ -11,7 +11,7 @@
 #' @importFrom tm stopwords
 #' @importFrom targets tar_assert_identical tar_assert_true
 #' @importFrom archive archive_extract
-#' @importFrom utils download.file object.size
+#' @importFrom utils object.size
 #' @importFrom stats coef predict
 #' @keywords internal
 "_PACKAGE"
