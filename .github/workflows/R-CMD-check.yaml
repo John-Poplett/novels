@@ -9,8 +9,8 @@
 #   dataset doc in R/data.R make it require the dataset: without it the step
 #   fails with `'novels' is not an exported object from 'namespace:novels'`,
 #   which names neither the cause nor the fix. Only `novels_data` is built --
-#   the modelling targets are not needed to test the package and would add
-#   hours.
+#   the modelling targets are not needed to test the package (they build in
+#   about 8 minutes on gpu-box, longer on a 2-core runner).
 # * `man/` is git-ignored, so the Rd files must be regenerated before the
 #   check or it reports stale codoc mismatches (F8/F17).
 #
@@ -53,15 +53,19 @@ jobs:
         with:
           r-version: renv   # the R version recorded in renv.lock
 
-      # The binaries below link against these at run time (the same list the
-      # Pi needed, OPERATIONS.md section B).
+      # Every system library the locked packages need on Ubuntu 24.04, as
+      # renv computes it; regenerate after a lockfile change with
+      #   renv::sysreqs(names(jsonlite::fromJSON("renv.lock")$Packages),
+      #                 report = FALSE, check = FALSE, distro = "ubuntu:24.04")
+      # (a hand-picked list missed libicu, then libgit2, one CI run each).
       - name: System libraries
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y -qq libarchive-dev libcurl4-openssl-dev \
-            libssl-dev libxml2-dev libuv1-dev cmake libfontconfig1-dev \
-            libharfbuzz-dev libfribidi-dev libfreetype6-dev libpng-dev \
-            libtiff5-dev libjpeg-dev libglpk-dev libx11-dev pandoc
+          sudo apt-get install -y -qq cmake git libarchive-dev \
+            libcurl4-openssl-dev libfontconfig1-dev libfreetype6-dev \
+            libfribidi-dev libgit2-dev libglpk-dev libharfbuzz-dev libicu-dev \
+            libjpeg-dev libpng-dev libssl-dev libtiff-dev libuv1-dev \
+            libwebp-dev libx11-dev libxml2-dev make pandoc zlib1g-dev
 
       - uses: actions/cache@v4
         with:
