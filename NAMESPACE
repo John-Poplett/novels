@@ -85,7 +85,4 @@ importFrom(tidyr,
   separate_wider_regex
 )
 importFrom(tm,stopwords)
-importFrom(utils,
-  download.file,
-  object.size
-)
+importFrom(utils,object.size)
