@@ -183,6 +183,13 @@ modelling code, and it can reach 0/0/0.
 > established (machine load or package-install cache is the obvious
 > candidate). Treat 6–40 minutes as the range and read the run's own
 > `Duration:` line rather than budgeting from a guess.
+>
+> Measured again on gpu-box, 2026-11-19 and 2026-11-20, five `make check`
+> runs: `Duration:` 13m25s–15m50s, and 27–30 minutes wall clock. `Duration:`
+> covers `R CMD check` only; the `R CMD build` before it knits the vignettes
+> (glmnet.Rmd ~5.5–6 min, novels-text-vectorization.Rmd ~5 min) and is not
+> included. So `make check` is not the quick level it looks like: both it and
+> `make check-full` run the vignette code once, and budget half an hour.
 
 3. Full gate, vignettes rebuilt:
 
@@ -220,6 +227,56 @@ pass — a failing vignette is a failing pipeline.
 package build: `make data` (i.e. `targets::tar_make()`) regenerates it. A
 check run on a fresh clone without it fails in the tests and vignettes that
 load the corpus.
+
+## Dependencies
+
+`DESCRIPTION` declares *which* packages: Imports (runtime), Suggests (tests,
+vignettes) and `Config/Needs/dev` (devtools, roxygen2, renv, and tarchetypes
+for the pipeline). `renv.lock` pins *which versions*, with the R version and
+the repository: 149 packages, R 4.6.2. The project is **not** an renv
+project (no `.Rprofile`, no private library); the lockfile is read only
+when a machine is deliberately brought in line with it:
+
+```r
+renv::restore(lockfile = "renv.lock", library = .libPaths()[1], prompt = FALSE)
+```
+
+On the Pi, use the serial-build settings in OPERATIONS.md section B, step 5;
+a parallel build there has rebooted the machine.
+
+CI's required `check` installs exactly the lockfile, so a red `check` means
+the commit broke something, never that CRAN moved. The weekly `latest`
+workflow (not required) runs the same check against the newest CRAN
+packages and lists every package that differs from the lockfile in its run
+summary.
+
+### Upgrading dependencies
+
+Deliberately, on a `chore/` branch, one batch at a time:
+
+1. **See what moved.** The latest `latest` run's summary, or locally a
+   `make lock` and its `git diff renv.lock` (then `git checkout renv.lock`).
+   A red `latest` names the package that would break the project: upgrade
+   around it, or fix the code first, on its own branch.
+2. **Upgrade the local library**, all of it (`update.packages(ask = FALSE)`)
+   or named packages (`install.packages(c(...))`).
+3. **Prove nothing changed that should not.** `make test`, then
+   `make check-full` ending `0 errors | 0 warnings | 0 notes`, then the full
+   pipeline (`targets::tar_make()`, hours: the modelling targets) and
+   `targets::tar_read(cv_baseline_check)`: no `alpha` may sit `beyond` two
+   standard errors of `baselines/cv_summary.csv`. A result that moves is a
+   finding, not noise: record it in CHANGELOG.md, do not lock it in silently.
+4. **`make lock`** and review the diff: only the intended packages and their
+   dependencies, and the R version only if R itself was upgraded.
+5. **Commit `renv.lock`** with the list of upgrades and the evidence from
+   step 3 in the message, and merge as usual; CI's `check` then runs on the
+   new versions.
+6. **Collectors** need only the Imports: after resetting the Pi's checkout,
+   re-run its restore (OPERATIONS.md section B, step 5).
+
+Keep a lockfile change out of unrelated commits. On 2026-11-20 gpu-box's own
+library was already ahead of the lockfile (`sass` 0.5.0, `shiny` 1.15.0,
+`targets` 1.12.1): the first batch for this procedure.
 
 ## Build
 

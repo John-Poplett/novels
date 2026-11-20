@@ -1,0 +1,69 @@
+# Weekly: the same check against the newest CRAN packages, not renv.lock.
+#
+# Not a required status. Its job is to say, before it matters, that CRAN has
+# moved: green means the lockfile can be advanced (AGENTS.md, "Upgrading
+# dependencies"); red names the package that would break the project. The
+# summary lists every package whose newest version differs from renv.lock.
+
+name: latest
+
+on:
+  schedule:
+    - cron: "0 9 * * 1"   # Mondays, 09:00 UTC
+  workflow_dispatch:
+
+jobs:
+  latest:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      NOVELS_ARCHIVE_URL: https://f005.backblazeb2.com/file/public-johnpoplett-09477/novels.7z
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          # Config/Needs/dev (devtools, roxygen2, renv, tarchetypes) is
+          # declared in DESCRIPTION; rcmdcheck drives the check below.
+          extra-packages: |
+            any::rcmdcheck
+            any::jsonlite
+          needs: dev
+
+      - name: Packages newer than renv.lock
+        run: |
+          Rscript -e '
+            lock <- jsonlite::fromJSON("renv.lock")$Packages
+            ip <- installed.packages()
+            rows <- vapply(names(lock), function(p) {
+              have <- if (p %in% rownames(ip)) ip[p, "Version"] else "not installed"
+              if (identical(have, lock[[p]]$Version)) "" else
+                sprintf("| %s | %s | %s |", p, lock[[p]]$Version, have)
+            }, character(1))
+            rows <- rows[nzchar(rows)]
+            out <- c("### Packages that differ from renv.lock", "",
+                     if (length(rows)) c("| package | locked | latest |", "|---|---|---|", rows)
+                     else "None: renv.lock is current.")
+            cat(out, sep = "\n", file = Sys.getenv("GITHUB_STEP_SUMMARY"), append = TRUE)
+            cat(out, sep = "\n")'
+
+      - name: Build the corpus
+        run: Rscript -e 'targets::tar_make(names = "novels_data")'
+
+      - name: Regenerate Rd files
+        run: Rscript -e 'roxygen2::roxygenise()'
+
+      - name: Fast test loop
+        run: Rscript -e 'pkgload::load_all(quiet = TRUE); testthat::test_dir("tests/testthat")'
+
+      - name: R CMD check
+        run: |
+          Rscript -e 'rcmdcheck::rcmdcheck(
+            build_args = c("--no-manual", "--no-build-vignettes"),
+            args = c("--no-manual", "--no-build-vignettes"),
+            error_on = "error", check_dir = "check")'

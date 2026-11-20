@@ -36,4 +36,5 @@ Config/roxygen2/version: 8.1.1
 Config/Needs/dev:
     devtools,
     roxygen2,
-    renv
+    renv,
+    tarchetypes
