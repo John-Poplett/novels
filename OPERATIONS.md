@@ -156,7 +156,7 @@ was answering 503, and the PGLAF host serves a copy frozen at 2026-11-15):
 ~95 KB/s — peak `TMPDIR` **2,602 MB** (it would have overflowed the 2 GB
 tmpfs `/tmp`), peak R RSS 419 MB, at least 1,721 MB of RAM left free. The
 first attempt failed after 60 s: R's default `download.file()` timeout
-covers the whole transfer. Fixed in `downloadRdfPayload()` (one hour).
+covers the whole transfer. Fixed in `downloadRdfPayload()` (one hour; since renamed `downloadWithTimeout()` and used for the corpus archive too).
 
 ## C. SSH keys
 

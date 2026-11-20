@@ -316,38 +316,38 @@ test_that("snapshotCollector names this machine by default", {
 
 # Regression, 2026-11-19: R's default 60 s timeout covers the whole transfer,
 # so a 127 MB payload at ~95 KB/s failed after 5.7 MB (the Pi's rehearsal).
-test_that("downloadRdfPayload allows the payload far longer than R's 60 s default", {
+test_that("downloadWithTimeout allows the payload far longer than R's 60 s default", {
   seen <- NULL
   fake <- function(url, destfile, ...) seen <<- getOption("timeout")
   old <- options(timeout = 60)
   on.exit(options(old))
-  novels:::downloadRdfPayload("https://example.invalid/x", tempfile(), download = fake)
+  novels:::downloadWithTimeout("https://example.invalid/x", tempfile(), download = fake)
   expect_identical(seen, 3600)
 })
 
-test_that("downloadRdfPayload restores the caller's timeout, even when the download fails", {
+test_that("downloadWithTimeout restores the caller's timeout, even when the download fails", {
   old <- options(timeout = 60)
   on.exit(options(old))
   fail <- function(...) stop("download failed")
-  expect_error(novels:::downloadRdfPayload("https://example.invalid/x", tempfile(),
+  expect_error(novels:::downloadWithTimeout("https://example.invalid/x", tempfile(),
                                            download = fail), "download failed")
   expect_identical(getOption("timeout"), 60)
 })
 
-test_that("downloadRdfPayload never lowers a longer timeout the caller already set", {
+test_that("downloadWithTimeout never lowers a longer timeout the caller already set", {
   seen <- NULL
   fake <- function(url, destfile, ...) seen <<- getOption("timeout")
   old <- options(timeout = 7200)
   on.exit(options(old))
-  novels:::downloadRdfPayload("https://example.invalid/x", tempfile(), download = fake)
+  novels:::downloadWithTimeout("https://example.invalid/x", tempfile(), download = fake)
   expect_identical(seen, 7200)
 })
 
-test_that("downloadRdfPayload writes a real file through the default downloader", {
+test_that("downloadWithTimeout writes a real file through the default downloader", {
   src <- tempfile(); dest <- tempfile()
   on.exit(unlink(c(src, dest)))
   writeBin(charToRaw("BZh9payload"), src)
-  novels:::downloadRdfPayload(paste0("file://", src), dest)
+  novels:::downloadWithTimeout(paste0("file://", src), dest)
   expect_identical(readBin(dest, "raw", 100L), charToRaw("BZh9payload"))
 })
 

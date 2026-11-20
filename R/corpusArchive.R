@@ -36,7 +36,7 @@ fetchRawData <- function(data_path = 'data-raw',
   if (!file.exists(dataset_path)) {
     tmp <- tempfile(fileext = ".7z")
     on.exit(unlink(tmp), add = TRUE)
-    download.file(archive_url, tmp, quiet = TRUE, mode = "wb")
+    downloadWithTimeout(archive_url, tmp)  # an hour, not R's 60 s
     verify_sha256(tmp, archive_sha256, what = "source archive")
     archive_extract(tmp, data_path)
     # Record which archive produced this extraction, so a later run can tell a

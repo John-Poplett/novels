@@ -106,3 +106,26 @@ test_that("fetchRawData trusts a verified extraction without downloading", {
     file.path(data_path, "novels")
   )
 })
+
+test_that("fetchRawData downloads the archive with an hour's timeout, not R's 60 s", {
+  # Regression: a bare download.file() gave up after getOption("timeout").
+  original <- novels:::downloadWithTimeout
+  seen <- NULL
+  fake <- function(url, dest, ...) {
+    seen <<- getOption("timeout")
+    stop("stop after the download")
+  }
+  local_mocked_bindings(
+    downloadWithTimeout = function(url, dest, ...) original(url, dest, ..., download = fake)
+  )
+  old <- options(timeout = 60)
+  on.exit(options(old), add = TRUE)
+  data_path <- tempfile("fetch-")
+  dir.create(data_path)
+  expect_error(
+    fetchRawData(data_path, "https://example.invalid/novels.7z", "abc123"),
+    "stop after the download"
+  )
+  expect_identical(seen, 3600)
+  expect_identical(getOption("timeout"), 60)
+})
