@@ -380,6 +380,11 @@ not hypotheses and are not corrected.
      reads the text, which is not a download count either.
 
   Sections 3, 5, 5.5, 7 and 12.1 are edited to match and point here.
+- **2026-11-20 — a text genre classifier is declared as an audit.** Section 12
+  now records it: an independent check on the subject-heading strata, with no
+  effect on strata, labels or the primary endpoint, and one exploratory
+  sensitivity analysis whose classifier version is fixed before any label is
+  built.
 - **2026-11-20 — if the 2026-12-31 catalogue cannot be retrieved.** Project
   Gutenberg has served a maintenance page since at least 2026-11-17.
   Eligibility is fixed from the first `pg_catalog.csv` that Project
@@ -465,6 +470,22 @@ after the fact:
    freeze.
 3. **Withdrawals.** Books leave the catalogue. A `withdrawn_on` column is
    required; withdrawn books are reported, not silently dropped.
+
+**Declared audit: a text genre classifier (2026-11-20).** Not a dependency,
+and it changes no stratum, label or endpoint. Text classifiers, one per
+content stratum, are trained on the 2013 corpus (its texts and genre labels)
+and applied to the wave's books once their texts are fetched. Their output is
+compared with the subject-heading strata, to estimate what the 2013 quota
+sample cannot: how often a heading's stratum does not read as that genre
+(precision on the wave), and how often a book reads as a genre whose heading
+it lacks (misses). Disagreements are reported with a hand-checked sample;
+a disagreement alone is not evidence that the heading is wrong. One
+sensitivity analysis re-runs the primary comparison with Novels' content
+indicators taken from the classifier instead of the headings; it is
+exploratory (section 10). The classifier may improve stepwise as the dataset
+expands, each version recorded, but the version used for that sensitivity
+analysis is fixed and recorded before any label is built (section 13), so it
+cannot be tuned on results.
 
 Form and audience attributes are defined in section 5.5, and the Children and
 Young Adult track in section 5.6. Neither is a dependency in the sense above:
