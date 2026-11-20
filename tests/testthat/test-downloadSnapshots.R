@@ -394,6 +394,17 @@ test_that("feedLastModified refuses an unavailable feed", {
   expect_error(novels:::feedLastModified("https://x/", headers = get), "HTTP 503")
 })
 
+test_that("feedLastModified's refusal says what the caller's outage means", {
+  get <- fake_headers(c("HTTP/2 503", ""), status = 503L)
+  expect_error(novels:::feedLastModified("https://x/", headers = get),
+               "No snapshot was written")
+  msg <- tryCatch(novels:::feedLastModified("https://x/", headers = get,
+                                            consequence = "Retry by 2027-01-31."),
+                  error = conditionMessage)
+  expect_match(msg, "Retry by 2027-01-31.", fixed = TRUE)
+  expect_no_match(msg, "snapshot")
+})
+
 test_that("checkFeedFreshness accepts a feed up to the limit", {
   now <- utc("2026-12-07 04:00:00")
   expect_equal(novels:::checkFeedFreshness(utc("2026-12-06 04:00:00"), now), 24)

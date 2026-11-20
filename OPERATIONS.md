@@ -275,6 +275,33 @@ series reaches ~4.5 GB by 2029 (≈1.5 GB/year of payloads, ~7 MB/year of
 snapshots): about three cents a month on an account already past the free
 10 GB.
 
+## G. Catalogue freeze (2026-12-31)
+
+Eligibility is fixed once from Project Gutenberg's `pg_catalog.csv`
+(PREREGISTRATION.md section 3). The 2026-11-20 amendment (section 11) allows
+an outage: the catalogue counts if Project Gutenberg regenerated it on or
+after 2026-12-31 (its `Last-Modified`) and it is retrieved by **2027-01-31**.
+No mirror, ever. `data-raw/freeze-catalogue.R` enforces all of it.
+
+1. **[Claude]** Rehearsal, any day before: `Rscript data-raw/freeze-catalogue.R
+   --dry-run`, also with `--source https://gutenberg.pglaf.org/cache/epub/feeds/pg_catalog.csv.gz`
+   to rehearse the parsing while the main site is down. Writes nothing.
+   Done 2026-11-20: the mirror's copy (regenerated 2026-11-08) parsed
+   cleanly, 79,769 rows, 61,977 English texts, and its timing was refused;
+   the official URL and a real run with `--source` were refused too.
+2. **[Claude]** On 2026-12-31 or the first day after it when the site is up
+   (on gpu-box or the Mac; a few seconds, 5.6 MB):
+   `Rscript data-raw/freeze-catalogue.R`. It refuses a catalogue
+   regenerated before 2026-12-31 (if it is the morning of the 31st, run it
+   again later that day), and refuses to run twice.
+3. **[Claude]** Commit `data-raw/catalogue-freeze/` on a `feat/` branch;
+   record its `payload_sha256` in PREREGISTRATION.md section 13; copy it to
+   B2: from the Pi, `~/.local/bin/rclone copy --immutable
+   data-raw/catalogue-freeze/ b2snap:gutenberg-download-counts/catalogue-freeze/`
+   after the commit reaches the Pi.
+4. If it cannot be done by 2027-01-31: stop. The wave's start is revisited
+   and amended before any window data are used.
+
 ## E. Upkeep
 
 - **Code updates on a collector:** `git fetch --prune && git reset --hard
