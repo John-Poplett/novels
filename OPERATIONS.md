@@ -50,7 +50,7 @@ the collectors. Collectors never commit (AGENTS.md).
 | C9 | Pi → gpu-box ssh key, write-only via `rrsync` | Claude | done 2026-11-18 |
 | C10 | Mac → Pi ssh key and config | John | done 2026-11-19: unattended (`BatchMode`, no agent) ssh to the Pi and gpu-box both ok |
 | D11 | Mac: reset to `origin/dev`, new crontab line | John | done 2026-11-19 (Mac at `49c14e0`; crontab with `RSYNC=` and `--move-payloads-to`) |
-| D12 | Pi crontab | Claude | live 2026-11-19 (01:00 CT); until D11, the Pi cannot see the Mac's snapshots and takes its own on grid dates too — gpu-box keeps the Mac's, which arrives first |
+| D12 | Pi crontab | Claude | live 2026-11-19 (01:00 CT): copy to gpu-box, upload snapshots and payloads to B2 |
 | F1 | B2 bucket and bucket-scoped key | John | done 2026-11-19: bucket `gutenberg-download-counts`, Object Lock on; key `writeFiles,listFiles,readFiles` (no `deleteFiles`); the first key was pasted in chat and replaced |
 | F2 | rclone on the Pi, probe, first upload | Claude | done 2026-11-19 (below) |
 | F3 | `--offsite` upload wiring | Claude | done 2026-11-19; Pi crontab uploads nightly |
