@@ -262,10 +262,14 @@ Deliberately, on a `chore/` branch, one batch at a time:
    or named packages (`install.packages(c(...))`).
 3. **Prove nothing changed that should not.** `make test`, then
    `make check-full` ending `0 errors | 0 warnings | 0 notes`, then the full
-   pipeline (`targets::tar_make()`; its 216 targets build in about 8 minutes
-   on gpu-box, 459 s measured 2026-11-20) and
-   `targets::tar_read(cv_baseline_check)`: no `alpha` may sit `beyond` two
-   standard errors of `baselines/cv_summary.csv`. A result that moves is a
+   pipeline **from scratch** and `targets::tar_read(cv_baseline_check)`: no
+   `alpha` may sit `beyond` two standard errors of `baselines/cv_summary.csv`.
+   `targets` does not treat an upgraded package as a reason to rebuild, so a
+   plain `tar_make()` replays the cached results and compares them with
+   themselves (it did, on the first batch). Invalidate first:
+   `targets::tar_invalidate(tidyselect::everything()); targets::tar_make()`,
+   about 13 minutes on gpu-box (2026-11-20), then confirm `cv_summary`'s
+   `tar_meta()` time is today's. A result that moves is a
    finding, not noise: record it in CHANGELOG.md, do not lock it in silently.
 4. **`make lock`** and review the diff: only the intended packages and their
    dependencies, and the R version only if R itself was upgraded.
@@ -275,9 +279,11 @@ Deliberately, on a `chore/` branch, one batch at a time:
 6. **Collectors** need only the Imports: after resetting the Pi's checkout,
    re-run its restore (OPERATIONS.md section B, step 5).
 
-Keep a lockfile change out of unrelated commits. On 2026-11-20 gpu-box's own
-library was already ahead of the lockfile (`sass` 0.5.0, `shiny` 1.15.0,
-`targets` 1.12.1): the first batch for this procedure.
+Keep a lockfile change out of unrelated commits. The first batch, 2026-11-20:
+`sass` 0.4.10 → 0.5.0, `shiny` 1.14.0 → 1.15.0, `targets` 1.12.0 → 1.12.1, and
+`watcher` 0.2.2 (new, imported by shiny 1.15). Evidence: 471 tests pass;
+`make check-full` 0/0/0 (16m14s); all 217 targets rebuilt from scratch in
+13m17s, every `alpha` within 2.2e-16 of the baseline.
 
 ## Build
 
