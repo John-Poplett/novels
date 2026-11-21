@@ -54,6 +54,9 @@ the collectors. Collectors never commit (AGENTS.md).
 | F1 | B2 bucket and bucket-scoped key | John | done 2026-11-19: bucket `gutenberg-download-counts`, Object Lock on; key `writeFiles,listFiles,readFiles` (no `deleteFiles`); the first key was pasted in chat and replaced |
 | F2 | rclone on the Pi, probe, first upload | Claude | done 2026-11-19 (below) |
 | F3 | `--offsite` upload wiring | Claude | done 2026-11-19; Pi crontab uploads nightly |
+| H1 | daily check, reported as a GitHub issue | Claude | code done 2026-11-21 |
+| H2 | fine-grained GitHub token on the Pi | John | open |
+| H3 | Pi crontab line, test issue | Claude | after H2 |
 
 Deadline: all of it in place, and failover tested, before **2026-12-07**,
 the first real grid date.
@@ -301,6 +304,64 @@ No mirror, ever. `data-raw/freeze-catalogue.R` enforces all of it.
    after the commit reaches the Pi.
 4. If it cannot be done by 2027-01-31: stop. The wave's start is revisited
    and amended before any window data are used.
+
+## H. Alert
+
+A collector that fails quietly is otherwise found only by reading logs,
+and a missed grid date cannot be recovered. So the Pi checks the series
+every day, an hour after its own run, and reports through a GitHub issue;
+GitHub's notification email is the alert. `data-raw/check-snapshots.R`
+asks four questions (`snapshotProblems()` in `R/snapshotAlert.R`):
+
+| Check | Fires when | What to do |
+|---|---|---|
+| Overdue | the next grid date after the latest snapshot has arrived and neither collector wrote one | read both logs; a feed outage needs only patience (E, "Feed down"), anything else a fix before tonight |
+| Off-site | B2 lacks a file of the latest snapshot, or the listing fails | the next Pi run uploads it; if it repeats, the Pi's log and the B2 key |
+| Failures | the Pi's log has a `FAILED` line in the last 26 hours, other than `copy to gpu-box:` (switched off on purpose) | the line names the step |
+| Silence | the Pi's log has no stamped line in 26 hours | the collector is not running: crontab, or the Pi is down |
+
+One issue per episode: opened (labelled `snapshot-alert`) when a problem
+appears, commented on only when the set of problems changes, so a long feed
+outage sends one email, not one a day; closed with a comment when every
+check passes. Closing it by hand is fine: a change reopens it. What was last
+reported, and in which issue, is kept in `~/.local/state/novels-alert.rds`.
+`--dry-run` prints the decision and the text without calling GitHub.
+
+**Not covered:** the Pi itself down, or its cron dead, silences the check
+too. The Mac's collector is not checked, only its result (the snapshot
+reaching the Pi and B2).
+
+1. **[John]** Create a fine-grained token: GitHub, Settings, Developer
+   settings, Personal access tokens, Fine-grained tokens, Generate new
+   token. Name `novels snapshot alert`; expiration past 2029-01-31 if
+   offered, otherwise the longest (GitHub emails a week before it
+   expires, and an expired token makes the check fail with exit 2 instead
+   of reporting); Repository access: only `novels`; Permissions,
+   Repository: **Issues: Read and write** (Metadata read-only comes with
+   it), nothing else. On the Pi, paste it into a file only you can read,
+   never into chat or the repository:
+
+   ```bash
+   install -d -m 700 ~/.config/novels
+   (umask 077; cat > ~/.config/novels/github-token)   # paste, Enter, Ctrl-D
+   ```
+
+   curl reads it from a mode-600 header file, so it never appears on a
+   command line.
+
+2. **[Claude]** Pi crontab, an hour after the collector:
+
+   ```
+   0 2 * * * cd /home/john/MachineLearning/novels && RCLONE=/home/john/.local/bin/rclone Rscript data-raw/check-snapshots.R --log /home/john/.local/state/novels-snapshot.log --offsite b2snap:gutenberg-download-counts/snapshots/ --ignore 'copy to gpu-box:' >> /home/john/.local/state/novels-alert.log 2>&1
+   ```
+
+   Its own log is separate, so the check's lines can never stand in for
+   the collector's in the Silence check. Exit status: 0 healthy, 1
+   problems reported, 2 the report itself failed (state left alone, so
+   the next day retries).
+
+3. **[Claude]** Test once with a doctored log (a `FAILED` line): an issue
+   opens and its email arrives; then the real log closes it.
 
 ## E. Upkeep
 

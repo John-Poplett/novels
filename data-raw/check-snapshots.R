@@ -1,0 +1,156 @@
+# Daily health check for the download-snapshot series, reported as a GitHub
+# issue (OPERATIONS.md, "Alert"). Runs on the Pi an hour after its collector:
+#
+#   Rscript data-raw/check-snapshots.R --log FILE [--offsite REMOTE]
+#     [--ignore REGEX] [--state FILE] [--token-file FILE] [--repo OWNER/NAME]
+#     [--dry-run]
+#
+# --log      the collector's log (collect-snapshot.sh's output)
+# --offsite  the rclone remote holding the snapshots, listed read-only
+#            ($RCLONE names the binary, as for the collector)
+# --ignore   FAILED lines matching this are expected (gpu-box switched off)
+# --state    what was last reported, and in which issue
+#            (default ~/.local/state/novels-alert.rds)
+# --token-file  a fine-grained GitHub token, this repository only, Issues
+#            read/write (default ~/.config/novels/github-token, mode 600)
+# --repo     default John-Poplett/novels
+# --dry-run  print the decision and the text; no GitHub call, no state change
+#
+# One issue per episode: opened when a problem appears, commented on only
+# when the set of problems changes, closed when every check passes. GitHub's
+# own notification email is the alert. The token never appears on a command
+# line: curl reads it from a mode-600 header file.
+#
+# Exit status: 0 healthy, 1 problems found (and reported), 2 reporting failed
+# (the state is left alone, so the next run tries again).
+
+pkgload::load_all(quiet = TRUE)
+
+args <- commandArgs(trailingOnly = TRUE)
+opt <- function(name, default = NULL) {
+  i <- match(name, args)
+  if (is.na(i)) return(default)
+  if (i == length(args) || startsWith(args[i + 1], "--")) {
+    stop(name, " needs a value.", call. = FALSE)
+  }
+  args[i + 1]
+}
+known <- c("--log", "--offsite", "--ignore", "--state", "--token-file", "--repo")
+flags <- args[startsWith(args, "--")]
+unknown <- setdiff(flags, c(known, "--dry-run"))
+if (length(unknown)) {
+  stop("Unknown option ", unknown[1], ". See the usage at the top of ",
+       "data-raw/check-snapshots.R.", call. = FALSE)
+}
+
+log_path <- opt("--log")
+if (is.null(log_path)) stop("--log FILE is required.", call. = FALSE)
+offsite_remote <- opt("--offsite")
+ignore <- opt("--ignore")
+state_path <- opt("--state", path.expand("~/.local/state/novels-alert.rds"))
+token_path <- opt("--token-file", path.expand("~/.config/novels/github-token"))
+repo <- opt("--repo", "John-Poplett/novels")
+dry_run <- "--dry-run" %in% args
+api <- Sys.getenv("NOVELS_GITHUB_API", "https://api.github.com")  # tests only
+
+now <- Sys.time()
+today <- as.Date(format(now, "%Y-%m-%d", tz = "UTC"))
+host <- Sys.info()[["nodename"]]
+
+log_lines <- if (file.exists(log_path)) readLines(log_path, warn = FALSE) else NULL
+
+offsite <- if (is.null(offsite_remote)) NA else {  # NA: not checked
+  rclone <- Sys.getenv("RCLONE", "rclone")
+  listing <- suppressWarnings(system2(
+    rclone, c("lsf", "-R", "--files-only", shQuote(offsite_remote)),
+    stdout = TRUE, stderr = FALSE))
+  if (!is.null(attr(listing, "status"))) NULL else listing
+}
+problems <- novels:::snapshotProblems("data-raw/snapshots", today, log_lines,
+                                      offsite, now = now, ignore = ignore)
+
+state <- if (file.exists(state_path)) readRDS(state_path) else
+  list(issue = NA_integer_, problems = character())
+action <- novels:::alertAction(problems, state$problems, state$issue)
+body <- novels:::alertBody(problems, host, now)
+stamp <- format(now, "%Y-%m-%dT%H:%M:%SZ", tz = "UTC")
+cat(stamp, "check-snapshots:", length(problems), "problem(s); action", action,
+    if (!is.na(state$issue)) paste0("(issue #", state$issue, ")"), "\n")
+if (length(problems)) cat(paste0("  ", problems, "\n"), sep = "")
+
+if (dry_run) {
+  cat("--- dry run: would ", action, " ---\n", body, "\n", sep = "")
+  quit(save = "no", status = if (length(problems)) 1L else 0L)
+}
+if (action == "none") quit(save = "no", status = if (length(problems)) 1L else 0L)
+
+# GitHub, through the curl binary (present on the Pi, the Mac and gpu-box).
+if (!file.exists(token_path)) {
+  stop("No GitHub token at ", token_path, ", so the ", length(problems),
+       " problem(s) above were not reported. Create it as OPERATIONS.md, ",
+       "\"Alert\" describes.", call. = FALSE)
+}
+token <- trimws(readLines(token_path, n = 1, warn = FALSE))
+header_file <- tempfile("gh-headers-")
+file.create(header_file)
+Sys.chmod(header_file, "600")
+writeLines(c(paste("Authorization: Bearer", token),
+             "Accept: application/vnd.github+json",
+             "X-GitHub-Api-Version: 2022-11-28"), header_file)
+on.exit(unlink(header_file), add = TRUE)
+
+github <- function(method, path, json) {
+  body_file <- tempfile("gh-body-")
+  response_headers <- tempfile("gh-response-")
+  on.exit(unlink(c(body_file, response_headers)))
+  writeLines(json, body_file)
+  code <- suppressWarnings(system2("curl", c(
+    "-sS", "--max-time", "60", "-o", "/dev/null", "-D", response_headers,
+    "-w", "'%{http_code}'", "-X", method, "-H", paste0("@", header_file),
+    "--data-binary", paste0("@", body_file),
+    paste0(api, "/repos/", repo, path)), stdout = TRUE))
+  code <- suppressWarnings(as.integer(code))
+  if (is.na(code) || code < 200 || code >= 300) {  # curl says 000 when unreachable
+    cat(stamp, "check-snapshots: FAILED:", method, path, "returned",
+        if (is.na(code) || code == 0) "no response" else code, "\n")
+    quit(save = "no", status = 2L)
+  }
+  readLines(response_headers, warn = FALSE)
+}
+comment <- function(issue, text) {
+  github("POST", sprintf("/issues/%d/comments", issue),
+         sprintf("{\"body\": %s}", novels:::jsonString(text)))
+}
+set_state <- function(issue, open) {
+  github("PATCH", sprintf("/issues/%d", issue), if (open) "{\"state\": \"open\"}" else
+    "{\"state\": \"closed\", \"state_reason\": \"completed\"}")
+}
+
+issue <- state$issue
+if (action == "open") {
+  kinds <- unique(sub(":.*", "", problems))
+  title <- sprintf("Snapshot alert (%s): %s", format(today), paste(kinds, collapse = ", "))
+  headers <- github("POST", "/issues", sprintf(
+    "{\"title\": %s, \"body\": %s, \"labels\": [\"snapshot-alert\"]}",
+    novels:::jsonString(title), novels:::jsonString(body)))
+  location <- grep("^location:", headers, ignore.case = TRUE, value = TRUE)
+  issue <- as.integer(sub(".*/issues/([0-9]+)\\s*$", "\\1", location[1]))
+  if (is.na(issue)) {
+    cat(stamp, "check-snapshots: FAILED: the new issue's number is not in the response\n")
+    quit(save = "no", status = 2L)
+  }
+} else if (action == "comment") {
+  set_state(issue, open = TRUE)  # someone may have closed it by hand
+  comment(issue, body)
+} else if (action == "close") {
+  comment(issue, body)
+  set_state(issue, open = FALSE)
+}
+cat(stamp, " check-snapshots: issue #", issue, " ",
+    c(open = "opened", comment = "commented on", close = "closed")[[action]],
+    "\n", sep = "")
+
+dir.create(dirname(state_path), showWarnings = FALSE, recursive = TRUE)
+saveRDS(list(issue = if (action == "close") NA_integer_ else issue,
+             problems = problems), state_path)
+quit(save = "no", status = if (length(problems)) 1L else 0L)
