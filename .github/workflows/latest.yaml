@@ -3,7 +3,8 @@
 # Not a required status. Its job is to say, before it matters, that CRAN has
 # moved: green means the lockfile can be advanced (AGENTS.md, "Upgrading
 # dependencies"); red names the package that would break the project. The
-# summary lists every package whose newest version differs from renv.lock.
+# summary lists the packages newer than renv.lock, separately from those the
+# repository has not caught up with yet.
 
 name: latest
 
@@ -35,20 +36,34 @@ jobs:
             any::jsonlite
           needs: dev
 
+      # Three cases, kept apart: newer than the lockfile (the upgrade
+      # candidates, the point of this job); behind it (the repository has not
+      # caught up with a recent CRAN release -- PPM snapshots daily); and not
+      # installed (build-time-only LinkingTo packages, which binaries do not
+      # need, or dependencies the newest versions dropped), listed on one line.
       - name: Packages newer than renv.lock
         run: |
           Rscript -e '
             lock <- jsonlite::fromJSON("renv.lock")$Packages
             ip <- installed.packages()
-            rows <- vapply(names(lock), function(p) {
-              have <- if (p %in% rownames(ip)) ip[p, "Version"] else "not installed"
-              if (identical(have, lock[[p]]$Version)) "" else
-                sprintf("| %s | %s | %s |", p, lock[[p]]$Version, have)
-            }, character(1))
-            rows <- rows[nzchar(rows)]
-            out <- c("### Packages that differ from renv.lock", "",
-                     if (length(rows)) c("| package | locked | latest |", "|---|---|---|", rows)
-                     else "None: renv.lock is current.")
+            locked <- vapply(lock, function(x) x$Version, character(1))
+            have <- setNames(rep(NA_character_, length(locked)), names(locked))
+            present <- intersect(names(locked), rownames(ip))
+            have[present] <- ip[present, "Version"]
+            cmp <- mapply(function(h, l) if (is.na(h)) NA_integer_ else utils::compareVersion(h, l),
+                          have, locked)
+            table_of <- function(sel, col) {
+              if (!any(sel)) return("None.")
+              c(sprintf("| package | locked | %s |", col), "|---|---|---|",
+                sprintf("| %s | %s | %s |", names(locked)[sel], locked[sel], have[sel]))
+            }
+            absent <- names(locked)[is.na(cmp)]
+            out <- c("### Newer than renv.lock: upgrade candidates", "",
+                     table_of(!is.na(cmp) & cmp > 0, "newest"), "",
+                     "### Behind renv.lock: the repository has not caught up yet", "",
+                     table_of(!is.na(cmp) & cmp < 0, "repository has"), "",
+                     sprintf("Locked but not installed here (%d; build-time only, or not needed by the newest versions): %s",
+                             length(absent), if (length(absent)) paste(absent, collapse = ", ") else "none"))
             cat(out, sep = "\n", file = Sys.getenv("GITHUB_STEP_SUMMARY"), append = TRUE)
             cat(out, sep = "\n")'
 
