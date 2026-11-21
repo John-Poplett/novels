@@ -2,7 +2,7 @@
 
 This tracks changes to the *dataset itself* — what a `tar_read(novels)` produces — separately from ordinary code changes to the pipeline. Each entry only changes one thing about what "success" means or what data backs it, so a version can be adopted independently of the others.
 
-## v1.1 — source-integrity fix (this release)
+## v1.1.0 — source-integrity fix (2026-11-21)
 
 Same titles, genres, fold structure, and success/failure labels as the original Ashok, Feng & Choi (2013) corpus. No relabeling. Text-source corrections only, plus two rows dropped as duplicates (below):
 
