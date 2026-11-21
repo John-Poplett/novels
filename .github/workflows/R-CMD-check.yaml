@@ -10,7 +10,7 @@
 #   fails with `'novels' is not an exported object from 'namespace:novels'`,
 #   which names neither the cause nor the fix. Only `novels_data` is built --
 #   the modelling targets are not needed to test the package (they build in
-#   about 8 minutes on gpu-box, longer on a 2-core runner).
+#   about 13 minutes on gpu-box, longer on a 2-core runner).
 # * `man/` is git-ignored, so the Rd files must be regenerated before the
 #   check or it reports stale codoc mismatches (F8/F17).
 #
