@@ -12,6 +12,7 @@ The quality of the expansion code corresponds to how faithfully it reproduces th
 * Then the expansion, with the download-count refresh and a decision on how labels are defined for old and new books together.
 * Parquet and the CRAN packaging (the sample, the download, the precompute run).
   * [ ] Swap out the current R-specific RDA format to Parquet for the default dataset format
+  * [ ] After Parquet: Python classifier examples (`examples/python/`), written to reproduce `baselines/cv_summary.csv` within two standard errors (README Roadmap)
   * [ ] CRAN size: the tarball would be ~76 MB against a ~5 MB guideline. Ship a small sample in the package (whole books, every genre) and fetch the full corpus through the pinned download, as Parquet. Measured: Parquet/zstd-22 is only ~11% smaller than the current bzip2 RDA, so format does not solve size.
 * [ ] Precompute the vignettes for CRAN: rename `vignettes/*.Rmd` to `.Rmd.orig`, add `^vignettes/.*\.Rmd\.orig$` to `.Rbuildignore`, run `data-raw/precompute-vignettes.R` against the full corpus.
 * [ ] Strip transcriber boilerplate that survives `stripGutenbergBoilerplate()`: 54 of 100 Science Fiction texts carry "extensive research did not uncover any evidence that the u.s. copyright… was renewed", a genre fingerprint. Also front matter in some replacements ("[this e-text comes in three forms…", "[redactor's note…").
@@ -26,6 +27,7 @@ The quality of the expansion code corresponds to how faithfully it reproduces th
 in a Gutenberg mirror
   * Automate retrieval of text from Gutenberg.org
   * Create an extensions directory for larger data sets
+* [ ] Golden-set knob (README Roadmap): a user-supplied set of peerless texts, blended into the classifier's score with a weight `λ`; plot AUC and ranking change across `λ`; golden texts go into their author's fold
 * [ ] Emulation label (`notes/emulation-label.md`): search the literature for book-level influence targets; pull candidate author-level edges from Wikidata (P737, "influenced by") for the corpus's authors; hand-confirm and type a pilot of 50 book pairs (retelling, stylistic descent, genre foundation, negative)
 * [ ] Try linear regression modeling on download counts instead of imposing a binary classifier. (measured case for it, and the sampling caveat, under README Roadmap)
 * [ ] Finish SCHEMA.md. Make it a document of versions, including at least original and the first update.
