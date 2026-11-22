@@ -26,6 +26,7 @@ The quality of the expansion code corresponds to how faithfully it reproduces th
 in a Gutenberg mirror
   * Automate retrieval of text from Gutenberg.org
   * Create an extensions directory for larger data sets
+* [ ] Emulation label (`notes/emulation-label.md`): search the literature for book-level influence targets; pull candidate author-level edges from Wikidata (P737, "influenced by") for the corpus's authors; hand-confirm and type a pilot of 50 book pairs (retelling, stylistic descent, genre foundation, negative)
 * [ ] Try linear regression modeling on download counts instead of imposing a binary classifier. (measured case for it, and the sampling caveat, under README Roadmap)
 * [ ] Finish SCHEMA.md. Make it a document of versions, including at least original and the first update.
 * [ ] Upgrade glmnet.rmd to litedown or Quarto
