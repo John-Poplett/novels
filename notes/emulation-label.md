@@ -1,5 +1,7 @@
 # Emulation as a success label
 
+See also [`narrative-devices.md`](narrative-devices.md): allusion is emulation at the scale of a sentence.
+
 A design note, not a plan. It is an excerpt from an early conversation with
 another agent on this project, kept for the idea; the chat interface's
 artefacts (timestamps, search counters, citation chips) are removed, and the
