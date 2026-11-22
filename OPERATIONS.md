@@ -55,7 +55,7 @@ the collectors. Collectors never commit (AGENTS.md).
 | F2 | rclone on the Pi, probe, first upload | Claude | done 2026-11-19 (below) |
 | F3 | `--offsite` upload wiring | Claude | done 2026-11-19; Pi crontab uploads nightly |
 | H1 | daily check, reported as a GitHub issue | Claude | code done 2026-11-21 |
-| H2 | fine-grained GitHub token on the Pi | John | open |
+| H2 | fine-grained GitHub token on the Pi | John | done 2026-11-21: this repository only, Issues read/write; **expires 2027-02-20** (the check warns from 2027-02-06) |
 | H3 | Pi crontab line, test issue | Claude | after H2 |
 
 Deadline: all of it in place, and failover tested, before **2026-12-07**,
@@ -311,7 +311,8 @@ A collector that fails quietly is otherwise found only by reading logs,
 and a missed grid date cannot be recovered. So the Pi checks the series
 every day, an hour after its own run, and reports through a GitHub issue;
 GitHub's notification email is the alert. `data-raw/check-snapshots.R`
-asks four questions (`snapshotProblems()` in `R/snapshotAlert.R`):
+asks five questions (`snapshotProblems()` and `tokenProblem()` in
+`R/snapshotAlert.R`):
 
 | Check | Fires when | What to do |
 |---|---|---|
@@ -319,6 +320,7 @@ asks four questions (`snapshotProblems()` in `R/snapshotAlert.R`):
 | Off-site | B2 lacks a file of the latest snapshot, or the listing fails | the next Pi run uploads it; if it repeats, the Pi's log and the B2 key |
 | Failures | the Pi's log has a `FAILED` line in the last 26 hours, other than `copy to gpu-box:` (switched off on purpose) | the line names the step |
 | Silence | the Pi's log has no stamped line in 26 hours | the collector is not running: crontab, or the Pi is down |
+| Token | the GitHub token expires within 14 days, or GitHub refuses it | regenerate it (step 1). A refused token cannot report itself: the check logs `FAILED: … returned 401` and exits 2, and GitHub's own expiry email is the backstop |
 
 One issue per episode: opened (labelled `snapshot-alert`) when a problem
 appears, commented on only when the set of problems changes, so a long feed

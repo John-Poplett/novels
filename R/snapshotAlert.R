@@ -185,3 +185,45 @@ alertBody <- function(problems, host, now = Sys.time()) {
     "This issue closes itself when the checks pass again."
   )
 }
+
+# Warn this many days before the GitHub token expires: while it still
+# works, so the warning itself can be delivered.
+TOKEN_WARN_DAYS <- 14
+
+#' Is the GitHub token about to expire?
+#'
+#' GitHub sends a fine-grained token's expiry with every response
+#' (`github-authentication-token-expiration`). An expired token would turn
+#' the alert off silently, so the check raises it while the token still
+#' works. The text names the date, not a count of days, so it stays the same
+#' from one day to the next and the episode gets one email, not one a day.
+#'
+#' @param headers response headers from any authenticated API call, or
+#'   `NULL` when the call failed (not reported here: a network failure is not
+#'   a token problem, and the report would fail the same way)
+#' @returns a character vector of zero or one problem
+#' @noRd
+tokenProblem <- function(headers, now = Sys.time(), warn_days = TOKEN_WARN_DAYS) {
+  if (is.null(headers)) return(character())
+  status <- suppressWarnings(as.integer(
+    sub("^HTTP/[0-9.]+ ([0-9]{3}).*", "\\1", grep("^HTTP/", headers, value = TRUE))))
+  if (length(status) && status[length(status)] == 401L) {
+    return(paste(
+      "Token: GitHub refused the token (401): expired or revoked. Generate a",
+      "new one and replace ~/.config/novels/github-token on the Pi",
+      "(OPERATIONS.md, H, step 1)."))
+  }
+  line <- grep("^github-authentication-token-expiration:", headers,
+               ignore.case = TRUE, value = TRUE)
+  if (!length(line)) return(character())  # a token without an expiry
+  expires <- as.POSIXct(trimws(sub("^[^:]*:", "", line[1])),
+                        format = "%Y-%m-%d %H:%M:%S", tz = "UTC")
+  if (is.na(expires) || expires - now > as.difftime(warn_days, units = "days")) {
+    return(character())
+  }
+  sprintf(paste(
+    "Token: the GitHub token expires on %s. Regenerate it (GitHub, Settings,",
+    "Developer settings, Fine-grained tokens) and replace",
+    "~/.config/novels/github-token on the Pi (OPERATIONS.md, H, step 1)."),
+    format(expires, "%Y-%m-%d", tz = "UTC"))
+}

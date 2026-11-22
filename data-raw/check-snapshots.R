@@ -16,6 +16,9 @@
 # --repo     default John-Poplett/novels
 # --dry-run  print the decision and the text; no GitHub call, no state change
 #
+# Also checked daily: the token itself, 14 days before it expires or once
+# GitHub refuses it.
+#
 # One issue per episode: opened when a problem appears, commented on only
 # when the set of problems changes, closed when every check passes. GitHub's
 # own notification email is the alert. The token never appears on a command
@@ -56,6 +59,7 @@ api <- Sys.getenv("NOVELS_GITHUB_API", "https://api.github.com")  # tests only
 now <- Sys.time()
 today <- as.Date(format(now, "%Y-%m-%d", tz = "UTC"))
 host <- Sys.info()[["nodename"]]
+stamp <- format(now, "%Y-%m-%dT%H:%M:%SZ", tz = "UTC")
 
 log_lines <- if (file.exists(log_path)) readLines(log_path, warn = FALSE) else NULL
 
@@ -69,11 +73,57 @@ offsite <- if (is.null(offsite_remote)) NA else {  # NA: not checked
 problems <- novels:::snapshotProblems("data-raw/snapshots", today, log_lines,
                                       offsite, now = now, ignore = ignore)
 
+# GitHub, through the curl binary (present on the Pi, the Mac and gpu-box).
+# The token goes into a mode-600 header file, never onto a command line.
+header_file <- NULL
+if (file.exists(token_path)) {
+  token <- trimws(readLines(token_path, n = 1, warn = FALSE))
+  header_file <- tempfile("gh-headers-")
+  file.create(header_file)
+  Sys.chmod(header_file, "600")
+  writeLines(c(paste("Authorization: Bearer", token),
+               "Accept: application/vnd.github+json",
+               "X-GitHub-Api-Version: 2022-11-28"), header_file)
+  rm(token)
+  on.exit(unlink(header_file), add = TRUE)
+}
+
+# One call: its status and response headers, or NULL if nothing came back.
+curl_call <- function(method, path, json = NULL) {
+  body_file <- tempfile("gh-body-")
+  response_headers <- tempfile("gh-response-")
+  on.exit(unlink(c(body_file, response_headers)))
+  data <- if (is.null(json)) character() else {
+    writeLines(json, body_file)
+    c("--data-binary", paste0("@", body_file))
+  }
+  code <- suppressWarnings(system2("curl", c(
+    "-sS", "--max-time", "60", "-o", "/dev/null", "-D", response_headers,
+    "-w", "'%{http_code}'", "-X", method, "-H", paste0("@", header_file),
+    data, paste0(api, "/repos/", repo, path)), stdout = TRUE, stderr = FALSE))
+  code <- suppressWarnings(as.integer(code))
+  if (is.na(code) || code == 0L) return(NULL)  # curl says 000 when unreachable
+  list(code = code, headers = readLines(response_headers, warn = FALSE))
+}
+github <- function(method, path, json) {
+  r <- curl_call(method, path, json)
+  if (is.null(r) || r$code < 200 || r$code >= 300) {
+    cat(stamp, "check-snapshots: FAILED:", method, path, "returned",
+        if (is.null(r)) "no response" else r$code, "\n")
+    quit(save = "no", status = 2L)
+  }
+  invisible(r$headers)
+}
+
+# The token's own health, every day: expiring soon, or refused.
+if (!is.null(header_file) && !dry_run) {
+  problems <- c(problems, novels:::tokenProblem(curl_call("GET", "")$headers, now))
+}
+
 state <- if (file.exists(state_path)) readRDS(state_path) else
   list(issue = NA_integer_, problems = character())
 action <- novels:::alertAction(problems, state$problems, state$issue)
 body <- novels:::alertBody(problems, host, now)
-stamp <- format(now, "%Y-%m-%dT%H:%M:%SZ", tz = "UTC")
 cat(stamp, "check-snapshots:", length(problems), "problem(s); action", action,
     if (!is.na(state$issue)) paste0("(issue #", state$issue, ")"), "\n")
 if (length(problems)) cat(paste0("  ", problems, "\n"), sep = "")
@@ -83,40 +133,12 @@ if (dry_run) {
   quit(save = "no", status = if (length(problems)) 1L else 0L)
 }
 if (action == "none") quit(save = "no", status = if (length(problems)) 1L else 0L)
-
-# GitHub, through the curl binary (present on the Pi, the Mac and gpu-box).
-if (!file.exists(token_path)) {
+if (is.null(header_file)) {
   stop("No GitHub token at ", token_path, ", so the ", length(problems),
        " problem(s) above were not reported. Create it as OPERATIONS.md, ",
        "\"Alert\" describes.", call. = FALSE)
 }
-token <- trimws(readLines(token_path, n = 1, warn = FALSE))
-header_file <- tempfile("gh-headers-")
-file.create(header_file)
-Sys.chmod(header_file, "600")
-writeLines(c(paste("Authorization: Bearer", token),
-             "Accept: application/vnd.github+json",
-             "X-GitHub-Api-Version: 2022-11-28"), header_file)
-on.exit(unlink(header_file), add = TRUE)
 
-github <- function(method, path, json) {
-  body_file <- tempfile("gh-body-")
-  response_headers <- tempfile("gh-response-")
-  on.exit(unlink(c(body_file, response_headers)))
-  writeLines(json, body_file)
-  code <- suppressWarnings(system2("curl", c(
-    "-sS", "--max-time", "60", "-o", "/dev/null", "-D", response_headers,
-    "-w", "'%{http_code}'", "-X", method, "-H", paste0("@", header_file),
-    "--data-binary", paste0("@", body_file),
-    paste0(api, "/repos/", repo, path)), stdout = TRUE))
-  code <- suppressWarnings(as.integer(code))
-  if (is.na(code) || code < 200 || code >= 300) {  # curl says 000 when unreachable
-    cat(stamp, "check-snapshots: FAILED:", method, path, "returned",
-        if (is.na(code) || code == 0) "no response" else code, "\n")
-    quit(save = "no", status = 2L)
-  }
-  readLines(response_headers, warn = FALSE)
-}
 comment <- function(issue, text) {
   github("POST", sprintf("/issues/%d/comments", issue),
          sprintf("{\"body\": %s}", novels:::jsonString(text)))

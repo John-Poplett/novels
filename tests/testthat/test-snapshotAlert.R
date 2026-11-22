@@ -148,3 +148,26 @@ test_that("alertBody lists problems and says resolved when there are none", {
   expect_identical(alertBody(character(), "appliance", t),
                    "Resolved: every check passed on appliance at 2026-12-08T08:00:00Z.")
 })
+
+test_that("tokenProblem warns within 14 days of expiry, by date", {
+  h <- function(date) c("HTTP/2 200", "content-type: application/json",
+                        paste0("github-authentication-token-expiration: ", date, " UTC"))
+  t <- as.POSIXct("2027-02-01 08:00:00", tz = "UTC")
+  expect_identical(tokenProblem(h("2027-02-20 00:03:40"), t), character())
+  p <- tokenProblem(h("2027-02-14 00:03:40"), t)
+  expect_match(p, "^Token: the GitHub token expires on 2027-02-14\\. Regenerate")
+  # the same text every day, so one episode, one email
+  expect_identical(p, tokenProblem(h("2027-02-14 00:03:40"), t + 86400))
+  expect_match(tokenProblem(h("2027-01-30 00:00:00"), t), "expires on 2027-01-30")
+})
+
+test_that("tokenProblem reports a refused token, and ignores what it cannot judge", {
+  t <- as.POSIXct("2027-02-01 08:00:00", tz = "UTC")
+  expect_match(tokenProblem(c("HTTP/2 401", "x: y"), t), "^Token: GitHub refused the token \\(401\\)")
+  expect_identical(tokenProblem(NULL, t), character())
+  expect_identical(tokenProblem(c("HTTP/2 200", "x: y"), t), character())
+  expect_identical(tokenProblem(c("HTTP/2 200",
+    "GitHub-Authentication-Token-Expiration: not a date"), t), character())
+  expect_match(tokenProblem(c("HTTP/2 200",
+    "GitHub-Authentication-Token-Expiration: 2027-02-02 00:00:00 UTC\r"), t), "2027-02-02")
+})
