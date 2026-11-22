@@ -28,6 +28,7 @@ LazyData: true
 LazyDataCompression: xz
 Suggests:
     data.table,
+    jsonlite,
     kableExtra,
     knitr,
     rmarkdown,
