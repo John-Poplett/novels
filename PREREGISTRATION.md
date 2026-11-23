@@ -375,13 +375,36 @@ not hypotheses and are not corrected.
      is reported with its interval and without a significance claim. It is
      the only analysis whose result may be described as being about style,
      and then descriptively.
-  5. *Power.* The minimum detectable effect (section 7, about 0.056) was
-     estimated from the 2013 paired SD of the registered comparison. Two
-     nested models share the record's covariates and are fitted on the same
-     rows, so their paired difference is expected to vary less, which would
-     make 0.056 conservative. **Before filing:** re-estimate the paired SD
-     for the nested comparison on the 2013 corpus, and restate the minimum
-     detectable effect if it is larger.
+  5. *Power, re-estimated on the 2013 corpus* (`data-raw/nested-comparison.R`;
+     per-fold results in `data-raw/nested-comparison.csv` and
+     `data-raw/nested-comparison-with-id.csv`). Five author-grouped folds,
+     about 151 test books each, alpha chosen per fold by inner CV:
+
+     | baseline | record | text | record + text | nested gain | its SD |
+     |---|---|---|---|---|---|
+     | section 6 (genre, length, `date_added`) | 0.748 | 0.731 | 0.794 | +0.046 (5 of 5 folds) | 0.027 |
+     | section 6 plus `log10(gutenberg_id)` | 0.819 | 0.731 | 0.836 | +0.017 (4 of 5) | 0.028 |
+
+     The nested gain's SD is about 0.027 with either baseline. Scaled to the
+     wave's ~400 test books per fold, section 7's arithmetic gives a minimum
+     detectable effect of about **0.022**, against the registered 0.056. (The
+     registered 0.068 is reproduced, 0.0686, by the registered comparison with
+     the id in the baseline; with `date_added`, as section 6 specifies, that SD
+     is 0.044.) The declared minimum effect of interest stays at **0.05**, but
+     its reason changes: section 7's "the design cannot detect anything
+     smaller" no longer holds, and 0.05 is kept as the smallest gain worth
+     calling a result. Lowering it after seeing 2013 gains of 0.046 and 0.017
+     would be choosing the bar to fit the data. Under these rules the 2013
+     corpus would not support H2 with either baseline.
+  5a. **Pending decision: the Gutenberg id in the baseline.** Ids were
+     assigned in order of digitisation, and the canon was digitised first, so
+     a low id partly records fame already established when the book was
+     chosen. It never reads the book and is in the record at freeze. On the
+     2013 corpus it is the strongest non-text predictor (AUC 0.810 with genre
+     and length, against 0.748 with `date_added`; the two correlate at 0.80),
+     and it removes about two thirds of the text's apparent gain. Adding
+     `log10(gutenberg_id)` to section 6's baseline makes H2 harder to pass and
+     a pass more meaningful. **To be decided before filing.**
   6. *Not changed.* The outcome, eligibility, strata, labels, folds, the
      audit gates and the declared minimum effect of interest.
 
