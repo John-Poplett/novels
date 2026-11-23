@@ -1,5 +1,5 @@
 # The H2 comparison on the 2013 corpus, registered and nested
-# (PREREGISTRATION.md section 11, draft amendment of 2026-11-22).
+# (PREREGISTRATION.md section 11, amendment of 2026-11-23).
 #
 # Four models on each of the five author-grouped folds, on the same rows:
 #
@@ -31,7 +31,7 @@
 #   Rscript data-raw/nested-comparison.R [--with-id] [--headings=CATALOGUE] [--out=FILE]
 #
 # --with-id adds log10(gutenberg_id) to the baseline, as the draft amendment
-# of 2026-11-22 does to section 6. Without it, the baseline is section 6 as
+# of 2026-11-23 does to section 6. Without it, the baseline is section 6 as
 # registered.
 #
 # --headings=CATALOGUE (a pg_catalog.csv.gz; implies --with-id) adds the

@@ -29,7 +29,7 @@ H2 is the claim the project exists to test, and it is the primary endpoint.
 If H2 fails, the honest publication is a dataset and a negative result, not a
 style claim. If it holds, it is still not a style claim by itself: the text
 model reads content as well as style. Only the style-restricted model of
-section 6 speaks to style, and it is exploratory (amendment of 2026-11-22,
+section 6 speaks to style, and it is exploratory (amendment of 2026-11-23,
 section 11).
 
 ## 2. Outcome definition
@@ -272,18 +272,18 @@ multiplicity rule in section 10 intact.
   log10(gutenberg_id) + publication year`, if publication year is available
   at freeze. If it is not, the baseline is `genre + log10(text length) +
   log10(date_added) + log10(gutenberg_id)` and the omission is reported. The
-  `gutenberg_id` term was added by the amendment of 2026-11-22 (section 11).
+  `gutenberg_id` term was added by the amendment of 2026-11-23 (section 11).
   These covariates are what this registration calls **bibliographic
   information**: what is known about a book without reading it.
 - **Bibliographic information is a yardstick, never an input.** The text model reads only
   the text. H2 is judged by a small **stacked model** (the primary
-  comparison, amendment of 2026-11-22): logistic regression of the label on
+  comparison, amendment of 2026-11-23): logistic regression of the label on
   the baseline's covariates plus one more column, the text model's score.
   Training books' scores are pre-validated (each scored by a text model that
   did not see it); test books are scored by the text model fitted on the
   whole training fold.
 - **Style-restricted model** (exploratory): a second text model, on
-  features that carry little content (amendment of 2026-11-22), judged
+  features that carry little content (amendment of 2026-11-23), judged
   against the bibliographic baseline in the same stacked form.
 - **All models** are fitted on the same rows and the same folds.
 
@@ -291,7 +291,7 @@ multiplicity rule in section 10 intact.
 
 **Endpoint.** Within the Novels stratum (section 11, 2026-11-20), paired
 difference in held-out AUC, stacked minus bibliographic (section 11,
-2026-11-22), computed once per fold and averaged over the 5 folds. Positive
+2026-11-23), computed once per fold and averaged over the 5 folds. Positive
 means the pure-text classifier added to the bibliographic baseline.
 
 **Inference.** A 95% bootstrap CI over books, resampling whole authors, not
@@ -300,7 +300,7 @@ reported as a secondary check.
 
 **Minimum detectable effect.** From the 2013 corpus, the paired fold-level SD
 of the stacked difference is about 0.022 at ~151 test books per fold
-(amendment of 2026-11-22, section 11, point 5). With the wave's expected
+(amendment of 2026-11-23, section 11, point 5). With the wave's expected
 ~2,000 books (~400 per fold), the SD scales as the square root of test size:
 about 0.013. At 5 folds, one-sided α = 0.05 and power 0.8, the detectable
 difference is `(2.132 + 0.842) * 0.013 / sqrt(5) ≈ 0.018`. (As registered,
@@ -311,7 +311,7 @@ for the text-minus-bibliographic comparison: SD 0.068, scaled 0.042, about
 the smallest difference the design could detect. The amended design detects
 about 0.018, so 0.05 is kept as a substantive bar, the smallest gain worth
 calling a result, not as a limit of the design. It is not lowered after the
-2013 estimates were seen (section 11, 2026-11-22, point 5).
+2013 estimates were seen (section 11, 2026-11-23, point 5).
 
 ## 8. Decision rules
 
@@ -347,10 +347,11 @@ not hypotheses and are not corrected.
 ## 11. Deviations
 
 - Amendments are dated, appended to this file, and published with the analysis.
-- **2026-11-22 — H2 is "beyond bibliographic information"; the text model is
+- **2026-11-23 — H2 is "beyond bibliographic information"; the text model is
   judged against the bibliographic baseline; the baseline gains the ebook
   number; a
-  style-restricted model is declared.** **DRAFT, not filed.**
+  style-restricted model is declared.** Drafted 2026-11-22, filed
+  2026-11-23, before the window opens and before any wave data exist.
   1. *What H2 tests (section 1).* The text model is TF-IDF over unigrams. Its
      strongest features in a corpus like this are topic words, settings,
      character names and period vocabulary, so beating the baseline shows
