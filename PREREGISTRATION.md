@@ -296,14 +296,19 @@ rows, so the CI respects the fold structure. The paired t across 5 folds is
 reported as a secondary check.
 
 **Minimum detectable effect.** From the 2013 corpus, the paired fold-level SD
-was 0.068 at ~150 test books per fold. With the wave's expected ~2,000 books
-(~400 per fold), the SD scales as the square root of test size: about 0.042.
-At 5 folds, one-sided α = 0.05 and power 0.8, the detectable difference is
-`(2.132 + 0.842) * 0.042 / sqrt(5) ≈ 0.056`.
+of the stacked difference is about 0.022 at ~151 test books per fold
+(amendment of 2026-11-22, section 11, point 5). With the wave's expected
+~2,000 books (~400 per fold), the SD scales as the square root of test size:
+about 0.013. At 5 folds, one-sided α = 0.05 and power 0.8, the detectable
+difference is `(2.132 + 0.842) * 0.013 / sqrt(5) ≈ 0.018`. (As registered,
+for the text-minus-bibliographic comparison: SD 0.068, scaled 0.042, about
+0.056.)
 
-**Declared minimum effect of interest: 0.05 AUC.** The design cannot detect
-anything smaller, and this limitation is to be stated in any publication
-rather than resolved by adding folds after the fact.
+**Declared minimum effect of interest: 0.05 AUC.** As registered, this was
+the smallest difference the design could detect. The amended design detects
+about 0.018, so 0.05 is kept as a substantive bar, the smallest gain worth
+calling a result, not as a limit of the design. It is not lowered after the
+2013 estimates were seen (section 11, 2026-11-22, point 5).
 
 ## 8. Decision rules
 
@@ -348,8 +353,12 @@ not hypotheses and are not corrected.
      that the words carry information the record lacks, not that the
      information is style. H2 is renamed to say what it tests, and the word
      "style" is kept for point 6's model alone. The original paper's style
-     claim is not taken as established either: it was never compared with a
-     baseline that does not read the book.
+     claim is not taken as established either. Its results (Ashok, Feng and
+     Choi 2013, Tables 2 and 3) compare text feature sets with one another
+     (POS tags, unigrams, bigrams, grammar rules, constituents); no model
+     that leaves the text out is reported, and the catalogue fields it
+     describes (title, author, genre, language, download count) are used
+     only to build the dataset.
   2. *The record is a yardstick, never an input (sections 6 and 7).* The
      registered endpoint compared two separate models, text minus
      bibliographic. Era, genre and length reach a text model through the
@@ -439,7 +448,8 @@ not hypotheses and are not corrected.
      audit gates and the declared minimum effect of interest. The text model
      itself is unchanged and still reads only the text.
 
-  Sections 1, 6, 7 and 10 are edited to match and point here.
+  Sections 1, 6, 7 (endpoint and power) and 10 are edited to match and
+  point here.
 - **2026-11-20 — genres from subject headings; Novels is the primary stratum.**
   1. *Mechanism (sections 3 and 12.1).* Genre strata come from the
      catalogue's Library of Congress subject headings through
