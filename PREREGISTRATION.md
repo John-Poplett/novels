@@ -418,18 +418,44 @@ not hypotheses and are not corrected.
      rules the 2013 corpus would not support H2 with any of the three
      records.
   6. *A style-restricted model (exploratory, sections 6 and 10).* A second
-     pure-text classifier on features that carry little content:
-     function-word relative frequencies from a published list, punctuation
-     rates per 1,000 words, and the distribution of sentence lengths. The
-     list and the feature code are fixed and pinned by hash before any label
-     is built (section 13). Narrative-form features
-     (`notes/narrative-devices.md`: cadence echo of period source texts,
-     dormant returns, the open-setup curve) may be added under the same rule:
-     defined, coded and hashed before any label is built, or not used in
-     this wave. It is judged against the record in the same stacked form,
-     reported with its interval and without a significance claim. It is the
-     only analysis whose result may be described as being about style, and
-     then descriptively.
+     pure-text classifier, on features that carry little content, in three
+     groups. Every list, model version and line of feature code is fixed and
+     pinned by hash before any label is built (section 13), and the features
+     are computed on the same normalised whole text as the TF-IDF model.
+     a. *Function words.* Relative frequencies per 1,000 words of Mosteller
+        and Wallace's 70 (*Inference and Disputed Authorship: The
+        Federalist*, 1964; reproduced in arXiv 2503.01869, appendix D, table
+        22). The list was built for 18th-century political essays, and six
+        of its words carry content in fiction: *her, his, my, our, your,
+        their* track a protagonist's gender and the narrative person. They
+        are a separate, declared sub-group, so their contribution can be
+        reported apart. Some words (*shall, upon*) are period markers; the
+        record's `date_added` and ebook number credit part of that era
+        signal first, but not all of it. The reproduction's *thing* (the
+        paper lemmatised) is checked against the 1964 list before pinning.
+     b. *Grammatical categories.* Rates per 1,000 tokens of the Universal
+        Dependencies part-of-speech tags (pronoun, determiner, adposition,
+        auxiliary, coordinating and subordinating conjunction, particle,
+        adverb, adjective, verb, noun, interjection, punctuation), from
+        spaCy's `en_core_web_sm` (MIT licence; spaCy and model versions
+        pinned and recorded). This is the open stand-in for LIWC's
+        grammatical categories, whose dictionary is proprietary and may not
+        be redistributed; it tags words in context, where LIWC counts words
+        against lists. udpipe's pretrained English models are CC BY-NC-SA,
+        which does not suit an MIT-licensed dataset, and are not used.
+     c. *Punctuation and sentences.* Punctuation marks per 1,000 words, by
+        mark, and the distribution of sentence lengths in words (mean,
+        standard deviation, quartiles), using the tagger's sentence
+        boundaries.
+     Narrative-form features (`notes/narrative-devices.md`: cadence echo of
+     period source texts, dormant returns, the open-setup curve) may be
+     added under the same rule: defined, coded and hashed before any label is
+     built, or not used in this wave. Content dictionaries (Empath, SEANCE,
+     the General Inquirer) describe what a book is about and are not style
+     features, so they are not used here. The model is judged against the
+     record in the same stacked form, reported with its interval and without
+     a significance claim. It is the only analysis whose result may be
+     described as being about style, and then descriptively.
   7. *Subject headings: a declared secondary yardstick, not the primary
      one.* The record with each heading split at " -- " into its parts, each
      part in at least 3 of a fold's training books a 0/1 column, penalised,
