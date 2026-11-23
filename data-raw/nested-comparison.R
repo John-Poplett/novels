@@ -18,12 +18,20 @@
 #
 # Run from the package root after `tar_make()`:
 #
-#   Rscript data-raw/nested-comparison.R [--with-id] [--out=FILE]
+#   Rscript data-raw/nested-comparison.R [--with-id] [--headings=CATALOGUE] [--out=FILE]
 #
 # --with-id adds log10(gutenberg_id) to the baseline. It is not in section 6,
 # but on this corpus it predicts the label far better than date_added
 # (AUC 0.810 against 0.748 alone), so it shows whether the nested gain
 # survives a stronger record.
+#
+# --headings=CATALOGUE (a pg_catalog.csv.gz; implies --with-id) adds the
+# subject headings to the record: each heading is split at " -- " into its
+# parts ("England", "19th century", "Fiction"), and each part found in at
+# least 3 of the fold's training books becomes a 0/1 column. There are
+# hundreds, so the record itself is then a penalised glmnet fit (core
+# covariates unpenalised, heading columns penalised, alpha by inner CV), and
+# record + text adds the TF-IDF columns to the same fit.
 #
 # Reads the per-fold targets (train_data_k, test_data_k, dtm_train_k,
 # dtm_test_k, cv_foldid_k, model_fit_k_alpha, eval_test_k_alpha) and
@@ -39,7 +47,37 @@ pkgload::load_all(quiet = TRUE)
 args <- commandArgs(trailingOnly = TRUE)
 out_path <- sub("^--out=", "", grep("^--out=", args, value = TRUE))
 if (!length(out_path)) out_path <- NULL
-with_id <- "--with-id" %in% args
+headings_path <- sub("^--headings=", "", grep("^--headings=", args, value = TRUE))
+with_headings <- length(headings_path) == 1
+with_id <- "--with-id" %in% args || with_headings
+if (with_headings) {
+  catalogue <- readCatalogue(headings_path)
+  subjects_of <- setNames(catalogue$Subjects, catalogue$`Text#`)
+  catalogue_sha256 <- digest::digest(headings_path, algo = "sha256", file = TRUE)
+}
+
+# The parts of every heading of each book, as a list of character vectors.
+headingParts <- function(ids) {
+  raw <- subjects_of[as.character(ids)]
+  if (anyNA(raw)) {
+    stop(sum(is.na(raw)), " book(s) are not in the catalogue.", call. = FALSE)
+  }
+  lapply(raw, function(x) {
+    if (!nzchar(x)) return(character())
+    unique(trimws(unlist(strsplit(unlist(strsplit(x, "; ", fixed = TRUE)),
+                                  " -- ", fixed = TRUE))))
+  })
+}
+
+# 0/1 columns for the parts in at least `min_books` training books.
+headingMatrix <- function(parts, vocabulary) {
+  i <- rep(seq_along(parts), lengths(parts))
+  j <- match(unlist(parts), vocabulary)
+  keep <- !is.na(j)
+  Matrix::sparseMatrix(i = i[keep], j = j[keep], x = 1,
+                       dims = c(length(parts), length(vocabulary)),
+                       dimnames = list(NULL, vocabulary))
+}
 
 alphas <- c(0.01, 0.03, 0.05, 0.07, 0.1, 0.3, 0.5, 0.7, 0.9, 1.0)  # _targets.R
 k_folds <- 5L
@@ -92,10 +130,34 @@ rows <- lapply(seq_len(k_folds), function(k) {
   x_train <- covariates(train)
   x_test <- covariates(test)
 
-  # Bibliographic: unpenalised logistic regression.
-  bib <- suppressWarnings(stats::glm.fit(cbind(1, x_train), train$response,
-                                         family = stats::binomial()))
-  bib_auc <- aucRank(test$response, as.vector(cbind(1, x_test) %*% bib$coefficients))
+  n_heading_columns <- NA_integer_
+  if (!with_headings) {
+    # Bibliographic: unpenalised logistic regression.
+    bib <- suppressWarnings(stats::glm.fit(cbind(1, x_train), train$response,
+                                           family = stats::binomial()))
+    bib_auc <- aucRank(test$response, as.vector(cbind(1, x_test) %*% bib$coefficients))
+  } else {
+    # The record with headings: core covariates unpenalised, heading parts
+    # penalised, the vocabulary taken from this fold's training books only.
+    parts_train <- headingParts(train$gutenberg_id)
+    counts <- table(unlist(parts_train))
+    vocabulary <- sort(names(counts)[counts >= 3])
+    n_heading_columns <- length(vocabulary)
+    x_train <- cbind(Matrix::Matrix(x_train, sparse = TRUE),
+                     headingMatrix(parts_train, vocabulary))
+    x_test <- cbind(Matrix::Matrix(x_test, sparse = TRUE),
+                    headingMatrix(headingParts(test$gutenberg_id), vocabulary))
+    n_core <- ncol(x_train) - n_heading_columns
+    pf_bib <- c(rep(0, n_core), rep(1, n_heading_columns))
+    bib_fits <- lapply(alphas, function(a) {
+      glmnet::cv.glmnet(x_train, train$response, family = "binomial", alpha = a,
+                        foldid = foldid, type.measure = "auc", penalty.factor = pf_bib,
+                        control = list(thresh = 1e-5, maxit = 1e4))
+    })
+    bib_best <- bestByInnerCv(bib_fits)
+    bib_auc <- aucRank(test$response, as.numeric(stats::predict(
+      bib_best$fit, newx = x_test, s = "lambda.min", type = "link")))
+  }
 
   # Text: the pipeline's fits, alpha by inner CV.
   text_fits <- lapply(alphas, function(a) targets::tar_read_raw(paste0("model_fit_", k, "_", a)))
@@ -106,7 +168,7 @@ rows <- lapply(seq_len(k_folds), function(k) {
   # Combined: covariates first, unpenalised, then the TF-IDF columns.
   z_train <- cbind(Matrix::Matrix(x_train, sparse = TRUE), dtm_train)
   z_test <- cbind(Matrix::Matrix(x_test, sparse = TRUE), dtm_test)
-  pf <- c(rep(0, ncol(x_train)), rep(1, ncol(dtm_train)))
+  pf <- c(if (with_headings) pf_bib else rep(0, ncol(x_train)), rep(1, ncol(dtm_train)))
   comb_fits <- lapply(alphas, function(a) {
     glmnet::cv.glmnet(z_train, train$response, family = "binomial", alpha = a,
                       foldid = foldid, type.measure = "auc", penalty.factor = pf,
@@ -117,7 +179,7 @@ rows <- lapply(seq_len(k_folds), function(k) {
     comb_best$fit, newx = z_test, s = "lambda.min", type = "link")))
 
   tibble::tibble(
-    fold = k, n_test = nrow(test),
+    fold = k, n_test = nrow(test), heading_columns = n_heading_columns,
     bibliographic = bib_auc,
     text = text_auc, text_alpha = text_best$alpha,
     combined = comb_auc, combined_alpha = comb_best$alpha,
@@ -145,7 +207,9 @@ summ <- tibble::tibble(
   mde_wave = c(mde(stats::sd(res$text_minus_bib))[["mde"]],
                mde(stats::sd(res$combined_minus_bib))[["mde"]])
 )
-cat("\nBaseline:", if (with_id) "genre + log_len + log_added + log_id" else
+cat("\nBaseline:", if (with_headings) paste0(
+  "genre + log_len + log_added + log_id + heading parts (catalogue sha256 ",
+  catalogue_sha256, ")") else if (with_id) "genre + log_len + log_added + log_id" else
   "genre + log_len + log_added (section 6)", "\n")
 cat("Mean AUC: bibliographic", format(mean(res$bibliographic), digits = 3),
     " text", format(mean(res$text), digits = 3),

@@ -267,10 +267,11 @@ multiplicity rule in section 10 intact.
   grouped by author. Alpha selected by inner cross-validation, not by the outer
   test folds; the selected alpha is reported.
 - **Bibliographic baseline**: logistic regression on
-  `genre + log10(text length) + log10(date_added as an ordinal) + publication
-  year`, if publication year is available at freeze. If it is not, the baseline
-  is `genre + log10(text length) + log10(date_added)` and the omission is
-  reported.
+  `genre + log10(text length) + log10(date_added as an ordinal) +
+  log10(gutenberg_id) + publication year`, if publication year is available
+  at freeze. If it is not, the baseline is `genre + log10(text length) +
+  log10(date_added) + log10(gutenberg_id)` and the omission is reported. The
+  `gutenberg_id` term was added by the amendment of 2026-11-22 (section 11).
 - **Combined model** (the primary comparison, amendment of 2026-11-22): the
   text model's features and the baseline's covariates together, in one
   `glmnet` fit with the covariates unpenalised (`penalty.factor = 0`), so the
@@ -396,7 +397,7 @@ not hypotheses and are not corrected.
      calling a result. Lowering it after seeing 2013 gains of 0.046 and 0.017
      would be choosing the bar to fit the data. Under these rules the 2013
      corpus would not support H2 with either baseline.
-  5a. **Pending decision: the Gutenberg id in the baseline.** Ids were
+  5a. *The Gutenberg id joins the baseline (section 6).* Ids were
      assigned in order of digitisation, and the canon was digitised first, so
      a low id partly records fame already established when the book was
      chosen. It never reads the book and is in the record at freeze. On the
@@ -404,7 +405,25 @@ not hypotheses and are not corrected.
      and length, against 0.748 with `date_added`; the two correlate at 0.80),
      and it removes about two thirds of the text's apparent gain. Adding
      `log10(gutenberg_id)` to section 6's baseline makes H2 harder to pass and
-     a pass more meaningful. **To be decided before filing.**
+     a pass more meaningful, so it is added. This changes the baseline as well
+     as the endpoint, so point 3's both-ways reporting covers it too: the
+     nested comparison is also reported with the registered baseline,
+     without the id, as exploratory.
+  5b. *Subject headings in the record (2013 corpus,
+     `data-raw/nested-comparison-with-headings.csv`, catalogue sha256
+     `66847ed7…`, the 2026-11-08 mirror copy).* Each heading is split at
+     " -- " into its parts, and each part in at least 3 of a fold's training
+     books becomes a 0/1 column (114–135 per fold), penalised, with the core
+     covariates (point 5a's baseline) unpenalised. Record alone 0.844, record
+     + text 0.835: reading adds **−0.009** (text helps in 2 of 5 folds; SD
+     0.032). As the record grows, what reading adds shrinks from +0.046 to
+     +0.017 to about nothing. Two caveats: the headings are from a 2026
+     catalogue and the labels from downloads around 2013, so headings added
+     since may reflect popularity and this is an upper bound on their power
+     (the wave's headings are frozen before its window); and the heading and
+     TF-IDF columns share one penalty in the combined fit, so the negative
+     sign is not evidence that reading hurts. **Pending decision: headings in
+     the primary baseline, or a declared secondary comparison.**
   6. *Not changed.* The outcome, eligibility, strata, labels, folds, the
      audit gates and the declared minimum effect of interest.
 
