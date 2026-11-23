@@ -55,8 +55,8 @@ the collectors. Collectors never commit (AGENTS.md).
 | F2 | rclone on the Pi, probe, first upload | Claude | done 2026-11-19 (below) |
 | F3 | `--offsite` upload wiring | Claude | done 2026-11-19; Pi crontab uploads nightly |
 | H1 | daily check, reported as a GitHub issue | Claude | code done 2026-11-21 |
-| H2 | bot account and its token on the Pi | John | 2026-11-22: GitHub never notifies you of your own actions, so the owner's own token (2026-11-21, test issue #6) sent no email; replaced by a bot account's classic `public_repo` token |
-| H3 | Pi crontab line, test issue | Claude | after H2 |
+| H2 | bot account and its token on the Pi | John | 2026-11-22: GitHub never notifies you of your own actions, so the owner's own token (2026-11-21, test issue #6) sent no email; replaced 2026-11-22 by the `novels-snapshot-bot` account's classic token (`public_repo` only, no expiry) |
+| H3 | Pi crontab line, test issue | Claude | live 2026-11-22 (02:00 CT): test issue #7 opened by the bot, its email received, closed by the real log; the line run in cron's bare environment |
 
 Deadline: all of it in place, and failover tested, before **2026-12-07**,
 the first real grid date.
@@ -382,7 +382,9 @@ reaching the Pi and B2).
 ## E. Upkeep
 
 - **Code updates on a collector:** `git fetch --prune && git reset --hard
-  origin/dev`, never `git pull`. Rebase-merges rewrite SHAs, and `pull`
+  origin/dev`, never `git pull`. Collectors only (the Mac and the Pi), never
+  gpu-box: its checkout is a working copy, often on a feature branch with
+  work in progress, which the reset would discard. Rebase-merges rewrite SHAs, and `pull`
   refuses when copied-in snapshot directories sit where git later tracks
   them; `reset --hard` overwrites them with identical bytes.
 - **Feed down or stale** (the log shows `HTTP 503` or `hours ago (limit
