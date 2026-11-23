@@ -340,13 +340,73 @@ before any modelling. A wave that fails a gate is reported, not silently fixed.
 One primary endpoint (section 7). Every additional comparison — sensitivity
 windows, per-genre models, the author-productivity model, the registered
 text-minus-bibliographic difference, the comparisons with section 6's
-original baseline and with subject headings, the style-restricted model — is labelled
+original baseline and with subject headings, the style-restricted model,
+the feature-family contest — is labelled
 exploratory and reported without significance claims. The five audit gates are
 not hypotheses and are not corrected.
 
 ## 11. Deviations
 
 - Amendments are dated, appended to this file, and published with the analysis.
+- **2026-11-23 — a feature-family contest is declared (exploratory).**
+  1. *The question.* Which families of text features know something about
+     the label beyond bibliographic information, and beyond one another. It
+     is a third question, beside H2 (does anything in the words add to
+     bibliographic information?) and the style-restricted model (does how a
+     book is written add, apart from what it is about?). It is not a test of
+     H2, whose endpoint (section 7) is unchanged, and no result of it can
+     confirm or refute H2.
+  2. *The families.* Each is a pure-text classifier, fitted on the Novels
+     stratum with the rows, folds and alpha selection of section 6, and each
+     contributes one pre-validated score (amendment of 2026-11-23, point 2):
+     - **T**, TF-IDF unigrams (section 6);
+     - **F**, Mosteller and Wallace's function words without the six below
+       (amendment of 2026-11-23, point 6a);
+     - **P**, the six possessive and personal forms (*her, his, my, our,
+       your, their*), their own family because in fiction they track a
+       protagonist's gender and the narrative person;
+     - **G**, the grammatical-category rates (point 6b);
+     - **S**, punctuation and sentence lengths (point 6c);
+     - **N**, narrative-form features, only if they are defined, coded and
+       hashed before any label is built (point 6), and otherwise absent.
+  3. *The adjudicator.* One stacked logistic regression of the label on the
+     bibliographic baseline's covariates plus one score per family. Its
+     held-out AUC is the full model's. A family's **unique contribution** is
+     the full model's AUC minus the AUC of the same stacked model without
+     that family's score, computed per fold and averaged over the 5 folds,
+     with the 95% bootstrap interval of section 7 (whole authors resampled).
+     Each family is also reported **alone** beside the baseline, which is
+     the stacked comparison of section 7 for that family.
+  4. *Why families and not features.* A single penalised fit over every
+     column (lasso, ridge, or the elastic net between them) cannot
+     adjudicate between feature kinds. The lasso keeps one of a group of
+     correlated features almost arbitrarily, and these families share the
+     same words, so which features survive changes from fold to fold and is
+     not evidence about kinds. About 10,000 sparse TF-IDF columns against
+     about 100 dense columns sharing one penalty is decided partly by the
+     count of columns (on the 2013 corpus, the joint fit of the amendment of
+     2026-11-23, point 5, measured less than the stacked model at every
+     level), and any per-family penalty weighting that corrects for it is a
+     choice of its own. Ridge spreads credit over everything and selects
+     nothing. One score per family leaves the stacked model a handful of
+     columns, which are stable to fit and each answer for one kind of
+     feature.
+  5. *Reading the results.* Unique contributions need not add up to the
+     full model's gain over the baseline: where families overlap, the
+     overlap belongs to none of them. The **shared part**, the full gain
+     minus the sum of the unique contributions, is reported with them. The
+     families F, P, G and S carry little content but are not free of it
+     (point 6a's period markers), so a unique contribution of style
+     families beyond T is the closest this registration comes to evidence
+     about style, and is reported descriptively.
+  6. *Multiplicity and status (section 10).* Exploratory: every number is
+     reported with its interval and without a significance claim, and none
+     is corrected or ranked beyond what the intervals show.
+  7. *Fixed before any label is built.* The families' definitions, the
+     stacked model and this reporting table, pinned with point 6's features
+     (section 13).
+
+  Section 10 is edited to list the contest among the exploratory analyses.
 - **2026-11-23 — H2 is "beyond bibliographic information"; the text model is
   judged against the bibliographic baseline; the baseline gains the ebook
   number; a
