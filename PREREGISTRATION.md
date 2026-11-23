@@ -422,6 +422,10 @@ not hypotheses and are not corrected.
      groups. Every list, model version and line of feature code is fixed and
      pinned by hash before any label is built (section 13), and the features
      are computed on the same normalised whole text as the TF-IDF model.
+     Unlike TF-IDF, whose vocabulary and weights are fitted on each fold's
+     training books, these features use no labels and no other book, so
+     each is computed once per book (`gutenberg_id`, however many strata it
+     belongs to) and looked up per fold, with no leakage between folds.
      a. *Function words.* Relative frequencies per 1,000 words of Mosteller
         and Wallace's 70 (*Inference and Disputed Authorship: The
         Federalist*, 1964; reproduced in arXiv 2503.01869, appendix D, table
