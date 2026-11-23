@@ -143,30 +143,45 @@ comment <- function(issue, text) {
   github("POST", sprintf("/issues/%d/comments", issue),
          sprintf("{\"body\": %s}", novels:::jsonString(text)))
 }
-set_state <- function(issue, open) {
-  github("PATCH", sprintf("/issues/%d", issue), if (open) "{\"state\": \"open\"}" else
-    "{\"state\": \"closed\", \"state_reason\": \"completed\"}")
+close_issue <- function(issue) {
+  github("PATCH", sprintf("/issues/%d", issue),
+         "{\"state\": \"closed\", \"state_reason\": \"completed\"}")
 }
 
-issue <- state$issue
-if (action == "open") {
+open_issue <- function() {
   kinds <- unique(sub(":.*", "", problems))
   title <- sprintf("Snapshot alert (%s): %s", format(today), paste(kinds, collapse = ", "))
-  headers <- github("POST", "/issues", sprintf(
-    "{\"title\": %s, \"body\": %s, \"labels\": [\"snapshot-alert\"]}",
+  headers <- github("POST", "/issues", sprintf("{\"title\": %s, \"body\": %s}",
     novels:::jsonString(title), novels:::jsonString(body)))
   location <- grep("^location:", headers, ignore.case = TRUE, value = TRUE)
-  issue <- as.integer(sub(".*/issues/([0-9]+)\\s*$", "\\1", location[1]))
-  if (is.na(issue)) {
+  number <- as.integer(sub(".*/issues/([0-9]+)\\s*$", "\\1", location[1]))
+  if (is.na(number)) {
     cat(stamp, "check-snapshots: FAILED: the new issue's number is not in the response\n")
     quit(save = "no", status = 2L)
   }
-} else if (action == "comment") {
-  set_state(issue, open = TRUE)  # someone may have closed it by hand
-  comment(issue, body)
+  number
+}
+
+issue <- state$issue
+if (action == "comment") {
+  # Someone may have closed the issue by hand. The bot opened it, but an
+  # issue its owner closed is one the bot may not reopen (it is not a
+  # collaborator): then the change starts a new episode instead.
+  reopened <- curl_call("PATCH", sprintf("/issues/%d", issue), "{\"state\": \"open\"}")
+  if (!is.null(reopened) && reopened$code >= 200 && reopened$code < 300) {
+    comment(issue, body)
+  } else {
+    cat(stamp, " check-snapshots: issue #", issue, " cannot be reopened (",
+        if (is.null(reopened)) "no response" else reopened$code,
+        "); opening a new one\n", sep = "")
+    action <- "open"
+  }
+}
+if (action == "open") {
+  issue <- open_issue()
 } else if (action == "close") {
   comment(issue, body)
-  set_state(issue, open = FALSE)
+  close_issue(issue)
 }
 cat(stamp, " check-snapshots: issue #", issue, " ",
     c(open = "opened", comment = "commented on", close = "closed")[[action]],

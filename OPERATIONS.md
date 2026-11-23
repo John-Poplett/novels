@@ -55,7 +55,7 @@ the collectors. Collectors never commit (AGENTS.md).
 | F2 | rclone on the Pi, probe, first upload | Claude | done 2026-11-19 (below) |
 | F3 | `--offsite` upload wiring | Claude | done 2026-11-19; Pi crontab uploads nightly |
 | H1 | daily check, reported as a GitHub issue | Claude | code done 2026-11-21 |
-| H2 | fine-grained GitHub token on the Pi | John | done 2026-11-21: this repository only, Issues read/write; **expires 2027-02-20** (the check warns from 2027-02-06) |
+| H2 | bot account and its token on the Pi | John | 2026-11-22: GitHub never notifies you of your own actions, so the owner's own token (2026-11-21, test issue #6) sent no email; replaced by a bot account's classic `public_repo` token |
 | H3 | Pi crontab line, test issue | Claude | after H2 |
 
 Deadline: all of it in place, and failover tested, before **2026-12-07**,
@@ -322,10 +322,13 @@ asks five questions (`snapshotProblems()` and `tokenProblem()` in
 | Silence | the Pi's log has no stamped line in 26 hours | the collector is not running: crontab, or the Pi is down |
 | Token | the GitHub token expires within 14 days, or GitHub refuses it | regenerate it (step 1). A refused token cannot report itself: the check logs `FAILED: … returned 401` and exits 2, and GitHub's own expiry email is the backstop |
 
-One issue per episode: opened (labelled `snapshot-alert`) when a problem
-appears, commented on only when the set of problems changes, so a long feed
-outage sends one email, not one a day; closed with a comment when every
-check passes. Closing it by hand is fine: a change reopens it. What was last
+One issue per episode: opened when a problem appears, commented on only
+when the set of problems changes, so a long feed outage sends one email,
+not one a day; closed with a comment when every check passes. Closing it by
+hand is fine: the bot may not reopen an issue its owner closed, so a change
+opens a new one instead. The issues carry no label, because GitHub drops
+labels set by non-collaborators; the `snapshot-alert` label exists for
+labelling by hand. What was last
 reported, and in which issue, is kept in `~/.local/state/novels-alert.rds`.
 `--dry-run` prints the decision and the text without calling GitHub.
 
@@ -333,15 +336,25 @@ reported, and in which issue, is kept in `~/.local/state/novels-alert.rds`.
 too. The Mac's collector is not checked, only its result (the snapshot
 reaching the Pi and B2).
 
-1. **[John]** Create a fine-grained token: GitHub, Settings, Developer
-   settings, Personal access tokens, Fine-grained tokens, Generate new
-   token. Name `novels snapshot alert`; expiration past 2029-01-31 if
-   offered, otherwise the longest (GitHub emails a week before it
-   expires, and an expired token makes the check fail with exit 2 instead
-   of reporting); Repository access: only `novels`; Permissions,
-   Repository: **Issues: Read and write** (Metadata read-only comes with
-   it), nothing else. On the Pi, paste it into a file only you can read,
-   never into chat or the repository:
+1. **[John]** The issues must come from an account other than yours:
+   GitHub never notifies you of your own actions, through a token or not,
+   and "Include your own updates" does not change that (tested 2026-11-21
+   with the owner's token: no email, no notification). So a bot account
+   (GitHub's "machine user"; one free one per person is allowed) opens
+   them, and GitHub emails you as it would for any stranger's issue on a
+   repository you watch.
+
+   Create the account in a private window, with an email address of its
+   own (a forwarding alias), two-factor authentication on, and **not** as
+   a collaborator on `novels`: it needs nothing a stranger lacks. As the
+   bot: Settings, Developer settings, Personal access tokens, **Tokens
+   (classic)**, Generate new token (classic); note `novels snapshot alert
+   (Pi)`, the longest expiration offered, and only the **`public_repo`**
+   scope. (A fine-grained token cannot reach a repository its owner does
+   not own.) It can open, comment on and close its own issues, and nothing
+   on `novels` a stranger cannot; leaked, the worst is spam in the bot's
+   name. On the Pi, paste it into a file only you can read, never into
+   chat or the repository:
 
    ```bash
    install -d -m 700 ~/.config/novels
@@ -349,7 +362,8 @@ reaching the Pi and B2).
    ```
 
    curl reads it from a mode-600 header file, so it never appears on a
-   command line.
+   command line. A token with an expiry is warned about 14 days ahead (the
+   Token check); one without has nothing to warn about.
 
 2. **[Claude]** Pi crontab, an hour after the collector:
 
