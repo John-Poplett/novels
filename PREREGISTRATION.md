@@ -18,13 +18,18 @@ Two claims are separated, because only the second one is interesting:
 
 - **H1 (learnability).** A text model predicts the label better than chance
   within the wave.
-- **H2 (style specifically).** The text model predicts the label better than a
-  bibliographic baseline that never reads the book.
+- **H2 (beyond the bibliographic record).** Reading the book adds predictive
+  information to a bibliographic baseline that never reads it: a model given
+  both the record and the text predicts the label better than the record
+  alone.
 
 H1 can be true for a label that is mostly a proxy for era, length and genre.
 H2 is the claim the project exists to test, and it is the primary endpoint.
 If H2 fails, the honest publication is a dataset and a negative result, not a
-style claim.
+style claim. If it holds, it is still not a style claim by itself: the text
+model reads content as well as style. Only the style-restricted model of
+section 6 speaks to style, and it is exploratory (amendment of 2026-11-22,
+section 11).
 
 ## 2. Outcome definition
 
@@ -266,14 +271,21 @@ multiplicity rule in section 10 intact.
   year`, if publication year is available at freeze. If it is not, the baseline
   is `genre + log10(text length) + log10(date_added)` and the omission is
   reported.
-- **Both models** are fitted on the same rows and the same folds.
+- **Combined model** (the primary comparison, amendment of 2026-11-22): the
+  text model's features and the baseline's covariates together, in one
+  `glmnet` fit with the covariates unpenalised (`penalty.factor = 0`), so the
+  record is credited in full before the text is given any weight.
+- **Style-restricted model** (exploratory): the same combined form, with the
+  TF-IDF features replaced by features that carry little content, defined in
+  the amendment of 2026-11-22.
+- **All models** are fitted on the same rows and the same folds.
 
 ## 7. Primary analysis and power
 
 **Endpoint.** Within the Novels stratum (section 11, 2026-11-20), paired
-difference in held-out AUC, text minus bibliographic, computed once per fold
-and averaged over the 5 folds. Positive means the text
-model is better.
+difference in held-out AUC, combined minus bibliographic (section 11,
+2026-11-22), computed once per fold and averaged over the 5 folds. Positive
+means reading the book added to the record.
 
 **Inference.** A 95% bootstrap CI over books, resampling whole authors, not
 rows, so the CI respects the fold structure. The paired t across 5 folds is
@@ -314,13 +326,66 @@ before any modelling. A wave that fails a gate is reported, not silently fixed.
 ## 10. Multiplicity
 
 One primary endpoint (section 7). Every additional comparison — sensitivity
-windows, per-genre models, the author-productivity model — is labelled
+windows, per-genre models, the author-productivity model, the registered
+text-minus-bibliographic difference, the style-restricted model — is labelled
 exploratory and reported without significance claims. The five audit gates are
 not hypotheses and are not corrected.
 
 ## 11. Deviations
 
 - Amendments are dated, appended to this file, and published with the analysis.
+- **2026-11-22 — H2 is "beyond the bibliographic record"; the endpoint is
+  nested; a style-restricted model is declared.** **DRAFT, not filed.**
+  1. *What H2 tests (section 1).* The text model is TF-IDF over unigrams. Its
+     strongest features in a corpus like this are topic words, settings,
+     character names and period vocabulary, so beating the baseline shows
+     that the words carry information the record lacks, not that the
+     information is style. H2 is renamed to say what it tests, and the word
+     "style" is kept for point 4's model alone. The original paper's style
+     claim is not taken as established either.
+  2. *Why the endpoint is nested (sections 6 and 7).* The registered
+     endpoint compared two separate models, text minus bibliographic. Era,
+     genre and length reach a text model through the words themselves, so the
+     record's information can leak into the text model and be counted as the
+     text's. The baseline's era terms are weak: `date_added` is when Project
+     Gutenberg issued the ebook, not when the book was written, and
+     publication year may be missing at freeze. Vocabulary and spelling date
+     a text well, so the text model could pass the registered test by being a
+     better clock. The combined model is given the record's covariates
+     unpenalised, so whatever the record knows is credited before the text is
+     given any weight, and the difference measures only what reading adds.
+     The rows, folds, bootstrap, minimum effect of interest (0.05) and
+     decision rules of section 8 are unchanged; only the model on the left of
+     the difference changes.
+  3. *Reported both ways (this section's own rule).* This changes the
+     endpoint, so the wave is reported as registered and as amended: the
+     registered difference, text minus bibliographic, is computed on the same
+     folds and reported with its interval, as exploratory. If the two
+     disagree, the disagreement is reported, and the amended one decides.
+  4. *A style-restricted model (exploratory, sections 6 and 10).* The same
+     combined form, with the TF-IDF features replaced by features that carry
+     little content: function-word relative frequencies from a fixed list,
+     punctuation rates per 1,000 words, and the distribution of sentence
+     lengths. The list and the feature code are fixed and pinned by hash
+     before any label is built (section 13). Narrative-form features
+     (`notes/narrative-devices.md`: cadence echo of period source texts,
+     dormant returns, the open-setup curve) may be added under the same
+     rule: defined, coded and hashed before any label is built, or not used
+     in this wave. The model's difference against the bibliographic baseline
+     is reported with its interval and without a significance claim. It is
+     the only analysis whose result may be described as being about style,
+     and then descriptively.
+  5. *Power.* The minimum detectable effect (section 7, about 0.056) was
+     estimated from the 2013 paired SD of the registered comparison. Two
+     nested models share the record's covariates and are fitted on the same
+     rows, so their paired difference is expected to vary less, which would
+     make 0.056 conservative. **Before filing:** re-estimate the paired SD
+     for the nested comparison on the 2013 corpus, and restate the minimum
+     detectable effect if it is larger.
+  6. *Not changed.* The outcome, eligibility, strata, labels, folds, the
+     audit gates and the declared minimum effect of interest.
+
+  Sections 1, 6, 7 and 10 are edited to match and point here.
 - **2026-11-20 — genres from subject headings; Novels is the primary stratum.**
   1. *Mechanism (sections 3 and 12.1).* Genre strata come from the
      catalogue's Library of Congress subject headings through
