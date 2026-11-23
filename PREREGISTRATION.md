@@ -18,10 +18,10 @@ Two claims are separated, because only the second one is interesting:
 
 - **H1 (learnability).** A text model predicts the label better than chance
   within the wave.
-- **H2 (beyond the bibliographic record).** Reading the book adds predictive
-  information to a bibliographic baseline that never reads it: a model given
-  both the record and the text predicts the label better than the record
-  alone.
+- **H2 (beyond the bibliographic record).** A classifier that reads only the
+  text knows something about the label that the bibliographic record (genre,
+  length, dates, ebook number) does not: added to the record as one score, it
+  predicts the label better than the record alone.
 
 H1 can be true for a label that is mostly a proxy for era, length and genre.
 H2 is the claim the project exists to test, and it is the primary endpoint.
@@ -272,21 +272,24 @@ multiplicity rule in section 10 intact.
   at freeze. If it is not, the baseline is `genre + log10(text length) +
   log10(date_added) + log10(gutenberg_id)` and the omission is reported. The
   `gutenberg_id` term was added by the amendment of 2026-11-22 (section 11).
-- **Combined model** (the primary comparison, amendment of 2026-11-22): the
-  text model's features and the baseline's covariates together, in one
-  `glmnet` fit with the covariates unpenalised (`penalty.factor = 0`), so the
-  record is credited in full before the text is given any weight.
-- **Style-restricted model** (exploratory): the same combined form, with the
-  TF-IDF features replaced by features that carry little content, defined in
-  the amendment of 2026-11-22.
+- **The record is a yardstick, never an input.** The text model reads only
+  the text. H2 is judged by a small **stacked model** (the primary
+  comparison, amendment of 2026-11-22): logistic regression of the label on
+  the baseline's covariates plus one more column, the text model's score.
+  Training books' scores are pre-validated (each scored by a text model that
+  did not see it); test books are scored by the text model fitted on the
+  whole training fold.
+- **Style-restricted model** (exploratory): a second text model, on
+  features that carry little content (amendment of 2026-11-22), judged
+  against the record in the same stacked form.
 - **All models** are fitted on the same rows and the same folds.
 
 ## 7. Primary analysis and power
 
 **Endpoint.** Within the Novels stratum (section 11, 2026-11-20), paired
-difference in held-out AUC, combined minus bibliographic (section 11,
+difference in held-out AUC, stacked minus bibliographic (section 11,
 2026-11-22), computed once per fold and averaged over the 5 folds. Positive
-means reading the book added to the record.
+means the pure-text classifier added to the record.
 
 **Inference.** A 95% bootstrap CI over books, resampling whole authors, not
 rows, so the CI respects the fold structure. The paired t across 5 folds is
@@ -328,104 +331,113 @@ before any modelling. A wave that fails a gate is reported, not silently fixed.
 
 One primary endpoint (section 7). Every additional comparison — sensitivity
 windows, per-genre models, the author-productivity model, the registered
-text-minus-bibliographic difference, the style-restricted model — is labelled
+text-minus-bibliographic difference, the comparisons with section 6's
+original baseline and with subject headings, the style-restricted model — is labelled
 exploratory and reported without significance claims. The five audit gates are
 not hypotheses and are not corrected.
 
 ## 11. Deviations
 
 - Amendments are dated, appended to this file, and published with the analysis.
-- **2026-11-22 — H2 is "beyond the bibliographic record"; the endpoint is
-  nested; a style-restricted model is declared.** **DRAFT, not filed.**
+- **2026-11-22 — H2 is "beyond the bibliographic record"; the text model is
+  judged against the record; the record gains the ebook number; a
+  style-restricted model is declared.** **DRAFT, not filed.**
   1. *What H2 tests (section 1).* The text model is TF-IDF over unigrams. Its
      strongest features in a corpus like this are topic words, settings,
      character names and period vocabulary, so beating the baseline shows
      that the words carry information the record lacks, not that the
      information is style. H2 is renamed to say what it tests, and the word
-     "style" is kept for point 4's model alone. The original paper's style
-     claim is not taken as established either.
-  2. *Why the endpoint is nested (sections 6 and 7).* The registered
-     endpoint compared two separate models, text minus bibliographic. Era,
-     genre and length reach a text model through the words themselves, so the
-     record's information can leak into the text model and be counted as the
-     text's. The baseline's era terms are weak: `date_added` is when Project
-     Gutenberg issued the ebook, not when the book was written, and
-     publication year may be missing at freeze. Vocabulary and spelling date
-     a text well, so the text model could pass the registered test by being a
-     better clock. The combined model is given the record's covariates
-     unpenalised, so whatever the record knows is credited before the text is
-     given any weight, and the difference measures only what reading adds.
-     The rows, folds, bootstrap, minimum effect of interest (0.05) and
-     decision rules of section 8 are unchanged; only the model on the left of
-     the difference changes.
-  3. *Reported both ways (this section's own rule).* This changes the
-     endpoint, so the wave is reported as registered and as amended: the
-     registered difference, text minus bibliographic, is computed on the same
-     folds and reported with its interval, as exploratory. If the two
-     disagree, the disagreement is reported, and the amended one decides.
-  4. *A style-restricted model (exploratory, sections 6 and 10).* The same
-     combined form, with the TF-IDF features replaced by features that carry
-     little content: function-word relative frequencies from a fixed list,
-     punctuation rates per 1,000 words, and the distribution of sentence
-     lengths. The list and the feature code are fixed and pinned by hash
-     before any label is built (section 13). Narrative-form features
+     "style" is kept for point 6's model alone. The original paper's style
+     claim is not taken as established either: it was never compared with a
+     baseline that does not read the book.
+  2. *The record is a yardstick, never an input (sections 6 and 7).* The
+     registered endpoint compared two separate models, text minus
+     bibliographic. Era, genre and length reach a text model through the
+     words themselves: a pure-text classifier can work out that a book is a
+     romance, or old, and predict by that, and the registered comparison
+     credits it in full. The baseline's era terms are weak, too (`date_added`
+     is when Project Gutenberg issued the ebook, not when the book was
+     written), so the text model could pass by being a better clock. The
+     amended endpoint withholds that credit without letting the record into
+     the classifier: the text model still reads only the text, and its score
+     is judged in a small stacked model beside the record's covariates.
+     Training books' scores are pre-validated, so the stacking model is not
+     fooled by in-sample confidence. The difference, stacked minus
+     bibliographic, is what the pure-text classifier knows that the record
+     does not. The rows, folds, bootstrap, minimum effect of interest (0.05)
+     and decision rules of section 8 are unchanged. A first draft fitted the
+     record and the text in one model; that puts the record inside the
+     classifier, and on the 2013 corpus it also measured less well (point 5).
+  3. *The ebook number joins the record (section 6).* Ids were assigned in
+     order of digitisation, and the canon was digitised first, so a low id
+     partly records fame already established when the book was chosen. It
+     never reads the book and is in the record at freeze. On the 2013 corpus
+     it is the strongest non-text predictor (AUC 0.810 with genre and length,
+     against 0.748 with `date_added`; the two correlate at 0.80).
+     `log10(gutenberg_id)` is added to section 6's baseline: H2 is harder to
+     pass, and a pass means more.
+  4. *Reported both ways (this section's own rule).* This changes the
+     endpoint and the baseline, so the wave is also reported as registered:
+     text minus bibliographic with section 6's original baseline, and the
+     amended stacked comparison with that baseline too, as exploratory. If
+     they disagree with the amended endpoint, the disagreement is reported,
+     and the amended endpoint decides.
+  5. *Power, re-estimated on the 2013 corpus* (`data-raw/nested-comparison.R`,
+     per-fold results in `data-raw/nested-comparison*.csv`). Five
+     author-grouped folds, about 151 test books each, alpha chosen per fold
+     by inner CV. "Adds" is stacked minus bibliographic:
+
+     | record (yardstick) | record | + text score | adds | folds positive | its SD | wave MDE |
+     |---|---|---|---|---|---|---|
+     | section 6 as registered | 0.748 | 0.795 | +0.046 | 5 of 5 | 0.023 | 0.019 |
+     | + `log10(gutenberg_id)` (amended) | 0.819 | 0.848 | +0.030 | 4 of 5 | 0.022 | 0.018 |
+     | + subject headings (point 7) | 0.844 | 0.854 | +0.010 | 4 of 5 | 0.022 | 0.018 |
+
+     The text model alone scores 0.731. The first draft's joint fit gave
+     +0.046, +0.017 and −0.009 on the same rows, less at every level: one
+     penalty shared by the record's and the text's columns handicaps it. The
+     SD of the stacked difference is about 0.022 whatever the record, so
+     section 7's arithmetic, scaled to the wave's ~400 test books per fold,
+     gives a minimum detectable effect of about **0.018**, against the
+     registered 0.056. (The registered 0.068 is reproduced, 0.0686, by the
+     registered comparison with the id in the baseline; with section 6's
+     baseline as registered that SD is 0.044.) The declared minimum effect
+     of interest stays at **0.05**, but its reason changes: section 7's "the
+     design cannot detect anything smaller" no longer holds, and 0.05 is kept
+     as the smallest gain worth calling a result. Lowering it after seeing
+     these 2013 gains would be choosing the bar to fit the data. Under these
+     rules the 2013 corpus would not support H2 with any of the three
+     records.
+  6. *A style-restricted model (exploratory, sections 6 and 10).* A second
+     pure-text classifier on features that carry little content:
+     function-word relative frequencies from a published list, punctuation
+     rates per 1,000 words, and the distribution of sentence lengths. The
+     list and the feature code are fixed and pinned by hash before any label
+     is built (section 13). Narrative-form features
      (`notes/narrative-devices.md`: cadence echo of period source texts,
-     dormant returns, the open-setup curve) may be added under the same
-     rule: defined, coded and hashed before any label is built, or not used
-     in this wave. The model's difference against the bibliographic baseline
-     is reported with its interval and without a significance claim. It is
-     the only analysis whose result may be described as being about style,
-     and then descriptively.
-  5. *Power, re-estimated on the 2013 corpus* (`data-raw/nested-comparison.R`;
-     per-fold results in `data-raw/nested-comparison.csv` and
-     `data-raw/nested-comparison-with-id.csv`). Five author-grouped folds,
-     about 151 test books each, alpha chosen per fold by inner CV:
-
-     | baseline | record | text | record + text | nested gain | its SD |
-     |---|---|---|---|---|---|
-     | section 6 (genre, length, `date_added`) | 0.748 | 0.731 | 0.794 | +0.046 (5 of 5 folds) | 0.027 |
-     | section 6 plus `log10(gutenberg_id)` | 0.819 | 0.731 | 0.836 | +0.017 (4 of 5) | 0.028 |
-
-     The nested gain's SD is about 0.027 with either baseline. Scaled to the
-     wave's ~400 test books per fold, section 7's arithmetic gives a minimum
-     detectable effect of about **0.022**, against the registered 0.056. (The
-     registered 0.068 is reproduced, 0.0686, by the registered comparison with
-     the id in the baseline; with `date_added`, as section 6 specifies, that SD
-     is 0.044.) The declared minimum effect of interest stays at **0.05**, but
-     its reason changes: section 7's "the design cannot detect anything
-     smaller" no longer holds, and 0.05 is kept as the smallest gain worth
-     calling a result. Lowering it after seeing 2013 gains of 0.046 and 0.017
-     would be choosing the bar to fit the data. Under these rules the 2013
-     corpus would not support H2 with either baseline.
-  5a. *The Gutenberg id joins the baseline (section 6).* Ids were
-     assigned in order of digitisation, and the canon was digitised first, so
-     a low id partly records fame already established when the book was
-     chosen. It never reads the book and is in the record at freeze. On the
-     2013 corpus it is the strongest non-text predictor (AUC 0.810 with genre
-     and length, against 0.748 with `date_added`; the two correlate at 0.80),
-     and it removes about two thirds of the text's apparent gain. Adding
-     `log10(gutenberg_id)` to section 6's baseline makes H2 harder to pass and
-     a pass more meaningful, so it is added. This changes the baseline as well
-     as the endpoint, so point 3's both-ways reporting covers it too: the
-     nested comparison is also reported with the registered baseline,
-     without the id, as exploratory.
-  5b. *Subject headings in the record (2013 corpus,
-     `data-raw/nested-comparison-with-headings.csv`, catalogue sha256
-     `66847ed7…`, the 2026-11-08 mirror copy).* Each heading is split at
-     " -- " into its parts, and each part in at least 3 of a fold's training
-     books becomes a 0/1 column (114–135 per fold), penalised, with the core
-     covariates (point 5a's baseline) unpenalised. Record alone 0.844, record
-     + text 0.835: reading adds **−0.009** (text helps in 2 of 5 folds; SD
-     0.032). As the record grows, what reading adds shrinks from +0.046 to
-     +0.017 to about nothing. Two caveats: the headings are from a 2026
-     catalogue and the labels from downloads around 2013, so headings added
-     since may reflect popularity and this is an upper bound on their power
-     (the wave's headings are frozen before its window); and the heading and
-     TF-IDF columns share one penalty in the combined fit, so the negative
-     sign is not evidence that reading hurts. **Pending decision: headings in
-     the primary baseline, or a declared secondary comparison.**
-  6. *Not changed.* The outcome, eligibility, strata, labels, folds, the
-     audit gates and the declared minimum effect of interest.
+     dormant returns, the open-setup curve) may be added under the same rule:
+     defined, coded and hashed before any label is built, or not used in
+     this wave. It is judged against the record in the same stacked form,
+     reported with its interval and without a significance claim. It is the
+     only analysis whose result may be described as being about style, and
+     then descriptively.
+  7. *Subject headings: a declared secondary yardstick, not the primary
+     one.* The record with each heading split at " -- " into its parts, each
+     part in at least 3 of a fold's training books a 0/1 column, penalised,
+     beside the unpenalised core (both rules pinned here). On the 2013 corpus
+     the headings take the text's contribution from +0.030 to +0.010
+     (point 5). They are not primary because they partly record fame: the
+     2013 successes carry 3.8 headings on average and the failures 2.5, and
+     the count of headings alone predicts the 2013 label with AUC 0.66, so a
+     baseline holding them partly controls for "already famous", which is
+     close to the outcome itself. On the 2013 corpus they are also
+     contaminated (a 2026 catalogue against labels from downloads around
+     2013); the wave's are frozen before its window. The comparison is
+     reported as "beyond the record including subject headings, which partly
+     reflect prior fame", with the heading count beside it.
+  8. *Not changed.* The outcome, eligibility, strata, labels, folds, the
+     audit gates and the declared minimum effect of interest. The text model
+     itself is unchanged and still reads only the text.
 
   Sections 1, 6, 7 and 10 are edited to match and point here.
 - **2026-11-20 — genres from subject headings; Novels is the primary stratum.**

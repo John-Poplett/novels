@@ -1,37 +1,47 @@
 # The H2 comparison on the 2013 corpus, registered and nested
 # (PREREGISTRATION.md section 11, draft amendment of 2026-11-22).
 #
-# Three models on each of the five author-grouped folds, on the same rows:
+# Four models on each of the five author-grouped folds, on the same rows:
 #
-#   bibliographic  glm on genre + log10(text length) + log10(date_added),
-#                  section 6's baseline without publication year (absent, as
-#                  section 6 allows; the omission is reported)
-#   text           TF-IDF unigrams + glmnet: the pipeline's own fits
-#   combined       the same TF-IDF matrix plus the bibliographic covariates,
-#                  unpenalised (penalty.factor = 0), one glmnet fit
+#   bibliographic  "the record": glm on genre + log10(text length) +
+#                  log10(date_added) (+ log10(gutenberg_id) with --with-id),
+#                  without publication year (absent, as section 6 allows)
+#   text           TF-IDF unigrams + glmnet: the pipeline's pure-text fits
+#   stacked        the record plus ONE extra column, the pure-text
+#                  classifier's score. The classifier never sees the record:
+#                  the record is only the yardstick it is judged against.
+#                  Training books' scores are pre-validated (cv.glmnet with
+#                  keep = TRUE: each book scored by a model that did not see
+#                  it), so the stacking model is not fooled by over-confident
+#                  in-sample scores; test books are scored by the classifier
+#                  fitted on the whole training fold.
+#   joint          the TF-IDF matrix and the record in one glmnet fit, record
+#                  unpenalised: the draft's first design, kept for comparison
+#                  (and as the vignette's "classifier given the catalogue")
 #
 # For text and combined, alpha is chosen per fold by inner cross-validation
 # (the best cross-validated AUC at lambda.min over the pipeline's alpha
 # grid), never by the outer test fold. The paired fold-level differences
-# text - bibliographic (registered) and combined - bibliographic (nested)
-# give the SDs from which section 7's minimum detectable effect is computed.
+# text - bibliographic (registered), stacked - bibliographic (the amended
+# endpoint) and joint - bibliographic give the SDs from which section 7's
+# minimum detectable effect is computed.
 #
 # Run from the package root after `tar_make()`:
 #
 #   Rscript data-raw/nested-comparison.R [--with-id] [--headings=CATALOGUE] [--out=FILE]
 #
-# --with-id adds log10(gutenberg_id) to the baseline. It is not in section 6,
-# but on this corpus it predicts the label far better than date_added
-# (AUC 0.810 against 0.748 alone), so it shows whether the nested gain
-# survives a stronger record.
+# --with-id adds log10(gutenberg_id) to the baseline, as the draft amendment
+# of 2026-11-22 does to section 6. Without it, the baseline is section 6 as
+# registered.
 #
 # --headings=CATALOGUE (a pg_catalog.csv.gz; implies --with-id) adds the
 # subject headings to the record: each heading is split at " -- " into its
 # parts ("England", "19th century", "Fiction"), and each part found in at
 # least 3 of the fold's training books becomes a 0/1 column. There are
 # hundreds, so the record itself is then a penalised glmnet fit (core
-# covariates unpenalised, heading columns penalised, alpha by inner CV), and
-# record + text adds the TF-IDF columns to the same fit.
+# covariates unpenalised, heading columns penalised, alpha by inner CV); the
+# stacked model adds the classifier's score to it, unpenalised, and the
+# joint model adds the TF-IDF columns.
 #
 # Reads the per-fold targets (train_data_k, test_data_k, dtm_train_k,
 # dtm_test_k, cv_foldid_k, model_fit_k_alpha, eval_test_k_alpha) and
@@ -165,7 +175,38 @@ rows <- lapply(seq_len(k_folds), function(k) {
   text_auc <- aucRank(test$response, as.numeric(stats::predict(
     text_best$fit, newx = dtm_test, s = "lambda.min", type = "link")))
 
-  # Combined: covariates first, unpenalised, then the TF-IDF columns.
+  # Stacked: the pure-text classifier's score as one column beside the
+  # record. Refit at the chosen alpha with keep = TRUE for pre-validated
+  # training scores (same data, alpha and foldid as the pipeline's fit).
+  pv <- glmnet::cv.glmnet(dtm_train, train$response, family = "binomial",
+                          alpha = text_best$alpha, foldid = foldid,
+                          type.measure = "auc", keep = TRUE,
+                          control = list(thresh = 1e-5, maxit = 1e4))
+  # glmnet 5.x keeps binomial pre-validated fits on the link (log-odds)
+  # scale; scores all inside [0, 1] would mean probabilities instead.
+  s_train <- pv$fit.preval[, match(pv$lambda.min, pv$lambda)]
+  if (min(s_train) >= 0 && max(s_train) <= 1) {
+    stop("fit.preval looks like probabilities, not log-odds; check the glmnet version")
+  }
+  s_test <- as.numeric(stats::predict(pv, newx = dtm_test, s = "lambda.min", type = "link"))
+  if (!with_headings) {
+    st <- suppressWarnings(stats::glm.fit(cbind(1, x_train, s_train), train$response,
+                                          family = stats::binomial()))
+    stacked_auc <- aucRank(test$response,
+                           as.vector(cbind(1, x_test, s_test) %*% st$coefficients))
+  } else {
+    st_fits <- lapply(alphas, function(a) {
+      glmnet::cv.glmnet(cbind(x_train, s_train), train$response, family = "binomial",
+                        alpha = a, foldid = foldid, type.measure = "auc",
+                        penalty.factor = c(pf_bib, 0),
+                        control = list(thresh = 1e-5, maxit = 1e4))
+    })
+    stacked_auc <- aucRank(test$response, as.numeric(stats::predict(
+      bestByInnerCv(st_fits)$fit, newx = cbind(x_test, s_test), s = "lambda.min",
+      type = "link")))
+  }
+
+  # Joint: covariates first, unpenalised, then the TF-IDF columns.
   z_train <- cbind(Matrix::Matrix(x_train, sparse = TRUE), dtm_train)
   z_test <- cbind(Matrix::Matrix(x_test, sparse = TRUE), dtm_test)
   pf <- c(if (with_headings) pf_bib else rep(0, ncol(x_train)), rep(1, ncol(dtm_train)))
@@ -182,9 +223,11 @@ rows <- lapply(seq_len(k_folds), function(k) {
     fold = k, n_test = nrow(test), heading_columns = n_heading_columns,
     bibliographic = bib_auc,
     text = text_auc, text_alpha = text_best$alpha,
-    combined = comb_auc, combined_alpha = comb_best$alpha,
+    stacked = stacked_auc,
+    joint = comb_auc, joint_alpha = comb_best$alpha,
     text_minus_bib = text_auc - bib_auc,
-    combined_minus_bib = comb_auc - bib_auc
+    stacked_minus_bib = stacked_auc - bib_auc,
+    joint_minus_bib = comb_auc - bib_auc
   )
 })
 res <- dplyr::bind_rows(rows)
@@ -198,14 +241,16 @@ mde <- function(sd_2013, n_2013 = mean(res$n_test), n_wave = 400) {
 }
 
 print(as.data.frame(res), digits = 3)
+diffs <- list("text - bibliographic (registered)" = res$text_minus_bib,
+              "stacked - bibliographic (amended)" = res$stacked_minus_bib,
+              "joint - bibliographic (first draft)" = res$joint_minus_bib)
 summ <- tibble::tibble(
-  comparison = c("text - bibliographic (registered)", "combined - bibliographic (nested)"),
-  mean = c(mean(res$text_minus_bib), mean(res$combined_minus_bib)),
-  sd_2013 = c(stats::sd(res$text_minus_bib), stats::sd(res$combined_minus_bib)),
-  sd_wave = c(mde(stats::sd(res$text_minus_bib))[["sd_wave"]],
-              mde(stats::sd(res$combined_minus_bib))[["sd_wave"]]),
-  mde_wave = c(mde(stats::sd(res$text_minus_bib))[["mde"]],
-               mde(stats::sd(res$combined_minus_bib))[["mde"]])
+  comparison = names(diffs),
+  mean = vapply(diffs, mean, numeric(1)),
+  positive_folds = vapply(diffs, function(d) sum(d > 0), integer(1)),
+  sd_2013 = vapply(diffs, stats::sd, numeric(1)),
+  sd_wave = vapply(diffs, function(d) mde(stats::sd(d))[["sd_wave"]], numeric(1)),
+  mde_wave = vapply(diffs, function(d) mde(stats::sd(d))[["mde"]], numeric(1))
 )
 cat("\nBaseline:", if (with_headings) paste0(
   "genre + log_len + log_added + log_id + heading parts (catalogue sha256 ",
@@ -213,7 +258,8 @@ cat("\nBaseline:", if (with_headings) paste0(
   "genre + log_len + log_added (section 6)", "\n")
 cat("Mean AUC: bibliographic", format(mean(res$bibliographic), digits = 3),
     " text", format(mean(res$text), digits = 3),
-    " combined", format(mean(res$combined), digits = 3), "\n")
+    " stacked", format(mean(res$stacked), digits = 3),
+    " joint", format(mean(res$joint), digits = 3), "\n")
 cat("Mean test books per fold:", format(mean(res$n_test), digits = 4), "\n\n")
 print(as.data.frame(summ), digits = 3)
 
