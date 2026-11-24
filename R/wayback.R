@@ -110,3 +110,24 @@ waybackDownloads <- function(html) {
   data.frame(downloads = as.integer(gsub(",", "", m[2])),
              window = if (grepl("last 30 days", m[3], fixed = TRUE)) "30 days" else "unstated")
 }
+
+#' Call `f()` again after a failure, waiting longer each time
+#'
+#' The archive refuses connections in bursts when it is asked too often, so
+#' a failed request is usually worth repeating after a pause. `f` is retried
+#' after each wait in `waits`; the last failure is re-raised.
+#'
+#' @param f a function of no arguments
+#' @param waits seconds to wait before each retry
+#' @param sleep the waiting function (a test passes a recorder)
+#' @returns `f()`'s value, from the first call that succeeds
+#' @noRd
+withRetry <- function(f, waits = c(10, 30, 90), sleep = Sys.sleep) {
+  stopifnot("waits must be non-negative seconds" = is.numeric(waits) && all(waits >= 0))
+  for (w in waits) {
+    result <- tryCatch(f(), error = function(e) e)
+    if (!inherits(result, "error")) return(result)
+    sleep(w)
+  }
+  f()
+}

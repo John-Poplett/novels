@@ -53,3 +53,25 @@ test_that("a page without a Downloads row gives NA, not a number from elsewhere"
                    data.frame(downloads = NA_integer_, window = NA_character_))
   expect_identical(waybackDownloads(character())$downloads, NA_integer_)
 })
+
+test_that("withRetry repeats a failing call after growing waits", {
+  calls <- 0
+  waited <- numeric()
+  flaky <- function() {
+    calls <<- calls + 1
+    if (calls < 3) stop("Couldn't connect to server")
+    "page"
+  }
+  expect_identical(withRetry(flaky, waits = c(10, 30, 90),
+                             sleep = function(s) waited <<- c(waited, s)), "page")
+  expect_identical(calls, 3)
+  expect_identical(waited, c(10, 30))
+})
+
+test_that("withRetry gives up with the last error", {
+  waited <- numeric()
+  expect_error(withRetry(function() stop("still refused"), waits = c(1, 2),
+                         sleep = function(s) waited <<- c(waited, s)), "still refused")
+  expect_identical(waited, c(1, 2))
+  expect_identical(withRetry(function() 1, waits = numeric()), 1)
+})

@@ -26,8 +26,10 @@
 #       [--limit=N]
 #
 # --ids reads only those corpus books (the mini-test: 215, whose answer is
-# known, and the three patched rows); --delay (default 1) spaces the
-# requests out, about three per book.
+# known, and the three patched rows); --delay (default 4) spaces the
+# requests out, about three per book, so about 15 a minute: at one a second
+# the archive refused connections in bursts (2026-11-24, 740 of 1,090
+# reads). A refused request is retried after 10, 30 and 90 seconds.
 
 pkgload::load_all(quiet = TRUE)
 
@@ -41,7 +43,7 @@ from <- arg("from", "2011")
 to <- arg("to", "2013")
 dir <- arg("dir", "data-raw/wayback")
 manifest_path <- arg("manifest", "data-raw/wayback-manifest.csv")
-delay <- as.numeric(arg("delay", "1"))
+delay <- as.numeric(arg("delay", "4"))
 limit <- as.integer(arg("limit", NA))
 only <- arg("ids", NA)
 if (is.na(target)) stop("--target must be a date, YYYY-MM-DD.", call. = FALSE)
@@ -103,7 +105,8 @@ readOne <- function(gutenberg_id, read_id) {
   index <- tryCatch({
     tmp <- tempfile(fileext = ".txt")
     on.exit(unlink(tmp))
-    downloadWithTimeout(waybackIndexUrl(read_id, from, to), tmp, timeout = 120)
+    withRetry(function() downloadWithTimeout(waybackIndexUrl(read_id, from, to), tmp,
+                                             timeout = 120))
     waybackCaptures(readLines(tmp, warn = FALSE))
   }, error = function(e) e)
   Sys.sleep(delay)
@@ -128,7 +131,7 @@ readOne <- function(gutenberg_id, read_id) {
       dest <- pagePath(read_id, bracket$timestamp[j])
       dir.create(dirname(dest), recursive = TRUE, showWarnings = FALSE)
       partial <- paste0(dest, ".partial")
-      downloadWithTimeout(row$url, partial, timeout = 120)
+      withRetry(function() downloadWithTimeout(row$url, partial, timeout = 120))
       if (!file.size(partial)) stop("the page is empty")
       file.rename(partial, dest)
       row$sha256 <- digest::digest(dest, algo = "sha256", file = TRUE)
