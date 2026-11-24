@@ -83,8 +83,9 @@ test_that("recent FAILED lines are reported, old ones are not", {
            healthy_log[2])
   p <- snapshotProblems(dir, "2026-11-21", log, complete("2026-11-07"), now)
   expect_length(p, 1)
-  expect_match(p, "^Failures: the collector logged 2 failures in the last 26 hours:\n")
-  expect_match(p, "2026-11-21T07:00:03Z collect-snapshot: FAILED: pull", fixed = TRUE)
+  expect_match(p, "^Failures: the collector logged these failures in the last 26 hours")
+  expect_match(p, "\n    collect-snapshot: FAILED: pull", fixed = TRUE)
+  expect_no_match(p, "2026-11-21T", fixed = TRUE)
   expect_no_match(p, "2026-11-19", fixed = TRUE)
   expect_no_match(p, "without a stamp", fixed = TRUE)
 })
@@ -99,7 +100,32 @@ test_that("expected failures are ignored", {
     character())
   expect_match(
     snapshotProblems(dir, "2026-11-21", log, complete("2026-11-07"), now),
-    "1 failure in")
+    "this failure in")
+})
+
+test_that("a failure repeating on consecutive nights is one episode", {
+  # Regression: the stamped lines and their count made each night's text
+  # differ, so alertAction() commented (and emailed) every night of an outage.
+  dir <- series("2026-11-07")
+  night <- function(day, extra = character()) c(
+    log_at(c(paste0(day, "T07:00:01Z"), "start on appliance"),
+           c(paste0(day, "T07:00:09Z"), "FAILED: data-raw/snapshot-downloads.R exited 1")),
+    extra,
+    log_at(c(paste0(day, "T07:00:10Z"), "done, status 1")))
+  # the 26-hour window still holds the previous night's line at the next check
+  log1 <- night("2026-11-21")
+  log2 <- c(log1, night("2026-11-22"))
+  at <- function(day) as.POSIXct(paste(day, "08:00:00"), tz = "UTC")
+  p1 <- snapshotProblems(dir, "2026-11-21", log1, complete("2026-11-07"), at("2026-11-21"))
+  p2 <- snapshotProblems(dir, "2026-11-22", log2, complete("2026-11-07"), at("2026-11-22"))
+  expect_identical(p2, p1)
+  expect_identical(alertAction(p2, p1, 12L), "none")
+  expect_identical(lengths(regmatches(p2, gregexpr("FAILED", p2))), 1L)
+  # a new kind of failure is a change, and gets its comment
+  log3 <- c(log2, night("2026-11-23",
+                        log_at(c("2026-11-23T07:00:09Z", "FAILED: upload to b2snap:x/"))))
+  p3 <- snapshotProblems(dir, "2026-11-23", log3, complete("2026-11-07"), at("2026-11-23"))
+  expect_identical(alertAction(p3, p2, 12L), "comment")
 })
 
 test_that("a silent, empty or unreadable log means the collector is not running", {

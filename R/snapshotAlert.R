@@ -36,7 +36,9 @@ logStamps <- function(lines) {
 #'    local snapshot? `offsite` is `NULL` when the listing itself failed.
 #' 3. **Failures:** does the log hold `FAILED` lines from the last
 #'    `max_age_hours`, other than those matching `ignore` (a peer that is
-#'    switched off on purpose)?
+#'    switched off on purpose)? Each distinct message is listed once,
+#'    without its stamp, so a failure that repeats nightly reads the same
+#'    every day.
 #' 4. **Silence:** is the log's newest stamped line older than
 #'    `max_age_hours` (or absent), meaning the collector never ran?
 #'
@@ -97,11 +99,16 @@ snapshotProblems <- function(dir, today, log_lines, offsite, now = Sys.time(),
     recent <- log_lines[stamped][stamps >= now - max_age_hours * 3600]
     failed <- grep("FAILED", recent, value = TRUE, fixed = TRUE)
     if (!is.null(ignore)) failed <- failed[!grepl(ignore, failed)]
+    # Without stamps or a count, and once each: the same failure on
+    # consecutive nights is then the same text, so alertAction() sees the
+    # same episode and does not comment (and email) every night.
+    failed <- sort(unique(sub(LOG_STAMP, "", failed)))
     if (length(failed)) {
       problems <- c(problems, paste0(
-        "Failures: the collector logged ", length(failed), " failure",
-        if (length(failed) > 1) "s", " in the last ", max_age_hours,
-        " hours:\n", paste0("    ", failed, collapse = "\n")))
+        "Failures: the collector logged ",
+        if (length(failed) > 1) "these failures" else "this failure",
+        " in the last ", max_age_hours, " hours (its log has the times):\n",
+        paste0("    ", failed, collapse = "\n")))
     }
     newest <- if (length(stamps)) max(stamps) else NA
     if (is.na(newest) || newest < now - max_age_hours * 3600) {
