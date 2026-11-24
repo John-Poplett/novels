@@ -348,6 +348,77 @@ not hypotheses and are not corrected.
 ## 11. Deviations
 
 - Amendments are dated, appended to this file, and published with the analysis.
+- **2026-11-23 — the counter's floor, and monitoring its reliability.**
+  1. *Findings.* (a) The 2013 count was not cumulative. The Wayback Machine's
+     captures of book 215's page read "Downloads 3796" (2011-07-16), 3434
+     (2012-05-02), 3423 (2012-10-18) and 3802 (2013-01-17), and from
+     2013-04-30 "downloads in the last 30 days"; a count that falls is not a
+     running total. The corpus's 3,433 for book 215 dates its scrape to about
+     May 2012. The 2013 labels and the wave therefore read the same kind of
+     counter, a trailing window. (b) A third reading exists: the Standardized
+     Project Gutenberg Corpus's metadata of 2018-07-18 (Zenodo
+     10.5281/zenodo.2422561) carries the counter for all 751 books, and
+     reproduces the 2013 labels at AUC 0.989 (2026-11-07: 0.899). (c) The
+     counter now has a floor. Books with no downloads in 2018 get a median
+     of 395 a month in the 2026-11-07 snapshot; English texts among them,
+     423, with a standard deviation of 173 where Poisson counting would give
+     21. Across the catalogue the ratio of the 80th to the 20th percentile
+     fell from about 7 (2018) to about 2 (2026), and the catalogue's 20th
+     percentile (401 in that snapshot) lies inside the floor's own spread.
+     The wave's own cuts, within its strata and over 25 windows, do not yet
+     exist. The floor is almost certainly automated traffic. Its catalogue
+     covariates (id, year added, authors, title length, subjects) predict
+     about a third of its log variance on English texts (10-fold
+     cross-validated R² 0.34, `data-raw/floor-calibration.R`).
+  2. *The floor is not subtracted from the label.* Its predictable part is
+     predicted from bibliographic information, including the baseline's own
+     id and date added. Subtracting it would put bibliographic information
+     into the outcome, which the amendment of 2026-11-23 (point 2) forbids.
+     A constant floor would change no rank and so no label. The outcome of
+     section 2 stands.
+  3. *Monitoring, not peeking.* After each snapshot, and only from counts:
+     the split-half reliability of the window so far (the sum of the odd
+     windows against the sum of the even ones, Spearman correlation stepped
+     up by Spearman-Brown), and the share of books placed in the same class
+     (above the 80th or below the 20th percentile) by both halves; for all
+     eligible books, for the bottom quintile, and for the calibration books
+     (English texts with no downloads in 2018). These are published as they
+     are computed. No interim label is built, nothing is paired with a text
+     or a feature, and no window length, cut or rule is changed on their
+     evidence during the window. The full reliability curve is reported with
+     the results.
+  4. *The December test, fixed now.* The snapshots of 2026-11-07 and
+     2026-12-07 measure disjoint windows, both before the wave's. On the
+     calibration books, the Spearman correlation of their two counts
+     estimates how much of the floor persists from one month to the next.
+     Read in advance: below **0.3**, the floor is mostly month-to-month
+     noise, which the sum of 25 windows shrinks; above **0.7**, it is mostly
+     a persistent property of each book, which summing does not remove, and
+     the label is reconsidered by amendment before 2027-01-01; between them,
+     both, reported as such. A correlation above 0.7 cannot tell persistent
+     automated traffic from readers the calibration books have gained since
+     2018; the amendment it triggers decides which it is. The same
+     correlation is reported for all eligible books and for the bottom
+     quintile, as the first point of the curve of point 3.
+  5. *The noise-separation rule (section 5, step 4) assumes Poisson
+     counting,* and the floor's spread is about eight times that. A
+     replacement based on the floor's measured spread is decided with the
+     December result, by amendment before 2027-01-01.
+  6. *A filter at source is a change of scale.* If Project Gutenberg starts
+     removing automated traffic during the window, the floor drops in a step.
+     That is not a change of the counter's definition: the same books are
+     counted over the same trailing window, with less noise. A floor removed
+     evenly changes no book's rank within a window, and the share of section 2
+     absorbs the change in the site total, so the wave continues. The step is
+     dated from the calibration books' counts and reported, and the
+     reliability of point 3 is reported before and after it. A change that is
+     not confined to the floor (a new window length, a cumulative count, books
+     counted differently) remains a changed counter, and section 11 suspends
+     the wave.
+
+  The rule on a changed counter (this section) is edited to point to point 6.
+  Section 5 is not yet edited; the amendment that follows the December test
+  will edit it.
 - **2026-11-23 — a feature-family contest is declared (exploratory).**
   1. *The question.* Which families of text features know something about
      the label beyond bibliographic information, and beyond one another. It
@@ -658,7 +729,9 @@ not hypotheses and are not corrected.
   the next eligible window is 2030–2031.
 - If the counter's definition changes at source (for example, the 30-day window
   is replaced by a cumulative count), the wave is suspended and the registration
-  is revised before restarting. A changed counter is a different instrument.
+  is revised before restarting. A changed counter is a different instrument. A
+  filter of automated traffic is not a change of definition (amendment of
+  2026-11-23, the counter's floor, point 6).
 
 ## 12. Not covered by this registration
 
