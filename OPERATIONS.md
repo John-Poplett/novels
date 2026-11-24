@@ -311,13 +311,14 @@ A collector that fails quietly is otherwise found only by reading logs,
 and a missed grid date cannot be recovered. So the Pi checks the series
 every day, an hour after its own run, and reports through a GitHub issue;
 GitHub's notification email is the alert. `data-raw/check-snapshots.R`
-asks five questions (`snapshotProblems()` and `tokenProblem()` in
+asks six questions (`snapshotProblems()` and `tokenProblem()` in
 `R/snapshotAlert.R`):
 
 | Check | Fires when | What to do |
 |---|---|---|
 | Overdue | the next grid date after the latest snapshot has arrived and neither collector wrote one | read both logs; a feed outage needs only patience (E, "Feed down"), anything else a fix before tonight |
 | Off-site | B2 lacks a file of the latest snapshot, or the listing fails | the next Pi run uploads it; if it repeats, the Pi's log and the B2 key |
+| Stalled | the Pi's newest run started more than 3 hours ago and logged no `done` line. A younger unfinished run is still going (a fallback download can outlast the hour before the check), so Overdue and Off-site wait for it | the log's last line says where it stopped; a hung step or a killed run |
 | Failures | the Pi's log has a `FAILED` line in the last 26 hours, other than `copy to gpu-box:` (switched off on purpose) | the line names the step |
 | Silence | the Pi's log has no stamped line in 26 hours | the collector is not running: crontab, or the Pi is down |
 | Token | the GitHub token expires within 14 days, or GitHub refuses it | regenerate it (step 1). A refused token cannot report itself: the check logs `FAILED: … returned 401` and exits 2, and GitHub's own expiry email is the backstop |

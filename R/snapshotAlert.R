@@ -11,6 +11,11 @@ COLLECTOR_LOG_MAX_AGE_HOURS <- 26
 # snapshot-downloads.R), so an off-site copy missing one is incomplete.
 SNAPSHOT_FILES <- c("date_added.csv.gz", "downloads.csv.gz", "provenance.txt")
 
+# A collector run still going after this long is not about to finish: the
+# payload download is capped at one hour (downloadWithTimeout()), and the
+# copies and uploads after it take minutes.
+COLLECTOR_RUN_MAX_HOURS <- 3
+
 # collect-snapshot.sh's stamp() at the start of a line.
 LOG_STAMP <- "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z "
 
@@ -25,9 +30,28 @@ logStamps <- function(lines) {
   as.POSIXct(substr(lines[stamped], 1, 20), format = "%Y-%m-%dT%H:%M:%SZ", tz = "UTC")
 }
 
+#' When did an unfinished collector run start?
+#'
+#' collect-snapshot.sh logs `start on <host>` first and `done, status <n>`
+#' last. A newest `start on` with no `done` after it is a run still going,
+#' or one that was killed.
+#' @returns the run's start as POSIXct, or `NA` if the newest run finished
+#'   (or the log has none)
+#' @noRd
+unfinishedRun <- function(log_lines) {
+  stamped <- log_lines[grepl(LOG_STAMP, log_lines)]
+  starts <- grep("collect-snapshot: start on ", stamped, fixed = TRUE)
+  dones <- grep("collect-snapshot: done, status ", stamped, fixed = TRUE)
+  last_start <- if (length(starts)) max(starts) else NA_integer_
+  if (is.na(last_start) || any(dones > last_start)) {
+    return(as.POSIXct(NA, tz = "UTC"))
+  }
+  logStamps(stamped[last_start])
+}
+
 #' What is wrong with the snapshot series today?
 #'
-#' Four questions, each answered from its inputs alone:
+#' Five questions, each answered from its inputs alone:
 #'
 #' 1. **Overdue:** has the next grid date after the latest snapshot
 #'    ([nextSnapshotDate()]) arrived, after both collectors have run? This
@@ -41,6 +65,12 @@ logStamps <- function(lines) {
 #'    every day.
 #' 4. **Silence:** is the log's newest stamped line older than
 #'    `max_age_hours` (or absent), meaning the collector never ran?
+#' 5. **Stalled:** has the log's newest run gone more than `run_max_hours`
+#'    without finishing ([unfinishedRun()])? A run younger than that is
+#'    still going: the check, an hour after the collector starts, can
+#'    overtake a long fallback download, so Overdue and Off-site are not
+#'    judged until the run finishes, and a snapshot about to be written is
+#'    not reported missing.
 #'
 #' @param dir the snapshot series
 #' @param today the UTC date the collectors used
@@ -50,20 +80,32 @@ logStamps <- function(lines) {
 #' @param now the current time
 #' @param ignore regular expression for `FAILED` lines that are expected, or
 #'   `NULL`
+#' @param run_max_hours how long a collector run may go unfinished before it
+#'   counts as stalled
 #' @returns a character vector, one sentence per problem; empty when healthy
 #' @noRd
 snapshotProblems <- function(dir, today, log_lines, offsite, now = Sys.time(),
                              ignore = NULL,
-                             max_age_hours = COLLECTOR_LOG_MAX_AGE_HOURS) {
+                             max_age_hours = COLLECTOR_LOG_MAX_AGE_HOURS,
+                             run_max_hours = COLLECTOR_RUN_MAX_HOURS) {
   today <- as.Date(today)
   stopifnot("today must be a single date" = length(today) == 1 && !is.na(today))
   problems <- character()
   latest <- latestSnapshotDate(dir)
+  started <- if (is.null(log_lines)) as.POSIXct(NA, tz = "UTC") else unfinishedRun(log_lines)
+  running <- !is.na(started) && started >= now - run_max_hours * 3600
+  if (!is.na(started) && !running) {
+    problems <- c(problems, sprintf(
+      paste("Stalled: the collector run that started at %s has not finished",
+            "after %s hours. It hangs or was killed; its log says where it",
+            "stopped."),
+      format(started, "%Y-%m-%dT%H:%M:%SZ", tz = "UTC"), run_max_hours))
+  }
 
   # Not snapshotDue(): after a late snapshot, the day after a missed grid
   # date is not allowed (it would overlap), yet the grid date was missed.
   due <- if (is.na(latest)) today else nextSnapshotDate(latest)
-  if (today >= due) {
+  if (!running && today >= due) {
     problems <- c(problems, sprintf(
       paste("Overdue: no snapshot since %s, and one has been due since %s.",
             "Both collectors have run without writing it; their logs say why",
@@ -72,7 +114,7 @@ snapshotProblems <- function(dir, today, log_lines, offsite, now = Sys.time(),
       if (is.na(latest)) "the start" else format(latest), format(due)))
   }
 
-  if (!is.na(latest) && !identical(offsite, NA)) {
+  if (!running && !is.na(latest) && !identical(offsite, NA)) {
     if (is.null(offsite)) {
       problems <- c(problems, paste(
         "Off-site: the off-site listing failed, so whether the snapshots",

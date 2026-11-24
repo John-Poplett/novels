@@ -139,6 +139,51 @@ test_that("a silent, empty or unreadable log means the collector is not running"
                "^Silence: the collector log could not be read")
 })
 
+test_that("unfinishedRun finds a run with no done line after its start", {
+  expect_true(is.na(unfinishedRun(healthy_log)))
+  expect_true(is.na(unfinishedRun(character())))
+  expect_true(is.na(unfinishedRun("no stamps, start on x")))
+  going <- c(healthy_log, log_at(c("2026-11-22T07:00:00Z", "start on appliance"),
+                                 c("2026-11-22T07:00:05Z", "FAILED: pull from x")))
+  expect_identical(unfinishedRun(going),
+                   as.POSIXct("2026-11-22 07:00:00", tz = "UTC"))
+})
+
+test_that("a run still going is not overdue or incomplete off-site yet", {
+  # Regression: on a fallback night the Pi's payload download (up to an hour)
+  # outlasts the hour before the check, and a snapshot about to be written
+  # was reported overdue.
+  dir <- series("2026-11-07")
+  at <- as.POSIXct("2026-12-07 08:00:00", tz = "UTC")
+  going <- c(healthy_log, log_at(c("2026-12-07T07:00:00Z", "start on appliance")))
+  expect_identical(
+    snapshotProblems(dir, "2026-12-07", going, character(), now = at,
+                     max_age_hours = 1e6),
+    character())
+  # once it finishes without writing one, it is overdue
+  done <- c(going, log_at(c("2026-12-07T07:50:00Z", "done, status 0")))
+  p <- snapshotProblems(dir, "2026-12-07", done, character(), now = at,
+                        max_age_hours = 1e6)
+  expect_match(p, "^Overdue:", all = FALSE)
+  expect_match(p, "^Off-site:", all = FALSE)
+})
+
+test_that("a run unfinished for hours is stalled, and the rest is judged", {
+  dir <- series("2026-11-07")
+  at <- as.POSIXct("2026-12-07 11:00:00", tz = "UTC")
+  going <- c(healthy_log, log_at(c("2026-12-07T07:00:00Z", "start on appliance")))
+  p <- snapshotProblems(dir, "2026-12-07", going, complete("2026-11-07"), now = at,
+                        max_age_hours = 1e6)
+  expect_match(p, "^Stalled: the collector run that started at 2026-12-07T07:00:00Z",
+               all = FALSE)
+  expect_match(p, "^Overdue:", all = FALSE)
+  # the text names the start, not an age, so a later check reads the same
+  expect_identical(
+    snapshotProblems(dir, "2026-12-07", going, complete("2026-11-07"),
+                     now = at + 3600, max_age_hours = 1e6),
+    p)
+})
+
 test_that("alertAction opens, comments only on change, and closes", {
   expect_identical(alertAction("a", character(), NA_integer_), "open")
   expect_identical(alertAction("a", "a", 7L), "none")
