@@ -73,6 +73,39 @@ and has not finished" only once it is older than, say, 3 hours. A simpler
 alternative is moving the check to 03:00. That would make the race unlikely
 rather than impossible, so the log test is still worth having.
 
+> **Status, 2026-11-24: both landed; the race is made rare, not removed.**
+> `de539a5` adds the log test. `unfinishedRun()` finds a newest `start on`
+> with no `done` after it. A run younger than 3 hours is waited for (Overdue
+> and Off-site are not judged that day), and an older one is reported as
+> Stalled. `1642bd3` moves the check to 03:00 (the Pi's crontab was changed
+> the same day).
+>
+> What this solves: **no false alarm.** The check reads the log before it
+> lists off-site or reads the series (`check-snapshots.R:65`), and the
+> collector logs `done` last. So a run the log shows as finished has
+> already written and uploaded, and a run it shows as going is not judged.
+>
+> What it does not solve: **a true alarm can come a day late.** The
+> collector and the check are two cron entries, timed apart and not
+> sequenced, and only the download is capped (one hour). The pulls, copies
+> and uploads are not capped. A night whose run outlasts the two hours
+> before the check is judged the next day. If every night's run did, for
+> example a feed that times out at the cap, Overdue would never be raised
+> and Failures would carry the alert alone. The stakes are low: the alert
+> is delayed, never lost, and the series is unaffected. It is still a race,
+> so it is logged as a concern, not closed. See TODO.md, "Alert: sequence
+> the check after the collector", and OPERATIONS.md H, "Known gap". The
+> fixes that remove it are sequencing, not timing: the collector runs the
+> check as its last step (cron kept as a backstop), or the two share a
+> `flock` that the check waits on. Either needs a test of the interleaving
+> itself.
+>
+> Two smaller interleavings were found and left. First, `collect-snapshot.sh`
+> has no lock, so two collector runs could overlap; that needs a run longer
+> than 24 hours, which the previous day's check would already have reported
+> as Stalled. Second, a Pi that misses its 01:00 run is judged on the
+> previous night's state, and the Overdue it raises then is true.
+
 ## 3. A transient error on reopen orphans the open issue
 
 On a `"comment"` run, any non-2xx answer to the reopen PATCH is read as
