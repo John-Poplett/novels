@@ -30,6 +30,7 @@
 ^papers$
 ^tmp$
 ^\.github$
+^\.git$
 ^\.env$
 ^\.env\.example$
 ^SKILL\.md$
