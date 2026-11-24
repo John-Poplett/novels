@@ -258,7 +258,9 @@ main <- function(use_text = FALSE, out_path = NULL) {
               fmt(art$cor_log_length), fmt(art$cor_log_id)))
   cat(sprintf("duplicate titles: %d\n", art$duplicate_titles))
   cat("Reading: a long right tail plus a -0.5 id correlation means the count\n")
-  cat("mixes readership with how long the book has been downloadable.\n")
+  cat("also tracks when a book came to Gutenberg. It is a trailing window, not\n")
+  cat("a running total (PREREGISTRATION.md, amendment of 2026-11-23), so that\n")
+  cat("is not accumulation: the early uploads are read more.\n")
 
   section("2. Stability under resampling (median split)")
   stab <- auditStability(books$download_count, medianRule)
@@ -279,9 +281,10 @@ main <- function(use_text = FALSE, out_path = NULL) {
   cat("So a book whose true rate equals the cut is a coin flip, one 15% away\n")
   cat("from it is wrong about 5-8% of the time, and one 50% away is safe. The\n")
   cat("band is scale-free: what matters is the book's rate relative to the cut,\n")
-  cat("not the absolute size of the cut. The archived counts are cumulative and\n")
-  cat("cannot be used directly to estimate today's 30-day rate, which is why this\n")
-  cat("is a curve rather than a corpus statistic.\n")
+  cat("not the absolute size of the cut. The archived counts are 2012 readings\n")
+  cat("of a window whose length the page did not state, so they cannot stand for\n")
+  cat("today's 30-day rate, which is why this is a curve rather than a corpus\n")
+  cat("statistic.\n")
 
   section("4. Non-text predictability (author-disjoint folds)")
   n$log_len <- log10(nchar(n$text))
@@ -322,8 +325,10 @@ main <- function(use_text = FALSE, out_path = NULL) {
   section("6. Where to put a cut")
   cat("Books within +/-2 Poisson standard errors of a candidate cut, on the\n")
   cat("shipped counts. This is where a cut is decided by noise rather than by\n")
-  cat("the book. The levels are cumulative counts, so the absolute percentages\n")
-  cat("are indicative; the ranking of positions is what the table is for.\n")
+  cat("the book. The levels are one reading of a trailing window, and real\n")
+  cat("counts vary more than Poisson's (PREREGISTRATION.md, amendment of\n")
+  cat("2026-11-23), so the absolute percentages are indicative; the ranking of\n")
+  cat("positions is what the table is for.\n")
   candidates <- tibble::tibble(
     rule = c("median", "25th pct", "75th pct", "90th pct"),
     level = c(stats::median(books$download_count),
