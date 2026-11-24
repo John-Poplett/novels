@@ -263,8 +263,10 @@ TOKEN_WARN_DAYS <- 14
 
 #' Is the GitHub token about to expire?
 #'
-#' GitHub sends a fine-grained token's expiry with every response
-#' (`github-authentication-token-expiration`). An expired token would turn
+#' GitHub sends a token's expiry with every response
+#' (`github-authentication-token-expiration`), when it has one: the bot's
+#' classic token (OPERATIONS.md H, step 1) was made with none, and then
+#' only a refusal is reported. An expired token would turn
 #' the alert off silently, so the check raises it while the token still
 #' works. The text names the date, not a count of days, so it stays the same
 #' from one day to the next and the episode gets one email, not one a day.
@@ -293,8 +295,9 @@ tokenProblem <- function(headers, now = Sys.time(), warn_days = TOKEN_WARN_DAYS)
     return(character())
   }
   sprintf(paste(
-    "Token: the GitHub token expires on %s. Regenerate it (GitHub, Settings,",
-    "Developer settings, Fine-grained tokens) and replace",
+    "Token: the GitHub token expires on %s. Regenerate it (GitHub, as the",
+    "bot account: Settings, Developer settings, Personal access tokens,",
+    "Tokens (classic)) and replace",
     "~/.config/novels/github-token on the Pi (OPERATIONS.md, H, step 1)."),
     format(expires, "%Y-%m-%d", tz = "UTC"))
 }

@@ -11,8 +11,10 @@
 # --ignore   FAILED lines matching this are expected (gpu-box switched off)
 # --state    what was last reported, and in which issue
 #            (default ~/.local/state/novels-alert.rds)
-# --token-file  a fine-grained GitHub token, this repository only, Issues
-#            read/write (default ~/.config/novels/github-token, mode 600)
+# --token-file  the bot account's classic GitHub token, `public_repo` scope
+#            only (OPERATIONS.md H, step 1: a fine-grained token cannot reach
+#            a repository its owner does not own); default
+#            ~/.config/novels/github-token, mode 600
 # --repo     default John-Poplett/novels
 # --dry-run  print the decision and the text; no GitHub call, no state change
 #
@@ -86,7 +88,11 @@ if (file.exists(token_path)) {
                "Accept: application/vnd.github+json",
                "X-GitHub-Api-Version: 2022-11-28"), header_file)
   rm(token)
-  on.exit(unlink(header_file), add = TRUE)
+  # Removed with R's session temporary directory when the script quits. An
+  # on.exit() here would do nothing: this is top level, not a function, and
+  # every exit is a quit(), which skips on.exit handlers anyway. A killed
+  # run can leave the file, mode 600, in TMPDIR (/tmp in the check's
+  # crontab line).
 }
 
 # One call: its status and response headers, or NULL if nothing came back.
@@ -130,7 +136,8 @@ cat(stamp, "check-snapshots:", length(problems), "problem(s); action", action,
 if (length(problems)) cat(paste0("  ", problems, "\n"), sep = "")
 
 if (dry_run) {
-  cat("--- dry run: would ", action, " ---\n", body, "\n", sep = "")
+  if (action == "none") cat("--- dry run: nothing to post ---\n")
+  else cat("--- dry run: would ", action, " ---\n", body, "\n", sep = "")
   quit(save = "no", status = if (length(problems)) 1L else 0L)
 }
 if (action == "none") quit(save = "no", status = if (length(problems)) 1L else 0L)

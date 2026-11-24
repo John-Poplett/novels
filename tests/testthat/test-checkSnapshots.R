@@ -146,3 +146,23 @@ test_that("an issue closed or removed by hand ends the episode", {
   expect_match(res$output, "cannot be closed (404)", fixed = TRUE, all = FALSE)
   expect_identical(res$state, list(issue = NA_integer_, problems = character()))
 })
+
+test_that("a dry run with nothing to post says so, not \"Resolved\"", {
+  skip_if(is.na(checkout_root()), "data-raw/ is not in the built package")
+  root <- check_sandbox()
+  res <- run_check(root, list(issue = NA_integer_, problems = character()))
+  dry <- local({
+    args <- c(file.path(checkout_root(), "data-raw", "check-snapshots.R"),
+              "--log", file.path(root, "collector.log"),
+              "--state", file.path(root, "state.rds"), "--dry-run")
+    old <- setwd(checkout_root())
+    on.exit(setwd(old))
+    suppressWarnings(system2(file.path(R.home("bin"), "Rscript"), shQuote(args),
+                             env = paste0("NOVELS_SNAPSHOT_DIR=",
+                                          shQuote(file.path(root, "snapshots"))),
+                             stdout = TRUE, stderr = TRUE))
+  })
+  expect_identical(res$status, 0L)
+  expect_true("--- dry run: nothing to post ---" %in% dry)
+  expect_false(any(grepl("Resolved", dry, fixed = TRUE)))
+})
