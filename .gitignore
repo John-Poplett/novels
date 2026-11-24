@@ -35,3 +35,4 @@ tests/testthat/_problems/
 # raw RDF payloads, kept on snapshot dates and moved off-site (OPERATIONS.md, F4)
 data-raw/payloads/
 data-raw/refetch/
+data-raw/wayback/
