@@ -50,6 +50,14 @@ because it names dates, not counts.
 **Priority: first.** The alert is live, and the first multi-night outage
 would teach the reader to ignore it.
 
+> **Status, 2026-11-24: fixed, `04fe11e`.** Each distinct `FAILED` message
+> is listed once, sorted, without its stamp or a count, so the same failure
+> on consecutive nights reads the same and gets no comment. The 26-hour
+> window also keeps the previous night's line, which the review missed.
+> Regression test: two and three nights of one failure are one episode, and
+> a new kind of failure still comments. The trade-off: the issue body no
+> longer shows when each failure happened; the log keeps the times.
+
 ## 2. False Overdue (or Off-site) while the Pi's fallback is still running
 
 The check runs at 02:00, an hour after the Pi's 01:00 collector, and assumes
@@ -121,6 +129,12 @@ state alone, as `github()` does. To test it, use the existing
 `NOVELS_GITHUB_API` hook with a stub server, or factor the status decision
 into a small pure function and test that.
 
+> **Status, 2026-11-24: fixed, `70d2814`.** `githubRefused()` decides, and
+> leaves a 403 that carries `retry-after` or `x-ratelimit-remaining: 0` out,
+> since that is the rate limit. Anything else exits 2 with the state
+> untouched. Tested end to end by the new `test-checkSnapshots.R`, which
+> runs the script against a stand-in `curl`.
+
 ## 4. A failed close re-posts "Resolved" every day
 
 The close path posts the "Resolved" comment and then the PATCH. If the PATCH
@@ -138,6 +152,13 @@ case was not tested against GitHub.
 is already closed, skip the PATCH. Alternatively, save the state right after
 the comment, with a `closing` flag, so a retry only retries the PATCH.
 
+> **Status, 2026-11-24: fixed, `70d2814`, by the second option.** Once the
+> "Resolved" comment is posted, the state records it, so a retry only
+> closes. A lasting refusal of the close (403, 404, 410, 422) ends the
+> episode. Both cases are tested with the stand-in `curl`. Whether GitHub
+> does refuse the bot's close of an issue its owner closed is still not
+> tested against GitHub itself; either way the episode now ends once.
+
 ## 5. A missing token exits 1, which the contract reads as "reported"
 
 When the token file is missing and there is something to report, the script
@@ -148,6 +169,9 @@ define 1 as "problems found (and reported)" and 2 as "reporting failed".
 exits with status 1.
 
 **Fix:** print the message and `quit(status = 2L)`.
+
+> **Status, 2026-11-24: fixed, `70d2814`.** It prints the message and
+> exits 2. Tested with the stand-in `curl`.
 
 ## 6. The token docs contradict OPERATIONS.md
 
@@ -171,6 +195,11 @@ token. While there, consider also treating 403 and 404 from the token probe
 (`GET /repos/…`) as a Token problem. The report would then fail the same
 way, but `novels-alert.log` would say why.
 
+> **Status, 2026-11-24: fixed, `94e1e2d`.** The header, `tokenProblem()`'s
+> doc and its expiry message name the bot's classic `public_repo` token and
+> its menu path. Not done: the suggestion to report a 403 or 404 from the
+> token probe as a Token problem.
+
 ## 7. The top-level `on.exit()` does nothing
 
 `on.exit(unlink(header_file), add = TRUE)` sits in a top-level `if` block of
@@ -190,6 +219,12 @@ nothing, and its session temporary directory was gone afterwards.
 what removes the file. Or wrap the reporting in a function so that
 `on.exit()` is real; `quit()` still skips it, so the function would have to
 return a status for a single `quit()` at the end.
+
+> **Status, 2026-11-24: fixed, `94e1e2d`, by the first option.** The line
+> is gone, and the comment says what removes the file and what a killed
+> run leaves in `TMPDIR`. The same commit makes a dry run whose action is
+> none print "nothing to post" instead of the "Resolved" body, an oddity
+> seen on the Pi.
 
 ## 8. A killed worker silently drops draws in the pilot
 
@@ -212,6 +247,12 @@ checked on 2026-11-24 that `contamination-pilot-v2.csv` and
 once. Fix this before the full run, which will be longer and use more
 memory.
 
+> **Status, 2026-11-24: fixed on `fix/pilot-null-draws` (`5abe321`), not
+> yet merged; its package check is running.** `parallelResults()` (`R/`)
+> stops on any `NULL` or `try-error` and names the jobs, and the pilot
+> also checks it has 2 rows per job. One test kills a real forked worker
+> with SIGKILL.
+
 ## 9. `aucRank()` exists four times, and the copies differ
 
 The copies are in `label-audit.R:40`, `genre-contamination-pilot.R:91`,
@@ -229,9 +270,22 @@ its helpers. Do the baseline builder in a second step. This finding is a
 refactor across four scripts, so it should come after the alert fixes and be
 kept out of any results-producing run.
 
+> **Status, 2026-11-24: done on `feat/shared-auc` (`cb9afd0`), not yet
+> merged, check to run.** One internal `aucRank()` in `R/aucRank.R` serves
+> all four scripts and checks its inputs. Tests cover agreement with
+> `pROC` on tied scores, the edges, and `NA` for one class. No committed
+> result changes: with both classes present the arithmetic is the same.
+> Left for a separate change: the alpha grid and the baseline-covariate
+> builder.
+
 ---
 
 ## Suggested order
+
+> **Status, 2026-11-24:** items 1–4 are on `dev`. The Pi has pulled items
+> 1 and 2 (`70d2814`), and needs one more pull for items 3 and 4. Item 5 is waiting on its check, and item 6 on
+> item 5. A seventh, `chore/rbuildignore-git`, came up along the way: a
+> check run in a worktree packaged its `.git` file.
 
 1. `fix/alert-episode-key`: finding 1, with its regression test.
 2. `fix/alert-github-paths`: findings 3, 4 and 5, all in the reporting
