@@ -309,7 +309,7 @@ No mirror, ever. `data-raw/freeze-catalogue.R` enforces all of it.
 
 A collector that fails quietly is otherwise found only by reading logs,
 and a missed grid date cannot be recovered. So the Pi checks the series
-every day, an hour after its own run, and reports through a GitHub issue;
+every day, two hours after its own run, and reports through a GitHub issue;
 GitHub's notification email is the alert. `data-raw/check-snapshots.R`
 asks six questions (`snapshotProblems()` and `tokenProblem()` in
 `R/snapshotAlert.R`):
@@ -335,6 +335,17 @@ the close itself has to be retried. The issues carry no label, because GitHub dr
 labels set by non-collaborators; the `snapshot-alert` label exists for
 labelling by hand. What was last
 reported, and in which issue, is kept in `~/.local/state/novels-alert.rds`.
+
+**Known gap (a race, made rare, not removed).** The collector and the check
+are two cron entries, timed apart, not sequenced. A run still going at the
+check is waited for (Overdue and Off-site are not judged that day), so it
+cannot raise a false alarm, but it can delay a true one by a day: a night
+whose run outlasts the two hours before the check is judged the next day,
+and if every night's run does, Overdue is never raised and Failures carries
+the alert alone. Only the download is capped (one hour); the pulls, copies
+and uploads are not. A run older than 3 hours is reported as Stalled. The
+fix is sequencing, not timing: TODO.md, "Alert: sequence the check after
+the collector".
 `--dry-run` prints the decision and the text without calling GitHub.
 
 **Not covered:** the Pi itself down, or its cron dead, silences the check
@@ -370,10 +381,11 @@ reaching the Pi and B2).
    command line. A token with an expiry is warned about 14 days ahead (the
    Token check); one without has nothing to warn about.
 
-2. **[Claude]** Pi crontab, an hour after the collector:
+2. **[Claude]** Pi crontab, two hours after the collector (03:00 since
+   2026-11-24; it was 02:00, which a long fallback run could outlast):
 
    ```
-   0 2 * * * cd /home/john/MachineLearning/novels && RCLONE=/home/john/.local/bin/rclone Rscript data-raw/check-snapshots.R --log /home/john/.local/state/novels-snapshot.log --offsite b2snap:gutenberg-download-counts/snapshots/ --ignore 'copy to gpu-box:' >> /home/john/.local/state/novels-alert.log 2>&1
+   0 3 * * * cd /home/john/MachineLearning/novels && RCLONE=/home/john/.local/bin/rclone Rscript data-raw/check-snapshots.R --log /home/john/.local/state/novels-snapshot.log --offsite b2snap:gutenberg-download-counts/snapshots/ --ignore 'copy to gpu-box:' >> /home/john/.local/state/novels-alert.log 2>&1
    ```
 
    Its own log is separate, so the check's lines can never stand in for
@@ -408,7 +420,7 @@ reaching the Pi and B2).
   `--ignore-existing` copy of the whole directory delivers everything it
   missed. Committing a new snapshot to git can be done from the Mac's
   checkout instead.
-- **Kernel reboots on the Pi:** not between 00:30 and 02:00 Central on a
+- **Kernel reboots on the Pi:** not between 00:30 and 03:30 Central on a
   grid date. A missed Pi night means the Mac covered it, or the next night
   takes a late snapshot.
 - **Before 2026-12-07:** pause the Mac's cron for one non-grid night and

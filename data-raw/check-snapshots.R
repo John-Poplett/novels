@@ -1,5 +1,5 @@
 # Daily health check for the download-snapshot series, reported as a GitHub
-# issue (OPERATIONS.md, "Alert"). Runs on the Pi an hour after its collector:
+# issue (OPERATIONS.md, "Alert"). Runs on the Pi two hours after its collector:
 #
 #   Rscript data-raw/check-snapshots.R --log FILE [--offsite REMOTE]
 #     [--ignore REGEX] [--state FILE] [--token-file FILE] [--repo OWNER/NAME]

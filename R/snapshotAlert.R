@@ -67,7 +67,7 @@ unfinishedRun <- function(log_lines) {
 #'    `max_age_hours` (or absent), meaning the collector never ran?
 #' 5. **Stalled:** has the log's newest run gone more than `run_max_hours`
 #'    without finishing ([unfinishedRun()])? A run younger than that is
-#'    still going: the check, an hour after the collector starts, can
+#'    still going: the check, two hours after the collector starts, can
 #'    overtake a long fallback download, so Overdue and Off-site are not
 #'    judged until the run finishes, and a snapshot about to be written is
 #'    not reported missing.
