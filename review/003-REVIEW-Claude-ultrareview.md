@@ -247,8 +247,7 @@ checked on 2026-11-24 that `contamination-pilot-v2.csv` and
 once. Fix this before the full run, which will be longer and use more
 memory.
 
-> **Status, 2026-11-24: fixed on `fix/pilot-null-draws` (`5abe321`), not
-> yet merged; its package check is running.** `parallelResults()` (`R/`)
+> **Status, 2026-11-24: fixed, `5abe321`.** `parallelResults()` (`R/`)
 > stops on any `NULL` or `try-error` and names the jobs, and the pilot
 > also checks it has 2 rows per job. One test kills a real forked worker
 > with SIGKILL.
@@ -270,8 +269,7 @@ its helpers. Do the baseline builder in a second step. This finding is a
 refactor across four scripts, so it should come after the alert fixes and be
 kept out of any results-producing run.
 
-> **Status, 2026-11-24: done on `feat/shared-auc` (`cb9afd0`), not yet
-> merged, check to run.** One internal `aucRank()` in `R/aucRank.R` serves
+> **Status, 2026-11-24: fixed, `cb9afd0`.** One internal `aucRank()` in `R/aucRank.R` serves
 > all four scripts and checks its inputs. Tests cover agreement with
 > `pROC` on tied scores, the edges, and `NA` for one class. No committed
 > result changes: with both classes present the arithmetic is the same.
@@ -282,10 +280,11 @@ kept out of any results-producing run.
 
 ## Suggested order
 
-> **Status, 2026-11-24:** items 1–4 are on `dev`. The Pi has pulled items
-> 1 and 2 (`70d2814`), and needs one more pull for items 3 and 4. Item 5 is waiting on its check, and item 6 on
-> item 5. A seventh, `chore/rbuildignore-git`, came up along the way: a
-> check run in a worktree packaged its `.git` file.
+> **Status, 2026-11-24: all six are on `dev`,** each after its own
+> level-2 check came back 0/0/0. The Pi has pulled the alert fixes
+> (items 1–4), and its dry run says "nothing to post". A seventh,
+> `chore/rbuildignore-git` (`0b25532`), came up along the way: a check run
+> in a worktree packaged the worktree's `.git` file.
 
 1. `fix/alert-episode-key`: finding 1, with its regression test.
 2. `fix/alert-github-paths`: findings 3, 4 and 5, all in the reporting
