@@ -280,9 +280,11 @@ results <- parallel::mclapply(seq_len(nrow(jobs)), function(j) {
                folds = min(gp[["folds"]], gc[["folds"]]))
   }))
 }, mc.cores = cores, mc.preschedule = FALSE)
-failed <- vapply(results, inherits, logical(1), "try-error")
-if (any(failed)) stop("Runs failed: ", conditionMessage(attr(results[[which(failed)[1]]], "condition")))
-res <- dplyr::bind_rows(results)
+res <- dplyr::bind_rows(novels:::parallelResults(results))
+if (nrow(res) != 2 * nrow(jobs)) {  # two label schemes per job
+  stop("Expected ", 2 * nrow(jobs), " rows (", nrow(jobs), " jobs x 2 label schemes), got ",
+       nrow(res), ". Nothing was summarised.", call. = FALSE)
+}
 message("done in ", format(round(difftime(Sys.time(), started, units = "mins"), 1)))
 
 summ <- res |>
