@@ -326,7 +326,11 @@ One issue per episode: opened when a problem appears, commented on only
 when the set of problems changes, so a long feed outage sends one email,
 not one a day; closed with a comment when every check passes. Closing it by
 hand is fine: the bot may not reopen an issue its owner closed, so a change
-opens a new one instead. The issues carry no label, because GitHub drops
+opens a new one instead, and when the problems clear the episode simply
+ends. Only a lasting refusal (403, 404, 410, 422) is read that way; a
+failure that may pass (no answer, a 5xx, the rate limit) exits 2 and is
+retried the next day, and a "Resolved" comment is posted once even when
+the close itself has to be retried. The issues carry no label, because GitHub drops
 labels set by non-collaborators; the `snapshot-alert` label exists for
 labelling by hand. What was last
 reported, and in which issue, is kept in `~/.local/state/novels-alert.rds`.

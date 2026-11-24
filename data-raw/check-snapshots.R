@@ -55,6 +55,7 @@ token_path <- opt("--token-file", path.expand("~/.config/novels/github-token"))
 repo <- opt("--repo", "John-Poplett/novels")
 dry_run <- "--dry-run" %in% args
 api <- Sys.getenv("NOVELS_GITHUB_API", "https://api.github.com")  # tests only
+snapshot_dir <- Sys.getenv("NOVELS_SNAPSHOT_DIR", "data-raw/snapshots")  # tests only
 
 now <- Sys.time()
 today <- as.Date(format(now, "%Y-%m-%d", tz = "UTC"))
@@ -70,7 +71,7 @@ offsite <- if (is.null(offsite_remote)) NA else {  # NA: not checked
     stdout = TRUE, stderr = FALSE))
   if (!is.null(attr(listing, "status"))) NULL else listing
 }
-problems <- novels:::snapshotProblems("data-raw/snapshots", today, log_lines,
+problems <- novels:::snapshotProblems(snapshot_dir, today, log_lines,
                                       offsite, now = now, ignore = ignore)
 
 # GitHub, through the curl binary (present on the Pi, the Mac and gpu-box).
@@ -134,18 +135,16 @@ if (dry_run) {
 }
 if (action == "none") quit(save = "no", status = if (length(problems)) 1L else 0L)
 if (is.null(header_file)) {
-  stop("No GitHub token at ", token_path, ", so the ", length(problems),
-       " problem(s) above were not reported. Create it as OPERATIONS.md, ",
-       "\"Alert\" describes.", call. = FALSE)
+  cat(stamp, " check-snapshots: FAILED: no GitHub token at ", token_path, ", so the ",
+      length(problems), " problem(s) above were not reported. Create it as ",
+      "OPERATIONS.md, \"Alert\" describes.\n", sep = "")
+  quit(save = "no", status = 2L)
 }
+dir.create(dirname(state_path), showWarnings = FALSE, recursive = TRUE)
 
 comment <- function(issue, text) {
   github("POST", sprintf("/issues/%d/comments", issue),
          sprintf("{\"body\": %s}", novels:::jsonString(text)))
-}
-close_issue <- function(issue) {
-  github("PATCH", sprintf("/issues/%d", issue),
-         "{\"state\": \"closed\", \"state_reason\": \"completed\"}")
 }
 
 open_issue <- function() {
@@ -166,28 +165,49 @@ issue <- state$issue
 if (action == "comment") {
   # Someone may have closed the issue by hand. The bot opened it, but an
   # issue its owner closed is one the bot may not reopen (it is not a
-  # collaborator): then the change starts a new episode instead.
+  # collaborator): then the change starts a new episode instead. Only a
+  # lasting refusal means that; a failure that may pass (a 5xx, the rate
+  # limit, no answer) is retried tomorrow, or the open issue is orphaned.
   reopened <- curl_call("PATCH", sprintf("/issues/%d", issue), "{\"state\": \"open\"}")
   if (!is.null(reopened) && reopened$code >= 200 && reopened$code < 300) {
     comment(issue, body)
-  } else {
+  } else if (novels:::githubRefused(reopened)) {
     cat(stamp, " check-snapshots: issue #", issue, " cannot be reopened (",
-        if (is.null(reopened)) "no response" else reopened$code,
-        "); opening a new one\n", sep = "")
+        reopened$code, "); opening a new one\n", sep = "")
     action <- "open"
+  } else {
+    cat(stamp, " check-snapshots: FAILED: reopening issue #", issue, " returned ",
+        if (is.null(reopened)) "no response" else reopened$code, "\n", sep = "")
+    quit(save = "no", status = 2L)
   }
 }
 if (action == "open") {
   issue <- open_issue()
 } else if (action == "close") {
-  comment(issue, body)
-  close_issue(issue)
+  # The "Resolved" comment is posted once: if the close then fails, the state
+  # records it, and tomorrow's retry only closes.
+  if (!identical(state$resolved, issue)) {
+    comment(issue, body)
+    saveRDS(utils::modifyList(state, list(resolved = issue)), state_path)
+  }
+  closed <- curl_call("PATCH", sprintf("/issues/%d", issue),
+                      "{\"state\": \"closed\", \"state_reason\": \"completed\"}")
+  if (is.null(closed) || closed$code < 200 || closed$code >= 300) {
+    if (!novels:::githubRefused(closed)) {
+      cat(stamp, " check-snapshots: FAILED: closing issue #", issue, " returned ",
+          if (is.null(closed)) "no response" else closed$code,
+          " (the comment is posted; the next run only closes)\n", sep = "")
+      quit(save = "no", status = 2L)
+    }
+    # Closed or deleted by its owner, so not the bot's to close: done.
+    cat(stamp, " check-snapshots: issue #", issue, " cannot be closed (", closed$code,
+        "); it was closed or removed by hand, so the episode ends here\n", sep = "")
+  }
 }
 cat(stamp, " check-snapshots: issue #", issue, " ",
     c(open = "opened", comment = "commented on", close = "closed")[[action]],
     "\n", sep = "")
 
-dir.create(dirname(state_path), showWarnings = FALSE, recursive = TRUE)
 saveRDS(list(issue = if (action == "close") NA_integer_ else issue,
              problems = problems), state_path)
 quit(save = "no", status = if (length(problems)) 1L else 0L)

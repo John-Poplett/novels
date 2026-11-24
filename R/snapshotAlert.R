@@ -147,6 +147,28 @@ alertAction <- function(problems, previous, issue) {
   }
 }
 
+#' Did GitHub refuse a call for good, rather than fail for now?
+#'
+#' A refusal (403 forbidden, 404 not found, 410 gone, 422 unprocessable)
+#' will be the same tomorrow: an issue its owner closed is one the bot may
+#' not reopen or re-close, and a deleted issue is gone. Anything else (no
+#' answer, a 5xx, a 429) may pass, and a 403 that carries `retry-after` or
+#' `x-ratelimit-remaining: 0` is GitHub's rate limit, which passes too.
+#'
+#' @param response a call's `list(code, headers)`, or `NULL` when nothing
+#'   came back
+#' @returns `TRUE` for a lasting refusal, `FALSE` otherwise (success
+#'   included)
+#' @noRd
+githubRefused <- function(response) {
+  if (is.null(response)) return(FALSE)
+  if (!response$code %in% c(403L, 404L, 410L, 422L)) return(FALSE)
+  headers <- tolower(response$headers)
+  limited <- any(startsWith(headers, "retry-after:")) ||
+    any(grepl("^x-ratelimit-remaining:\\s*0\\s*$", headers))
+  !limited
+}
+
 #' A JSON string literal for `x`
 #'
 #' Enough of RFC 8259 for issue text: quotes, backslashes and control
