@@ -62,13 +62,7 @@ k_folds <- 5L
 unreliable_counts <- c(19513L, 19640L, 19836L)  # README, "Not yet fixed"
 glmnet_control <- list(thresh = 1e-5, maxit = 1e4)
 
-# Rank AUC (Mann-Whitney), as data-raw/label-audit.R: ties score 0.5.
-aucRank <- function(truth, score) {
-  n1 <- sum(truth == 1)
-  n0 <- sum(truth == 0)
-  r <- rank(score)
-  (sum(r[truth == 1]) - n1 * (n1 + 1) / 2) / (n1 * n0)
-}
+# aucRank() is the package's (R/aucRank.R), loaded above.
 
 spearman <- function(x, y) stats::cor(x, y, method = "spearman")
 

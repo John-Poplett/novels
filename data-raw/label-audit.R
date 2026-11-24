@@ -35,16 +35,7 @@ pkgload::load_all(quiet = TRUE)
 
 # ---------------------------------------------------------------- helpers ---
 
-# Rank-based AUC (Mann-Whitney), so no package decides the `direction` for us
-# and tied predictions score 0.5 rather than depending on input order.
-aucRank <- function(truth, score) {
-  stopifnot(length(truth) == length(score), all(truth %in% c(0, 1)))
-  n1 <- sum(truth == 1)
-  n0 <- sum(truth == 0)
-  if (n1 == 0 || n0 == 0) return(NA_real_)
-  r <- rank(score)
-  (sum(r[truth == 1]) - n1 * (n1 + 1) / 2) / (n1 * n0)
-}
+# aucRank() is the package's (R/aucRank.R), loaded above.
 
 # The paper's fold column is not author-disjoint (85 of 514 authors appear in
 # more than one fold), so every number below uses the stored author-grouped

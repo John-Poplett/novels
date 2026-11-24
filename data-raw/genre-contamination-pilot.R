@@ -88,13 +88,7 @@ alphas <- c(0.01, 0.03, 0.05, 0.07, 0.1, 0.3, 0.5, 0.7, 0.9, 1.0)  # _targets.R
 unreliable_counts <- c(19513L, 19640L, 19836L)  # README, "Not yet fixed"
 glmnet_control <- list(thresh = 1e-5, maxit = 1e4)
 
-aucRank <- function(truth, score) {
-  n1 <- sum(truth == 1)
-  n0 <- sum(truth == 0)
-  if (n1 == 0 || n0 == 0) return(NA_real_)
-  r <- rank(score)
-  (sum(r[truth == 1]) - n1 * (n1 + 1) / 2) / (n1 * n0)
-}
+# aucRank() is the package's (R/aucRank.R), loaded above.
 
 novels <- targets::tar_read(novels) |>
   dplyr::filter(!gutenberg_id %in% unreliable_counts)

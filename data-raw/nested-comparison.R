@@ -92,13 +92,7 @@ headingMatrix <- function(parts, vocabulary) {
 alphas <- c(0.01, 0.03, 0.05, 0.07, 0.1, 0.3, 0.5, 0.7, 0.9, 1.0)  # _targets.R
 k_folds <- 5L
 
-# Rank AUC (Mann-Whitney), as data-raw/label-audit.R: ties score 0.5.
-aucRank <- function(truth, score) {
-  n1 <- sum(truth == 1)
-  n0 <- sum(truth == 0)
-  r <- rank(score)
-  (sum(r[truth == 1]) - n1 * (n1 + 1) / 2) / (n1 * n0)
-}
+# aucRank() is the package's (R/aucRank.R), loaded above.
 
 date_added <- readr::read_csv("data-raw/snapshots/2026-11-07/date_added.csv.gz",
                               show_col_types = FALSE)
