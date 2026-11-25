@@ -9,8 +9,8 @@
 # "Selection rule"), so a regression here can only speak to ordering inside
 # each band, never to Gutenberg as a whole. The 2013 count is one reading of
 # Project Gutenberg's trailing-window counter, not a running total
-# (PREREGISTRATION.md, amendment of 2026-11-23, point 1(a)): id 215 holds
-# 3,433, which dates the scrape to about May 2012.
+# (PREREGISTRATION.md, amendment of 2026-11-23, point 1(a)); the scrape was
+# about 5 November 2012 (amendment of 2026-11-25).
 #
 # Outcome y = log1p(download_count). Four models on each of the five
 # author-grouped folds, on the pipeline's rows and TF-IDF matrices:

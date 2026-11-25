@@ -348,6 +348,34 @@ not hypotheses and are not corrected.
 ## 11. Deviations
 
 - Amendments are dated, appended to this file, and published with the analysis.
+- **2026-11-25 — the 2013 scrape was about 5 November 2012, not May.**
+  A correction of a finding; no hypothesis, outcome, rule or analysis
+  changes.
+  1. *What was said.* The amendment of 2026-11-23 (point 1(a)) dated the
+     scrape "to about May 2012" from one book: the corpus's 3,433 for
+     book 215 against captures of 3,434 (2012-05-02) and 3,423
+     (2012-10-18). Both are within 11 of the corpus, so that book could not
+     choose between May and October.
+  2. *What was measured.* The Wayback reader (`R/wayback.R`,
+     `data-raw/wayback-2012.R`) read the captures either side of 2012-05-15
+     and of 2012-10-15 for every corpus book: 753 books, 2,278 distinct
+     readings, every one parsed (`data-raw/wayback-manifest.csv` and
+     `data-raw/wayback-manifest-2012-10.csv`). Median |log(capture /
+     corpus)| by capture month: May 2012, 0.277 (1,266 readings); October,
+     0.143 (226); **November, 0.010 (570)**, with 87% of November readings
+     within 10% of the corpus. By day, the share equal to the corpus count
+     exactly is 20–35% on 1–3 November,
+     38% on the 4th (74 readings) and **67 of 67 on the 5th**. For the 643
+     books with three or more readings, the median date of the capture
+     nearest the corpus is 2012-11-02. No captures between 6 November and
+     31 December were read, so a scrape a day or two later is not excluded:
+     the date is 5 November 2012, ±1 day.
+  3. *What follows.* Point 1(a)'s conclusion stands: the count fell between
+     captures, so it was a trailing window, and the 2013 labels and the wave
+     read the same kind of counter. Only the date changes. Any count the
+     2013 corpus lacks (the two rows the metadata lost, and the three
+     patched LibriVox rows' text editions) is read from the capture nearest
+     2012-11-05, not from May.
 - **2026-11-23 — the counter's floor, and monitoring its reliability.**
   1. *Findings.* (a) The 2013 count was not cumulative. The Wayback Machine's
      captures of book 215's page read "Downloads 3796" (2011-07-16), 3434
