@@ -1,0 +1,5 @@
+gutenberg_id,read_id,side,timestamp,days,url,downloads,window,sha256,captures,fetched_utc,status
+23177,23177,after,20130127153604,83.7,https://web.archive.org/web/20130127153604id_/http://www.gutenberg.org/ebooks/23177,13,unstated,95bfcefc9cf08c129932bffbe5281f493905b1f40306ba3115d6065337dab821,9,2026-11-25T16:58:06Z,ok
+23177,23177,before,20121103093105,-1.6,https://web.archive.org/web/20121103093105id_/http://www.gutenberg.org/ebooks/23177,10,unstated,fa418383029e81ef3732b05ae0707b752d2ae02a6ee438564323a4382d545389,9,2026-11-25T16:58:01Z,ok
+23178,23178,after,20130127051521,83.2,https://web.archive.org/web/20130127051521id_/http://www.gutenberg.org/ebooks/23178,9,unstated,2b865589a6896fc0dba4d05d8d432468c01fdd498b79942ccbd350da6e933d00,9,2026-11-25T16:58:20Z,ok
+23178,23178,before,20121103071104,-1.7,https://web.archive.org/web/20121103071104id_/http://www.gutenberg.org/ebooks/23178,4,unstated,8ca335727d0ef0636c01eaccc15728607d4819fbdf9c1c900b8dcfb4c5eac05e,9,2026-11-25T16:58:15Z,ok
