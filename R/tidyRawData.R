@@ -154,6 +154,7 @@ tidyRawData <- function(dataset_path, parsed_metadata) {
 
   df <- dplyr::inner_join(df, novel_metadata, by = c("gutenberg_id"))
   df <- applyTitleCorrections(df, librivox_title_corrections)
+  df <- applyLibrivoxCounts(df, readLibrivoxCounts())
 
   tar_assert_true(
     nrow(df) == nrow(novel_metadata),

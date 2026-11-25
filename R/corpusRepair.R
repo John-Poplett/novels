@@ -64,8 +64,8 @@ dropByGutenbergId <- function(df, ids) {
 
 # Titles that no longer describe the replaced text. Only 19836 is a different
 # work, not another edition of the same one; the collection "Early Spring" is
-# not available as text anywhere we could find. The row keeps its original
-# download count and label until those are refreshed against the new book.
+# not available as text anywhere we could find. Its count and label are the
+# new book's own (applyLibrivoxCounts()).
 librivox_title_corrections <- c(
   "19836" = "The Verse-Book of a Homely Woman"
 )
@@ -402,19 +402,91 @@ recoverLostRows <- function(novel_metadata, dataset_path, recovered) {
 
 #' Read the recovered-rows table
 #'
-#' @param path the table; by default the installed copy, else the source tree's
 #' @returns a data frame, one row per recovered book
 #' @noRd
-readRecoveredRows <- function(path = NULL) {
-  if (is.null(path)) {
-    path <- system.file("extdata", "recovered_rows.csv", package = "novels")
-    if (!nzchar(path)) path <- findInSourceTree(file.path("inst", "extdata", "recovered_rows.csv"))
+readRecoveredRows <- function() {
+  readExtdataTable("recovered_rows.csv", readr::cols(
+    gutenberg_id = "i", fold = "i", response = "i", download_count = "i", .default = "c"))
+}
+
+#' Give the patched LibriVox rows their text editions' counts
+#'
+#' The three rows `patchContaminatedText()` repairs keep the audio entry's id
+#' as their key, and so came with the audio entry's download count.
+#' `inst/extdata/librivox_counts.csv` holds each text edition's count, read
+#' from the Wayback Machine's capture of its page nearest the scrape
+#' (5 November 2012; PREREGISTRATION.md, amendment of 2026-11-25).
+#'
+#' The label is re-derived from the genre's band, measured on the genre's
+#' other rows: a count at or above the lowest success is a success, at or
+#' below the highest failure a failure. A count between them would have been
+#' discarded by the 2013 selection, so it is an error, not a guess; so is a
+#' table whose `response` disagrees with the band.
+#'
+#' @param df the corpus, one row per (book, genre)
+#' @param counts the table, as read by `readLibrivoxCounts()`
+#' @returns df with `download_count` and `response` replaced on those rows
+#' @noRd
+applyLibrivoxCounts <- function(df, counts) {
+  needed <- c("gutenberg_id", "download_count", "response")
+  missing <- setdiff(needed, names(counts))
+  if (length(missing)) {
+    stop("The LibriVox counts table lacks column(s) ", paste(missing, collapse = ", "),
+         ". See inst/extdata/librivox_counts.csv.", call. = FALSE)
   }
+  others <- df[!df$gutenberg_id %in% counts$gutenberg_id, ]
+  for (i in seq_len(nrow(counts))) {
+    rows <- which(df$gutenberg_id == counts$gutenberg_id[i])
+    if (!length(rows)) {
+      stop(sprintf("LibriVox count for %s: the corpus has no such row.", counts$gutenberg_id[i]),
+           call. = FALSE)
+    }
+    for (r in rows) {
+      g <- others[as.character(others$genre) == as.character(df$genre[r]), ]
+      n <- counts$download_count[i]
+      band <- if (n >= min(g$download_count[g$response == 1L])) 1L
+              else if (n <= max(g$download_count[g$response == 0L])) 0L
+              else NA_integer_
+      if (is.na(band)) {
+        stop(sprintf(paste0("LibriVox count for %s: %d falls between %s's failure and ",
+                            "success bands, which the 2013 selection discarded. Decide ",
+                            "the row, then record it in inst/extdata/librivox_counts.csv."),
+                     counts$gutenberg_id[i], n, as.character(df$genre[r])), call. = FALSE)
+      }
+      if (!identical(band, as.integer(counts$response[i]))) {
+        stop(sprintf("LibriVox count for %s: %d is a %s in %s, but the table says response %d.",
+                     counts$gutenberg_id[i], n, if (band) "success" else "failure",
+                     as.character(df$genre[r]), counts$response[i]), call. = FALSE)
+      }
+      df$download_count[r] <- as.integer(n)
+      df$response[r] <- band
+    }
+  }
+  df
+}
+
+#' Read a table shipped in inst/extdata
+#'
+#' @param name the file name, e.g. "librivox_counts.csv"
+#' @param types readr column types
+#' @returns a data frame
+#' @noRd
+readExtdataTable <- function(name, types) {
+  path <- system.file("extdata", name, package = "novels")
+  if (!nzchar(path)) path <- findInSourceTree(file.path("inst", "extdata", name))
   if (!nzchar(path) || !file.exists(path)) {
-    stop("inst/extdata/recovered_rows.csv not found; run from the package root or ",
-         "install the package.", call. = FALSE)
+    stop("inst/extdata/", name, " not found; run from the package root or install the package.",
+         call. = FALSE)
   }
-  as.data.frame(readr::read_csv(path, col_types = readr::cols(
-    gutenberg_id = "i", fold = "i", response = "i", download_count = "i",
-    .default = "c")))
+  as.data.frame(readr::read_csv(path, col_types = types))
+}
+
+#' Read the LibriVox counts table
+#'
+#' @returns a data frame, one row per patched LibriVox row
+#' @noRd
+readLibrivoxCounts <- function() {
+  readExtdataTable("librivox_counts.csv", readr::cols(
+    gutenberg_id = "i", source_id = "i", download_count = "i", response = "i",
+    previous_count = "i", .default = "c"))
 }
