@@ -37,21 +37,13 @@ tidyRawData <- function(dataset_path, parsed_metadata) {
   # compareGenreAssignment.R).
   #
 
-  novel_metadata <- dplyr::inner_join(novel_metadata, gutenbergr::gutenberg_metadata, by = c("gutenberg_id"))
+  # One row per (book, genre, fold), with the catalogue's title, authors and
+  # language (joinCatalogue(), below).
+  novel_metadata <- joinCatalogue(novel_metadata, gutenbergr::gutenberg_metadata)
 
-  novel_metadata <- novel_metadata |>
-    group_by(gutenberg_id, genre, fold) |>
-    summarize(
-      author = paste(author, collapse = "; "),
-      gutenberg_author_id = paste(gutenberg_author_id, collapse = "; "),
-      across(-c(author, gutenberg_author_id), first),
-      .groups = "drop"
-    )
-
-  # NOTE: this is guaranteed to pass by construction, since the
-  # group_by(gutenberg_id, genre, fold) |> summarize(...) step above already
-  # collapses to one row per combination. Kept as a regression guard in case
-  # that step is ever changed.
+  # NOTE: this is guaranteed to pass by construction, since the parsed
+  # metadata has one row per (gutenberg_id, genre, fold) and the join above is
+  # many-to-one. Kept as a regression guard in case either is ever changed.
   is_distinct <- function(df, columns_to_group = c("gutenberg_id", "genre", "fold")) {
     nrow(df) == nrow(dplyr::distinct(df, dplyr::across(dplyr::all_of(columns_to_group))))
   }
@@ -187,4 +179,32 @@ writeNovelsData <- function(novels, path = "data/novels.rda") {
   dir.create(dirname(path), showWarnings = FALSE, recursive = TRUE)
   save(novels, file = path, compress = "bzip2")
   path
+}
+
+#' Join the parsed metadata to the Gutenberg catalogue
+#'
+#' gutenberg_metadata has one row per (book, author) and novel_metadata one
+#' per (book, genre), so joining them directly is many-to-many: a book with
+#' two authors in two genres (1184, The Count of Monte Cristo) becomes four
+#' rows. Collapse the catalogue to one row per book first, authors joined
+#' with "; ", and the join is many-to-one, which dplyr then enforces.
+#'
+#' @param novel_metadata one row per (gutenberg_id, genre, fold)
+#' @param catalogue gutenbergr's `gutenberg_metadata`: one row per (book, author)
+#' @returns novel_metadata's rows with the catalogue's columns, ordered by
+#'   gutenberg_id, genre and fold
+#' @noRd
+joinCatalogue <- function(novel_metadata, catalogue) {
+  catalogue_books <- catalogue |>
+    group_by(gutenberg_id) |>
+    summarize(
+      author = paste(author, collapse = "; "),
+      gutenberg_author_id = paste(gutenberg_author_id, collapse = "; "),
+      across(-c(author, gutenberg_author_id), first),
+      .groups = "drop"
+    )
+  dplyr::inner_join(novel_metadata, catalogue_books, by = "gutenberg_id",
+                    relationship = "many-to-one") |>
+    dplyr::select(gutenberg_id, genre, fold, author, gutenberg_author_id, dplyr::everything()) |>
+    dplyr::arrange(gutenberg_id, genre, fold)
 }
