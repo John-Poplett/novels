@@ -1,7 +1,8 @@
 # Read the 2013 corpus's download counts back from the Wayback Machine
 # (TODO.md, "Wayback reader"). For every book, the archive's captures of its
-# Gutenberg page nearest the scrape (about May 2012: PREREGISTRATION.md,
-# amendment of 2026-11-23, point 1(a)) are fetched, one on each side of
+# Gutenberg page nearest the scrape (5 November 2012, +-1 day:
+# PREREGISTRATION.md, amendment of 2026-11-25, from this script's runs at
+# targets 2012-05-15 and 2012-10-15) are fetched, one on each side of
 # --target, and their "Downloads" figure read (R/wayback.R).
 #
 # What it is for: an independent reading of every corpus count, to see how
@@ -22,7 +23,7 @@
 # Run from the package root after `tar_make()`:
 #
 #   Rscript data-raw/wayback-2012.R [--ids=215,19513,...] [--extra-ids=23177,...]
-#       [--target=2012-05-15] [--from=2011] [--to=2013] [--dir=DIR]
+#       [--target=2012-11-05] [--from=2011] [--to=2013] [--dir=DIR]
 #       [--manifest=FILE] [--delay=SECONDS] [--limit=N]
 #
 # --ids reads only those corpus books (the mini-test: 215, whose answer is
@@ -40,7 +41,7 @@ arg <- function(name, default) {
                                                commandArgs(trailingOnly = TRUE), value = TRUE))
   if (length(v)) v else default
 }
-target <- as.Date(arg("target", "2012-05-15"))
+target <- as.Date(arg("target", "2012-11-05"))
 from <- arg("from", "2011")
 to <- arg("to", "2013")
 dir <- arg("dir", "data-raw/wayback")
