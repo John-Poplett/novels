@@ -21,12 +21,14 @@
 #
 # Run from the package root after `tar_make()`:
 #
-#   Rscript data-raw/wayback-2012.R [--ids=215,19513,...] [--target=2012-05-15]
-#       [--from=2011] [--to=2013] [--dir=DIR] [--manifest=FILE] [--delay=SECONDS]
-#       [--limit=N]
+#   Rscript data-raw/wayback-2012.R [--ids=215,19513,...] [--extra-ids=23177,...]
+#       [--target=2012-05-15] [--from=2011] [--to=2013] [--dir=DIR]
+#       [--manifest=FILE] [--delay=SECONDS] [--limit=N]
 #
 # --ids reads only those corpus books (the mini-test: 215, whose answer is
-# known, and the three patched rows); --delay (default 4) spaces the
+# known, and the three patched rows); --extra-ids reads books outside the
+# corpus, each as itself (23177 and 23178, the rows its metadata lost), and
+# alone reads only those; --delay (default 4) spaces the
 # requests out, about three per book, so about 15 a minute: at one a second
 # the archive refused connections in bursts (2026-11-24, 740 of 1,090
 # reads). A refused request is retried after 10, 30 and 90 seconds.
@@ -66,6 +68,22 @@ reads <- do.call(rbind, lapply(seq_len(nrow(ids)), function(i) {
   data.frame(gutenberg_id = ids$gutenberg_id[i],
              read_id = unique(c(ids$source_id[i], ids$gutenberg_id[i])))
 }))
+# Books outside the corpus (the rows its metadata lost), each read as itself.
+extra <- arg("extra-ids", NA)
+if (!is.na(extra)) {
+  extra_ids <- suppressWarnings(as.integer(strsplit(extra, ",", fixed = TRUE)[[1]]))
+  if (anyNA(extra_ids) || any(extra_ids <= 0)) {
+    stop("--extra-ids must be positive Gutenberg ids, comma-separated; got '", extra, "'.",
+         call. = FALSE)
+  }
+  in_corpus <- intersect(extra_ids, targets::tar_read(novels)$gutenberg_id)
+  if (length(in_corpus)) {
+    stop("--extra-ids is for books outside the corpus; already in it: ",
+         paste(in_corpus, collapse = ", "), ". Use --ids for those.", call. = FALSE)
+  }
+  if (is.na(only)) reads <- reads[0, ]  # alone, it reads only these
+  reads <- rbind(reads, data.frame(gutenberg_id = unique(extra_ids), read_id = unique(extra_ids)))
+}
 
 columns <- c("gutenberg_id", "read_id", "side", "timestamp", "days", "url", "downloads",
              "window", "sha256", "captures", "fetched_utc", "status")
