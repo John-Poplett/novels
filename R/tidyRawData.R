@@ -94,6 +94,16 @@ tidyRawData <- function(dataset_path, parsed_metadata) {
   # rather than deferred.
   df$text <- sapply(df$text, stripGutenbergBoilerplate)
 
+  # The pulp-magazine transcriber's note at the end of 73 books names the
+  # magazine and the copyright search: provenance that leaks the label in
+  # Short Stories (stripTranscriberNote()). Asserted on the sentence itself.
+  df$text <- vapply(df$text, stripTranscriberNote, character(1), USE.NAMES = FALSE)
+  tar_assert_true(
+    !any(grepl("copyright[[:space:]]+on[[:space:]]+this[[:space:]]+publication[[:space:]]+was[[:space:]]+renewed",
+               df$text)),
+    "a transcriber's copyright-renewal note survived stripTranscriberNote()"
+  )
+
   tar_assert_true(
     !any(grepl("\\*\\*\\* ?(START|END) OF", df$text, ignore.case = TRUE)),
     "Gutenberg boilerplate markers still present after stripping"

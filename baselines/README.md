@@ -11,10 +11,10 @@ compared against them. The files are what `tar_read(cv_summary)` and
 
 ## Current baseline
 
-Produced after the Gutenberg boilerplate fix.
+Produced after the transcriber's-note fix.
 
-- Pipeline run: `tar_make()`, 2026-11-07, 216 targets, 5m 39.5s.
-- Corpus: 796 rows over 754 books, fingerprint `4cea80937cee9b4c8a1151717d7d4ff8`.
+- Pipeline run: `tar_make()`, 2026-11-24, 216 targets, 13m 22s (gpu-box).
+- Corpus: 796 rows over 754 books, fingerprint `eb7fabad40da4fb1056d73d9556222e0`.
 - Folds: the stored `author5_v1` table, author-grouped and append-only. For this corpus it equals `createKFoldSplit(novels, 5, seed = 42)`.
 
 The fingerprint is `digest::digest(targets::tar_read(novels))`, which is the
@@ -28,7 +28,8 @@ changes, including one that no result depends on.
 |---|---|---|---|
 | Pre-fix, 2026-10-29 | 798 rows, 756 books (`f87ed8388486cdf9476bfcb559a93cb2`) | 0.686–0.739 | git commit `23b5baf` |
 | Post-fix, 2026-10-30 | 796 rows, 754 books (`25f3cb40af928b414c6f03e9dd53d1f7`) | 0.695–0.746 | git commit `a1ad0a8` |
-| Post-boilerplate, 2026-11-07 | 796 rows, 754 books (`4cea80937cee9b4c8a1151717d7d4ff8`) | 0.695–0.745 | current files |
+| Post-boilerplate, 2026-11-07 | 796 rows, 754 books (`4cea80937cee9b4c8a1151717d7d4ff8`) | 0.695–0.745 | git commit `734f8f5` |
+| Post-transcriber-note, 2026-11-24 | 796 rows, 754 books (`eb7fabad40da4fb1056d73d9556222e0`) | 0.696–0.745 | current files |
 
 The 2026-10-30 fingerprint was recorded by an earlier call whose exact form
 was not written down, and a digest depends on row order and attributes as well
@@ -39,7 +40,10 @@ The LibriVox fix moved every `alpha`'s mean up by 0.002–0.015 (mean +0.0085);
 none by more than two standard errors. The boilerplate fix moved them by at
 most 0.0025 in either direction (mean −0.0001); none by more than one standard
 error, and the automatic check raised no warning. That is the expected size
-for a change to 0.002% of the corpus characters.
+for a change to 0.002% of the corpus characters. The transcriber's-note fix
+(73 books, 20,080 characters) moved them by at most 0.0025 (mean +0.0003),
+again inside one standard error; its effect within Short Stories, where the
+note leaked the label, is in CHANGELOG.md.
 
 ## How to read a comparison
 

@@ -2,6 +2,11 @@
 
 This tracks changes to the *dataset itself* — what a `tar_read(novels)` produces — separately from ordinary code changes to the pipeline. Each entry only changes one thing about what "success" means or what data backs it, so a version can be adopted independently of the others.
 
+## Unreleased (v1.2.0, "2013+")
+
+- Stripped the pulp-magazine transcriber's note from the end of 73 books (`stripTranscriberNote()`): "transcriber's note: this etext was produced from _astounding science fiction_ march 1959. extensive research did not uncover any evidence that the u.s. copyright on this publication was renewed. minor spelling and typographical errors have been corrected without note." It records where the transcription came from, not what the author wrote, and it leaked the label: in Short Stories all 11 books carrying it were successes and none of the failures (Fisher p = 0.0005), eight of them pulp stories also in Science Fiction, where it was evenly split (35 failures, 34 successes). 20,080 characters removed, 182–371 per book, each a cut of the book's tail at the note's header line; `tidyRawData()` asserts that no copy survives.
+  *Effect on results:* the pooled sweep moved by at most 0.0025 at any `alpha`, inside one standard error everywhere. Within Short Stories, scored from the pooled model's out-of-fold predictions at `alpha = 0.05` (`data-raw/transcriber-note-effect.R`), the AUC fell from 0.719 to 0.708 (−0.012): the direction leakage predicts, and well inside the noise of 98 rows. It is removed because it is provenance, not style, not because of its size. Rows, labels, counts and folds are unchanged; the corpus fingerprint is now `eb7fabad40da4fb1056d73d9556222e0`.
+
 ## v1.1.0 — source-integrity fix (2026-11-21)
 
 Same titles, genres, fold structure, and success/failure labels as the original Ashok, Feng & Choi (2013) corpus. No relabeling. Text-source corrections only, plus two rows dropped as duplicates (below):

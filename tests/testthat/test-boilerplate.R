@@ -161,3 +161,39 @@ test_that("keeps a sentence that happens to begin with 'produced by'", {
   expect_identical(stripGutenbergBoilerplate(text), paste(body, collapse = "\n"))
 })
 
+
+# The pulp-magazine transcriber's note (stripTranscriberNote()), in the
+# shapes the corpus holds (2026-11-24, all 73 books).
+note_book <- function(header = "transcriber's note:", extra = "") paste(
+  "\"we'll all be rich, son,\" the older man said.", "the end", "", header,
+  "this etext was produced from _analog_ april 1962. extensive research",
+  "did not uncover any evidence that the u.s. copyright on this",
+  paste0("publication was renewed. minor spelling and typographical errors", extra),
+  "have been corrected without note.", sep = "\n")
+
+test_that("stripTranscriberNote removes the final note, and the blank line before it", {
+  expect_identical(stripTranscriberNote(note_book()),
+                   "\"we'll all be rich, son,\" the older man said.\nthe end")
+  # without the colon, and with the extra sentences some notes add
+  expect_identical(stripTranscriberNote(note_book("transcriber's note")),
+                   "\"we'll all be rich, son,\" the older man said.\nthe end")
+  expect_identical(stripTranscriberNote(note_book(extra = " variant spellings retained.")),
+                   "\"we'll all be rich, son,\" the older man said.\nthe end")
+})
+
+test_that("stripTranscriberNote leaves other transcriber's notes and prose alone", {
+  plain <- "a story.\ntranscriber's note:\nobvious typographical errors have been corrected."
+  expect_identical(stripTranscriberNote(plain), plain)
+  # the renewal sentence alone, without the note's header, is not touched
+  bare <- "a story.\nextensive research did not uncover any evidence that the u.s.\ncopyright on this publication was renewed."
+  expect_identical(stripTranscriberNote(bare), bare)
+  expect_identical(stripTranscriberNote("no note here"), "no note here")
+  expect_identical(stripTranscriberNote(""), "")
+})
+
+test_that("stripTranscriberNote never takes more than a note's length", {
+  # a header followed by a long run of text is a chapter, not a note
+  long <- paste(note_book(), paste(rep("more of the story.", 100), collapse = " "), sep = "\n")
+  expect_identical(stripTranscriberNote(long), long)
+  expect_error(stripTranscriberNote(c("a", "b")), "single string")
+})

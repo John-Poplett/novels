@@ -202,6 +202,47 @@ readReplacementText <- function(source_id) {
   paste(readLines(con, warn = FALSE), collapse = "\n")
 }
 
+#' Strip the pulp-magazine transcriber's note at the end of a book
+#'
+#' 73 books, mostly science fiction transcribed from magazines, end with a
+#' block like "transcriber's note: this etext was produced from _astounding
+#' science fiction_ march 1959. extensive research did not uncover any
+#' evidence that the u.s. copyright on this publication was renewed. minor
+#' spelling and typographical errors have been corrected without note."
+#' It is provenance, not the author's text, and it leaks the label: in
+#' Short Stories all 11 books carrying it are successes (Fisher p = 0.0005;
+#' review of 2026-11-24).
+#'
+#' Only that block is removed: the last line reading "transcriber's note"
+#' (colon optional), when what follows it to the end names the source
+#' ("this etext was produced from") and the copyright renewal, and is at
+#' most `max_chars` long, so a note can never take a chapter with it.
+#' Trailing blank lines before it go too.
+#'
+#' @param text a single string containing one book's text
+#' @param max_chars the longest block treated as a note (the corpus's
+#'   longest is under 400 characters)
+#' @returns the text without the note; unchanged if it has none
+#' @noRd
+stripTranscriberNote <- function(text, max_chars = 1000) {
+  stopifnot("text must be a single string" = is.character(text) && length(text) == 1)
+  lines <- strsplit(text, "\n", fixed = TRUE)[[1]]
+  heads <- which(grepl("^[[:space:]]*transcriber.?s[[:space:]]+notes?[[:space:]]*:?[[:space:]]*$",
+                       lines, ignore.case = TRUE, perl = TRUE))
+  if (!length(heads)) return(text)
+  h <- max(heads)
+  block <- paste(lines[h:length(lines)], collapse = " ")
+  is_note <- nchar(block) <= max_chars &&
+    grepl("this[[:space:]]+e-?text[[:space:]]+was[[:space:]]+produced[[:space:]]+from", block,
+          ignore.case = TRUE, perl = TRUE) &&
+    grepl("copyright[[:space:]]+on[[:space:]]+this[[:space:]]+publication[[:space:]]+was[[:space:]]+renewed",
+          block, ignore.case = TRUE, perl = TRUE)
+  if (!is_note) return(text)
+  keep <- seq_len(h - 1)
+  while (length(keep) && !nzchar(trimws(lines[keep[length(keep)]]))) keep <- keep[-length(keep)]
+  paste(lines[keep], collapse = "\n")
+}
+
 #' Title stripGutenbergBoilerplate
 #'
 #' Strips Project Gutenberg's standard license header/footer boilerplate
