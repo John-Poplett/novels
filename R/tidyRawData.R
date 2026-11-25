@@ -3,6 +3,9 @@
 
 tidyRawData <- function(dataset_path, parsed_metadata) {
   novel_metadata <- parsed_metadata$data
+  # The two rows novel_meta.txt lost (23177, 23178), checked against their
+  # folders and added before anything is joined to them.
+  novel_metadata <- recoverLostRows(novel_metadata, dataset_path, readRecoveredRows())
 
   files <- list.files(path = dataset_path, pattern = "[0-9]+\\.txt", recursive = TRUE)
 

@@ -1,0 +1,3 @@
+gutenberg_id,genre,fold,response,download_count,path,count_timestamp,count_url,note
+23177,Short Stories,5,0,10,Short_Stories/ss_fold5/failure5/23177.txt,20121103093105,https://web.archive.org/web/20121103093105id_/http://www.gutenberg.org/ebooks/23177,"novel_meta.txt breaks off inside this book's line, before its count; 10 is one above Short Stories' failure band (at most 9), within the drift of captures two days before the scrape; the class is the folder's (decided 2026-11-25)"
+23178,Short Stories,5,0,4,Short_Stories/ss_fold5/failure5/23178.txt,20121103071104,https://web.archive.org/web/20121103071104id_/http://www.gutenberg.org/ebooks/23178,"the archive's 800th file; novel_meta.txt has no line for it"

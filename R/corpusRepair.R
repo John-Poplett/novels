@@ -325,3 +325,96 @@ stripGutenbergBoilerplate <- function(text) {
 
   paste(lines[body_start:body_end], collapse = "\n")
 }
+
+#' Restore the rows the 2013 metadata lost
+#'
+#' `novel_meta.txt` breaks off inside the line for 23177 and has none for
+#' 23178, the archive's 800th file, though both texts are in the archive.
+#' `inst/extdata/recovered_rows.csv` supplies them: genre, fold and class
+#' from the file's folder, the count from the Wayback Machine's capture of
+#' the book's page nearest the scrape (5 November 2012; PREREGISTRATION.md,
+#' amendment of 2026-11-25). Title, author and language come from the
+#' catalogue join, as for every other row.
+#'
+#' Each row is checked against the archive before it is added: its id is
+#' not already in the metadata, its file is where the table says, the folder
+#' names its class and fold (`success5`, `ss_fold5`), and the genre that
+#' every book already parsed from the same genre folder shares is the row's.
+#'
+#' @param novel_metadata the parsed metadata (`parseMetaData()$data`)
+#' @param dataset_path the unpacked archive
+#' @param recovered the table, as read by `readRecoveredRows()`
+#' @returns `novel_metadata` with the recovered rows appended
+#' @noRd
+recoverLostRows <- function(novel_metadata, dataset_path, recovered) {
+  needed <- c("gutenberg_id", "genre", "fold", "response", "download_count", "path")
+  missing <- setdiff(needed, names(recovered))
+  if (length(missing)) {
+    stop("The recovered-rows table lacks column(s) ", paste(missing, collapse = ", "),
+         ". See inst/extdata/recovered_rows.csv.", call. = FALSE)
+  }
+  if (!nrow(recovered)) return(novel_metadata)
+  fail <- function(i, why) {
+    stop(sprintf("Recovered row %s: %s. Fix inst/extdata/recovered_rows.csv.",
+                 recovered$gutenberg_id[i], why), call. = FALSE)
+  }
+  ids_by_folder <- function(folder) {
+    files <- list.files(file.path(dataset_path, folder), pattern = "[0-9]+\\.txt$",
+                        recursive = TRUE)
+    as.integer(sub("\\.txt$", "", basename(files)))
+  }
+  for (i in seq_len(nrow(recovered))) {
+    r <- recovered[i, ]
+    if (r$gutenberg_id %in% novel_metadata$gutenberg_id) fail(i, "the metadata already has it")
+    if (!file.exists(file.path(dataset_path, r$path))) fail(i, paste("no file at", r$path))
+    parts <- strsplit(r$path, "/", fixed = TRUE)[[1]]
+    if (length(parts) != 4) fail(i, "path is not genre/fold/class/file")
+    class_dir <- paste0(if (r$response == 1L) "success" else "failure", r$fold)
+    if (!identical(parts[3], class_dir)) {
+      fail(i, sprintf("its folder is %s, but the table says %s", parts[3], class_dir))
+    }
+    if (!endsWith(parts[2], paste0("_fold", r$fold))) {
+      fail(i, sprintf("its folder is %s, but the table says fold %d", parts[2], r$fold))
+    }
+    # A book in several genres has a copy in each genre's folder, so the
+    # folder's genre is the one every parsed book in it shares.
+    in_folder <- novel_metadata[novel_metadata$gutenberg_id %in% ids_by_folder(parts[1]), ]
+    shared <- Reduce(intersect, split(as.character(in_folder$genre), in_folder$gutenberg_id))
+    if (!identical(shared, as.character(r$genre))) {
+      fail(i, sprintf("the books in %s share the genre %s, but the table says %s", parts[1],
+                      if (length(shared)) paste(shared, collapse = "/") else "(none)", r$genre))
+    }
+  }
+  added <- tibble::tibble(
+    response = as.integer(recovered$response),
+    download_count = as.integer(recovered$download_count),
+    genre = factor(recovered$genre, levels = levels(novel_metadata$genre)),
+    fold = as.integer(recovered$fold),
+    gutenberg_id = as.integer(recovered$gutenberg_id)
+  )
+  if (anyNA(added$genre)) {
+    stop("A recovered row's genre is not one of the corpus's: ",
+         paste(setdiff(recovered$genre, levels(novel_metadata$genre)), collapse = ", "),
+         ".", call. = FALSE)
+  }
+  dplyr::bind_rows(novel_metadata, added[names(novel_metadata)])
+}
+
+#' Read the recovered-rows table
+#'
+#' @param path the table; by default the installed copy, else the source tree's
+#' @returns a data frame, one row per recovered book
+#' @noRd
+readRecoveredRows <- function(path = NULL) {
+  if (is.null(path)) {
+    path <- system.file("extdata", "recovered_rows.csv", package = "novels")
+    if (!nzchar(path)) path <- findInSourceTree(file.path("inst", "extdata", "recovered_rows.csv"))
+  }
+  if (!nzchar(path) || !file.exists(path)) {
+    stop("inst/extdata/recovered_rows.csv not found; run from the package root or ",
+         "install the package.", call. = FALSE)
+  }
+  as.data.frame(readr::read_csv(path, col_types = readr::cols(
+    gutenberg_id = "i", fold = "i", response = "i", download_count = "i",
+    .default = "c")))
+}
