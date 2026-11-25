@@ -358,16 +358,19 @@ not hypotheses and are not corrected.
      choose between May and October.
   2. *What was measured.* The Wayback reader (`R/wayback.R`,
      `data-raw/wayback-2012.R`) read the captures either side of 2012-05-15
-     and of 2012-10-15 for every corpus book: 753 books, 2,278 distinct
-     readings, every one parsed (`data-raw/wayback-manifest.csv` and
-     `data-raw/wayback-manifest-2012-10.csv`). Median |log(capture /
-     corpus)| by capture month: May 2012, 0.277 (1,266 readings); October,
-     0.143 (226); **November, 0.010 (570)**, with 87% of November readings
-     within 10% of the corpus. By day, the share equal to the corpus count
-     exactly is 20–35% on 1–3 November,
-     38% on the 4th (74 readings) and **67 of 67 on the 5th**. For the 643
-     books with three or more readings, the median date of the capture
-     nearest the corpus is 2012-11-02. No captures between 6 November and
+     and of 2012-10-15 for every corpus book: 754 books, every reading
+     parsed (`data-raw/wayback-manifest.csv` and
+     `data-raw/wayback-manifest-2012-10.csv`). The ratios below cover 753
+     books and 2,278 distinct readings: 11003 (*Michelangelo's Shoulder*)
+     has a corpus count of 0, so its ratio is undefined, and its captures
+     read 11 and 12 in May and 0 on 2 November, the only one matching the
+     corpus. Median |log(capture / corpus)| by capture month: May 2012,
+     0.277 (1,266 readings); October, 0.143 (226); **November, 0.010
+     (570)**, with 87% of November readings within 10% of the corpus. By
+     day, the share equal to the corpus count exactly is 20–35% on 1–3
+     November, 38% on the 4th (74 readings) and **67 of 67 on the 5th**.
+     For the 643 books with three or more readings, the median date of the
+     capture nearest the corpus is 2012-11-02. No captures between 6 November and
      31 December were read, so a scrape a day or two later is not excluded:
      the date is 5 November 2012, ±1 day.
   3. *What follows.* Point 1(a)'s conclusion stands: the count fell between
